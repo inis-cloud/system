@@ -1,0 +1,291 @@
+<!-- head - 开始 -->
+<? require(dirname(dirname(__FILE__)).'/public/head.html'); ?>
+<!-- head - 结束 -->
+
+</head>
+<? require(dirname(dirname(__FILE__)).'/public/body.html'); ?>
+    <div class="wrapper" id="configure">
+        
+        <!-- 侧边栏 - 开始 -->
+        <i-left-side></i-left-side>
+        <!-- 侧边栏 - 结束 -->
+        
+        <div class="content-page">
+            
+            <div class="content">
+                
+                <!-- 顶部导航 - 开始 -->
+                <i-top-nav></i-top-nav>
+                <!-- 顶部导航 - 结束 -->
+                
+                <!-- 内容 - 开始 -->
+                <div class="container-fluid">
+                
+                    <!-- 页面标题 开始 -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <div class="page-title-right">
+                                    <form class="form-inline">
+                                        <div class="form-group">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control form-control-light" id="dash-daterange">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text bg-primary border-primary text-white">
+                                                        <i class="mdi mdi-calendar-range font-13"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a href="/index/options" class="btn btn-primary ml-2">
+                                            <i class="mdi mdi-autorenew"></i>
+                                        </a>
+                                    </form>
+                                </div>
+                                <h4 class="page-title">&nbsp;</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 页面标题 结束 -->
+                
+                    <div class="row">
+                
+                        <div class="col-xl-12">
+                            <div class="card">
+                                <div class="card-body">
+    
+                                    <h4 class="header-title mb-3">配置服务</h4>
+    
+                                    <ul class="nav nav-tabs nav-bordered mb-3">
+                                        <li class="nav-item">
+                                            <a href="#email-b1" data-toggle="tab" aria-expanded="false" class="nav-link active">
+                                                <i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i>
+                                                <span class="d-none d-lg-block">邮件</span>
+                                            </a>
+                                        </li>
+                                        <li v-if="false" class="nav-item">
+                                            <a href="#other" data-toggle="tab" aria-expanded="true" class="nav-link">
+                                                <i class="mdi mdi-account-circle d-lg-none d-block mr-1"></i>
+                                                <span class="d-none d-lg-block">其他</span>
+                                            </a>
+                                        </li>
+                                        <li v-if="false" class="nav-item">
+                                            <a href="#settings-b1" data-toggle="tab" aria-expanded="false" class="nav-link">
+                                                <i class="mdi mdi-settings-outline d-lg-none d-block mr-1"></i>
+                                                <span class="d-none d-lg-block">Settings</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+    
+                                    <div class="tab-content">
+                                        <div class="tab-pane show active" id="email-b1">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card-body">
+                                                        <div class="tab-content mb-0 b-0">
+                                                            <div class="tab-pane fade active show">
+                                                                <div class="row">
+                                                                    <div class="col-12">
+                                                                        <div class="form-group row mb-3">
+                                                                            <label class="col-md-3 col-form-label">服务地址</label>
+                                                                            <div class="col-md-9">
+                                                                                <input v-model="email_serve.smtp" type="text" class="form-control" placeholder="如QQ：smtp.qq.com">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group row mb-3">
+                                                                            <label class="col-md-3 col-form-label">端口号</label>
+                                                                            <div class="col-md-9">
+                                                                                <select class="select2 form-control" id="port-select2" data-toggle="select2" data-placeholder="Choose ..."></select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group row mb-3">
+                                                                            <label class="col-md-3 col-form-label">加密方式</label>
+                                                                            <div class="col-md-9">
+                                                                                <select class="select2 form-control" id="encry-select2" data-toggle="select2" data-placeholder="Choose ..."></select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group row mb-3">
+                                                                            <label class="col-md-3 col-form-label">邮件编码</label>
+                                                                            <div class="col-md-9">
+                                                                                <select class="select2 form-control" id="encoded-select2" data-toggle="select2" data-placeholder="Choose ..."></select>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card-body">
+                                                        <div class="tab-content mb-0 b-0">
+                                                            <div class="tab-pane fade active show">
+                                                                <div class="row">
+                                                                    <div class="col-12">
+                                                                        <div class="form-group row mb-3">
+                                                                            <label class="col-md-3 col-form-label">邮箱帐号</label>
+                                                                            <div class="col-md-9">
+                                                                                <input v-model="email_serve.email" type="text" class="form-control" placeholder="邮件服务的邮箱帐号">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group row mb-3">
+                                                                            <label class="col-md-3 col-form-label">邮箱密码</label>
+                                                                            <div class="col-md-9">
+                                                                                <input v-model="email_serve.password" type="password" class="form-control" placeholder="邮件服务的邮箱密码">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group row mb-3">
+                                                                            <label class="col-md-3 col-form-label">发件人昵称</label>
+                                                                            <div class="col-md-9">
+                                                                                <input v-model="email_serve.nickname" type="text" class="form-control" placeholder="如：INIS">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group row mb-3">
+                                                                            <label class="col-md-3 col-form-label">邮箱抄送</label>
+                                                                            <div class="col-md-9">
+                                                                                <input type="text" data-toggle="modal" data-target="#email-cc-modal" class="form-control pointer" onfocus=this.blur() placeholder="点击配置">
+                                                                            </div>
+                                                                        </div>
+                                                                        
+                                                                        <!-- 邮箱抄送 - 开始 -->
+                                                                        <div id="email-cc-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+                                                                            <div class="modal-dialog">
+                                                                                <div class="modal-content modal-filled bg-primary">
+                                                                                    <div class="modal-header">
+                                                                                        <h4 class="modal-title">什么是 邮箱抄送 ？</h4>
+                                                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                                                                    </div>
+                                                                                    <div class="modal-body">
+                                                                                    <p>当用户发起评论后，就向被抄送的邮箱发起一条评论提醒。</p>
+                                                                                    <div class="row">
+                                                                                        <textarea v-model="email_serve.email_cc" class="form-control domain-textarea" rows="5" placeholder="请至少填写一个邮箱&#13;&#10;邮箱地址(每行1个)，如下：&#13;&#10;test@qq.com&#13;&#10;test@163.com"></textarea>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="modal-footer">
+                                                                                    <button type="button" class="btn btn-outline-light" data-dismiss="modal">我已了解</button>
+                                                                                    <button v-on:click="SaveEmailCC()" type="button" class="btn btn-light" data-dismiss="modal">保存配置</button>
+                                                                                </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <!-- 邮箱抄送 - 结束 -->
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <button v-on:click="testEmail()" type="button" class="btn btn-block btn-primary">点击测试邮件配置</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card-body">
+                                                        <div class="tab-content mb-0 b-0">
+                                                            <div class="tab-pane fade active show">
+                                                                <div class="row">
+                                                                    <div class="col-12">
+                                                                        <div class="form-group row mb-3">
+                                                                            <label v-on:click="setPreview(1)" class="col-md-3 col-form-label pointer">博主收信模板</label>
+                                                                            <div class="col-md-9">
+                                                                                <textarea v-model="email_serve.template_1" v-on:click="setPreview(1)" class="form-control domain-textarea pointer" rows="7" placeholder="发送邮件的模板，可以是HTML或纯文本" style="border: 1px solid #dee2e6;"></textarea>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group row mb-3">
+                                                                            <label v-on:click="setPreview(2)" class="col-md-3 col-form-label pointer">用户收信模板</label>
+                                                                            <div class="col-md-9">
+                                                                                <textarea v-model="email_serve.template_2" v-on:click="setPreview(2)" class="form-control domain-textarea pointer" rows="7" placeholder="发送邮件的模板，可以是HTML或纯文本" style="border: 1px solid #dee2e6;"></textarea>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group row mb-3">
+                                                                            <label v-on:click="setPreview(3)" class="col-md-3 col-form-label pointer">验证码模板</label>
+                                                                            <div class="col-md-9">
+                                                                                <textarea v-model="email_serve.template_3" v-on:click="setPreview(3)" class="form-control domain-textarea pointer" rows="7" placeholder="发送邮件的模板，可以是HTML或纯文本" style="border: 1px solid #dee2e6;"></textarea>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div v-html="preview_email_temp" class="card-body">
+                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex-center">
+                                                <button v-on:click="btnSave()" type="button" class="btn btn-primary">保存配置</button>
+                                            </div>
+                                        </div>
+                                        <div v-if="false" class="tab-pane" id="other">
+                                            <!--<div class="row">-->
+                                            <!--    <div class="col-md-6">-->
+                                            <!--        <h4 class="header-title mt-5 mt-sm-0">允许API上传的文件类型</h4>-->
+                                            <!--        <div class="mt-2">-->
+                                            <!--            <div class="custom-control custom-checkbox">-->
+                                            <!--                <input type="checkbox" class="custom-control-input" id="images">-->
+                                            <!--                <label class="custom-control-label" for="images">图片文件（gif,jpg,jpeg,png,svg）</label>-->
+                                            <!--            </div>-->
+                                            <!--            <div class="custom-control custom-checkbox">-->
+                                            <!--                <input type="checkbox" class="custom-control-input" id="videos">-->
+                                            <!--                <label class="custom-control-label" for="videos">多媒体文件（mp3,mp4,avi,flv）</label>-->
+                                            <!--            </div>-->
+                                            <!--            <div class="custom-control custom-checkbox">-->
+                                            <!--                <input type="checkbox" class="custom-control-input" id="files">-->
+                                            <!--                <label class="custom-control-label" for="files">常用档案文件 (txt,doc,docx,xls,xlsx,ppt,pptx,zip,rar,pdf)</label>-->
+                                            <!--            </div>-->
+                                                        
+                                            <!--        </div>-->
+                                            <!--    </div>-->
+                                            <!--</div>-->
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <label class="col-3 col-form-label pl-0">允许API上传的文件类型</label>
+                                                    <textarea class="form-control domain-textarea border-radius-unset" rows="5" placeholder="用英文 , 号隔开多个数据，如：gif,jpg,jpeg,png,svg"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-if="false" class="tab-pane" id="settings-b1">
+                                            <p>Food truck quinoa dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.</p>
+                                            <p class="mb-0">Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt.Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.</p>
+                                        </div>
+                                    </div>
+    
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="col-xl-6">
+                            <div class="card">
+                            </div>
+                        </div>
+                    </div>
+                
+                </div>
+                <!-- 内容 - 结束 -->
+                
+            </div>
+            
+            <!-- 页脚 - 开始 -->
+            <i-footer></i-footer>
+            <!-- 页脚 - 结束 -->
+        </div>
+        
+        <!-- 右侧边栏 - 开始 -->
+        <i-right-side></i-right-side>
+        <!-- 右侧边栏 - 结束 -->
+    </div>
+    
+    <script src="<?= __ADMIN_JS__.'vue/configure.js'; ?>"></script>
+    
+    <!-- 依赖 - 开始 -->
+    <? require(dirname(dirname(__FILE__)).'/public/script.html'); ?>
+    <!-- 依赖 - 结束 -->
+    
+    <!-- APP JS - 开始 -->
+    <!-- APP JS - 结束 -->
+    
+    <!-- footer - 开始 -->
+    <? require(dirname(dirname(__FILE__)).'/public/footer.html'); ?>
+    <!-- footer - 结束 -->

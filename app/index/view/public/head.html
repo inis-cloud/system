@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title><?= __SITE_TITLE__; ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="<?= __SITE_DESCRIPTION__; ?>">
+	<meta name="keywords" content="<?= __SITE_KEYWORDS__; ?>">
+	<meta name="author" content="inis,racns,兔子"/>
+
+    <!-- favicon -->
+    <link rel="shortcut icon" href="<?= !empty(__SITE_ICO__) ? __SITE_ICO__ : __ADMIN_IMG__.'logo-2.png'; ?>">
+
+    <!-- 依赖 - 开始 -->
+    <link rel="stylesheet" href="<?= __ADMIN_CSS__.'vendor/jquery-jvectormap-1.2.2.css'; ?>">
+    <script src="<?= __ADMIN_LIBS__.'vue3.js'; ?>"></script>
+    <script src="<?= __ADMIN_LIBS__.'axios.min.js'; ?>"></script>
+    <script src="<?= __ADMIN_LIBS__.'lottie/lottie.min.js'; ?>"></script>
+    <script src="<?= __ADMIN_JS__.'utils/helper.js'; ?>"></script>
+    <script src="<?= __ADMIN_JS__.'vue/template.js'; ?>"></script>
+    <!-- 依赖 - 结束 -->
+
+    <!-- APP CSS - 开始 -->
+    <link rel="stylesheet" href="<?= __ADMIN_CSS__.'icons.min.css'; ?>">
+    <link rel="stylesheet" href="<?= __ADMIN_CSS__.'app.min.css'; ?>">
+    <link rel="stylesheet" href="<?= __ADMIN_CSS__.'style.css'; ?>">
+    <!-- APP CSS - 结束 -->

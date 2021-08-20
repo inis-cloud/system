@@ -1,0 +1,240 @@
+<!-- head - 开始 -->
+<? require('public/head.html'); ?>
+<!-- head - 结束 -->
+
+<!-- 引入 ECharts 文件 -->
+<script src="<?= __ADMIN_LIBS__.'echarts/echarts.min.js'; ?>"></script>
+
+</head>
+<? require('public/body.html'); ?>
+    <div class="wrapper" id="index">
+        
+        <!-- 侧边栏 - 开始 -->
+        <i-left-side></i-left-side>
+        <!-- 侧边栏 - 结束 -->
+        
+        <div class="content-page">
+            
+            <div class="content">
+                
+                <!-- 顶部导航 - 开始 -->
+                <i-top-nav></i-top-nav>
+                <!-- 顶部导航 - 结束 -->
+                
+                <!-- 内容 - 开始 --> 
+                <div class="container-fluid">
+                    
+                    <!-- 标题 - 开始 -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box">
+                                <div class="page-title-right">
+                                    <form class="form-inline">
+                                        <div class="form-group">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control form-control-light" id="dash-daterange">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text bg-primary border-primary text-white">
+                                                        <i class="mdi mdi-calendar-range font-13"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a href="/" class="btn btn-primary ml-2">
+                                            <i class="mdi mdi-autorenew"></i>
+                                        </a>
+                                    </form>
+                                </div>
+                                <h4 class="page-title">控制台</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 标题 - 结束 -->
+                    
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <div class="card widget-flat">
+                                <div class="card-body">
+                                    <div class="float-right">
+                                        <i class="mdi mdi-account-multiple widget-icon"></i>
+                                    </div>
+                                    <h5 class="text-muted font-weight-normal mt-0" title="Number of Customers">文章</h5>
+                                    <h3 class="mt-3 mb-3">{{count.article || 0}}</h3>
+                                    <p class="mb-0 text-muted">
+                                        <!--<span class="text-success mr-2"><i class="mdi mdi-arrow-up-bold"></i> 5.27%</span>-->
+                                        <span class="text-nowrap">您的文章有<span class="badge badge-info-lighten badge-pill">{{count.tag || 0}}个</span>标签</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="card widget-flat">
+                                <div class="card-body">
+                                    <div class="float-right">
+                                        <i class="mdi mdi-cart-plus widget-icon"></i>
+                                    </div>
+                                    <h5 class="text-muted font-weight-normal mt-0" title="Number of Orders">分类</h5>
+                                    <h3 class="mt-3 mb-3">{{count.article_sort || 0}}</h3>
+                                    <p class="mb-0 text-muted">
+                                        <!--<span class="text-danger mr-2"><i class="mdi mdi-arrow-down-bold"></i> 1.08%</span>-->
+                                        <span class="text-nowrap">这是文章的分类</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="card widget-flat">
+                                <div class="card-body">
+                                    <div class="float-right">
+                                        <i class="mdi mdi-currency-usd widget-icon"></i>
+                                    </div>
+                                    <h5 class="text-muted font-weight-normal mt-0" title="Average Revenue">评论</h5>
+                                    <h3 class="mt-3 mb-3">{{count.comments || 0}}</h3>
+                                    <p class="mb-0 text-muted">
+                                        <!--<span class="text-success mr-2"><i class="mdi mdi-arrow-up-bold"></i> {{count.reply_ratio  || 0}}%</span>-->
+                                        <span class="text-nowrap">您参与了其中的<span class="badge badge-info-lighten badge-pill">{{count.my_reply || 0}}条</span>评论</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                                <div class="card widget-flat">
+                                    <div class="card-body">
+                                        <div class="float-right">
+                                            <i class="mdi mdi-pulse widget-icon"></i>
+                                        </div>
+                                        <h5 class="text-muted font-weight-normal mt-0" title="Growth">友链</h5>
+                                        <h3 class="mt-3 mb-3">{{count.links || 0}}</h3>
+                                        <p class="mb-0 text-muted">
+                                            <!--<span class="text-success mr-2"><i class="mdi mdi-arrow-up-bold"></i> 4.87%</span>-->
+                                            <span class="text-nowrap">您拥有<span class="badge badge-info-lighten badge-pill">{{count.links_sort || 0}}个</span>友链分类</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="dropdown float-right">
+                                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-toggle="dropdown" aria-expanded="false">
+                                            <i class="mdi mdi-dots-vertical"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right">
+                                            <a href="javascript:void(0);" class="dropdown-item">后期拓展</a>
+                                            <a href="javascript:void(0);" class="dropdown-item">后期拓展</a>
+                                        </div>
+                                    </div>
+                                    <h4 class="header-title mt-2">热门文章</h4>
+            
+                                    <div class="table-responsive">
+                                        <table class="table table-centered table-hover mb-0">
+                                            <tbody>
+                                            <tr v-for="data in populars" :key="data.id">
+                                                <td class="table-user">
+                                                    <img :src="data.expand.author.head_img" alt="table-user" class="mr-1 rounded-circle">
+                                                    {{data.expand.author.nickname}}
+                                                </td>
+                                                <td>
+                                                    <h5 class="font-14 mb-1 font-weight-normal">{{data.title}}</h5>
+                                                    <span class="text-muted font-13">{{data.create_time}}</span>
+                                                </td>
+                                                <td>
+                                                    <h5 class="font-14 mb-1 font-weight-normal">{{data.views}}</h5>
+                                                    <span class="text-muted font-13">浏览</span>
+                                                </td>
+                                                <td>
+                                                    <h5 class="font-14 mb-1 font-weight-normal">{{data.expand.comments}}</h5>
+                                                    <span class="text-muted font-13">评论</span>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="header-title mb-4">
+                                        <div class="float-left">
+                                            系统缓存
+                                        </div>
+                                        <div class="float-right">
+                                            <span class="badge badge-primary badge-pill cursor" data-toggle="modal" data-target="#system-cache-modal">清理缓存</span>
+                                        </div>
+                                    </h4>
+                                    <div id="system-cache" style="height:400px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <!-- 内容 - 结束 -->
+                
+            </div>
+            
+            <!-- 清理缓存 - modal - 开始 -->
+            <div id="system-cache-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true" style="display: none;">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content modal-filled bg-primary">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="fill-primary-modalLabel">日志清理工具</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="p-2 font-1-3em border-bottom">
+                                <svg t="1626257802473" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="870" width="48" height="48"><path d="M580 888h296a20 20 0 0 1 20 20 20 20 0 0 1-20 20h-296a20 20 0 0 1-20-20 20 20 0 0 1 20-20zM493.2 877.28l15.52-58a20 20 0 0 1 24.48-14.08 20 20 0 0 1 14.16 24.48L531.84 888a20 20 0 0 1-24.56 14.16 20 20 0 0 1-14.08-24.88zM341.2 877.28l15.52-58a20 20 0 0 1 24.48-14.08 20 20 0 0 1 14.16 24.48L379.84 888a20 20 0 0 1-24.56 14.16 20 20 0 0 1-14.08-24.88zM417.2 877.28l15.52-58a20 20 0 0 1 24.48-14.08 20 20 0 0 1 14.16 24.48L456 888a20 20 0 0 1-24.56 14.16 20 20 0 0 1-14.24-24.88z" fill="#ffffff" p-id="871"></path><path d="M569.2 877.28l15.52-58a20 20 0 0 1 24.48-14.08 20 20 0 0 1 14.16 24.48L608 888a20 20 0 0 1-24.56 14.16 20 20 0 0 1-14.24-24.88z" fill="#ffffff" p-id="872"></path><path d="M684.32 849.52L655.36 760H324.72l-39.36 92.24a25.84 25.84 0 0 0-1.92 9.44 24 24 0 0 0 24 24h397.28a104 104 0 0 1-20.4-36.16zM298.32 720h386.08l38 117.2a64 64 0 0 0 20.88 30.32l37.12 29.68a16 16 0 0 1-10 28.48H307.44a64 64 0 0 1-64-64 63.36 63.36 0 0 1 5.2-25.12z" fill="#ffffff" p-id="873"></path><path d="M228 720h512a20 20 0 0 1 20 20 20 20 0 0 1-20 20h-512a20 20 0 0 1-20-20 20 20 0 0 1 20-20z" fill="#ffffff" p-id="874"></path><path d="M376 720h216v-16a40 40 0 0 0-40-40H416a40 40 0 0 0-40 40z m40-96h136a80 80 0 0 1 80 80v56H336v-56a80 80 0 0 1 80-80z" fill="#ffffff" p-id="875"></path><path d="M526.64 624l84.32-460.48a24.4 24.4 0 0 0 0-4.16A23.36 23.36 0 0 0 588 136h-9.28a40 40 0 0 0-39.36 32.8L456 624z m52.08-528h9.28a63.44 63.44 0 0 1 63.36 63.36 60 60 0 0 1-1.04 11.36L560 664H408l92-502.4a80 80 0 0 1 78.72-65.6z" fill="#ffffff" p-id="876"></path><path d="M250.48 397.04l8 20.56a32 32 0 0 0 17.76 17.76l20.56 8a8 8 0 0 1 4.48 10.4 8 8 0 0 1-4.48 4.48l-20.56 8a32 32 0 0 0-17.76 17.76l-8 20.56a8 8 0 0 1-14.88 0l-8-20.56a32 32 0 0 0-17.76-17.76l-20.56-8a8 8 0 0 1-4.48-10.4 8 8 0 0 1 4.48-4.48l20.56-8a32 32 0 0 0 17.76-17.76l8-20.56a8 8 0 0 1 10.4-4.48 8 8 0 0 1 4.48 4.48zM837.6 597.04l9.12 22.8a32 32 0 0 0 17.84 17.76l22.8 9.12a8 8 0 0 1 4.4 10.4 8 8 0 0 1-4.4 4.48l-22.8 9.12a32 32 0 0 0-17.84 17.84l-9.12 22.8a8 8 0 0 1-10.4 4.4 8 8 0 0 1-4.48-4.4l-9.12-22.8a32 32 0 0 0-17.76-17.84l-22.8-9.12a8 8 0 0 1-4.48-10.4 8 8 0 0 1 4.48-4.48l22.8-9.12a32 32 0 0 0 17.76-17.76l9.12-22.8a8 8 0 0 1 10.4-4.48 8 8 0 0 1 4.48 4.48z" fill="#ffffff" p-id="877"></path></svg>
+                            共 <span class="text-success">{{computedBytes(system_cache_total)}}</span> 可清理，已选中 <span class="text-success">{{selectedCache || '0 KB'}}</span>
+                                <div class="float-right">
+                                    <button v-on:click="clearCache()" type="button" class="btn btn-success btn-rounded d-none d-lg-block">立即清理</button>
+                                </div>
+                            </div>
+                            <div class="card-body pl-1 pb-0">
+                                <div v-for="(data, index) in system_cache" :key="index" class="custom-control custom-checkbox mb-2">
+                                    <input v-on:click="computedSelected()" :id="'system-cache-select-' + index" :name="data.item" :sizes="data.size" type="checkbox" class="custom-control-input checkbox-cache">
+                                    <label :for="'system-cache-select-' + index" class="custom-control-label cursor">
+                                        <span class="mr-2">{{data.name}}</span>
+                                        <span class="text-light">共 {{data.file_count}} 条数据，大小为 {{computedBytes(data.size)}}</span>
+                                        <span class="text-warning ml-2">( {{data.description}} )</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer pt-0">
+                            <button v-on:click="clearCache()" type="button" class="btn btn-success btn-block d-lg-none d-block">立即清理</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 清理缓存 - modal - 结束 -->
+            
+            <!-- 页脚 - 开始 -->
+            <i-footer></i-footer>
+            <!-- 页脚 - 结束 -->
+        </div>
+        
+        <!-- 右侧边栏 - 开始 -->
+        <i-right-side></i-right-side>
+        <!-- 右侧边栏 - 结束 -->
+    </div>
+    
+    <script src="<?= __ADMIN_JS__.'vue/index.js'; ?>"></script>
+    
+    <!-- 依赖 - 开始 -->
+    <? require('public/script.html'); ?>
+    <!-- 依赖 - 结束 -->
+    
+    <!-- APP JS - 开始 -->
+    <!--<script src="<?= __ADMIN_JS__.'vendor/Chart.bundle.min.js'; ?>"></script>-->
+    <!--<script src="<?= __ADMIN_JS__.'vendor/jquery-jvectormap-1.2.2.min.js'; ?>"></script>-->
+    <!--<script src="<?= __ADMIN_JS__.'vendor/jquery-jvectormap-world-mill-en.js'; ?>"></script>-->
+    <!-- APP JS - 结束 -->
+    
+    <!-- footer - 开始 -->
+    <? require('public/footer.html'); ?>
+    <!-- footer - 结束 -->

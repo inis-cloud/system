@@ -1,0 +1,317 @@
+<!-- head - 开始 -->
+<? require(dirname(dirname(__FILE__)).'/public/head.html'); ?>
+<!-- head - 结束 -->
+</head>
+
+<? require(dirname(dirname(__FILE__)).'/public/body.html'); ?>
+<!--<body onload data-keep-enlarged="true">-->
+    <div class="wrapper" id="filesystem">
+        <!-- 侧边栏 - 开始 -->
+        <i-left-side></i-left-side>
+        <!-- 侧边栏 - 结束 -->
+        
+        <div class="content-page">
+            
+            <div class="content">
+                
+                <!-- 顶部导航 - 开始 -->
+                <i-top-nav></i-top-nav>
+                <!-- 顶部导航 - 结束 -->
+                
+                <!-- 内容 - 开始 -->
+                <div class="container-fluid">
+                    
+                    <div class="row">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-0">
+                                        <div class="input-group">
+                                            <div class="input-group-append">
+                                                <span v-on:click="toPath" class="input-group-text bg-primary border-primary text-white" style="border-radius: .15em 0 0 .15em;cursor: pointer;">
+                                                    <svg t="1618041290680" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11050" width="16" height="16"><path d="M161.1 511.2l373.6-373.6c26.4-26.4 61-39.5 95.6-39.5 34.6 0 69.2 13.2 95.6 39.5 52.7 52.7 52.7 138.5 0 191.2L400.4 654.3c-10.3 10.3-27 10.3-37.3 0-10.3-10.3-10.3-27 0-37.3l325.4-325.4c32.2-32.2 32.2-84.5 0-116.6-32.2-32.2-84.5-32.2-116.6 0L198.4 548.5M630.3 98.1" fill="#ffffff" p-id="11051" data-spm-anchor-id="a313x.7781069.0.i31" class="selected"></path><path d="M371 375.9l341.2 341.2c42.5 42.5 42.5 111.4 0 153.9s-111.4 42.5-153.9 0L217 529.9" fill="#ffffff" p-id="11052" data-spm-anchor-id="a313x.7781069.0.i29" class="selected"></path><path d="M198.4 548.5l336.3 336.3c25.5 25.5 59.5 39.6 95.6 39.6 36.1 0 70.1-14.1 95.6-39.6 52.7-52.7 52.7-138.5 0-191.2L389.6 357.3m-74.6 0l17.4 17.4 19.8 19.8 336.3 336.3c32.2 32.2 32.2 84.5 0 116.6-15.6 15.6-36.3 24.2-58.3 24.2s-42.7-8.6-58.3-24.2L235.7 511.2l-20.5-20.5-16.7-16.7" fill="#ffffff" p-id="11053" data-spm-anchor-id="a313x.7781069.0.i30" class="selected"></path></svg>
+                                                </span>
+                                            </div>
+                                            <input v-model="dir_info.path" type="text" class="form-control form-control-light">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="text-right">
+                                        <div class="btn-group">
+                                            <div class="btn-group ml-2">
+                                                <input v-show="false" v-on:change="fileSelect($event, 2)" type="file" multiple="multiple" id="btn-file" />
+                                                <input v-show="false" v-on:change="fileSelect($event, 2)" type="file" multiple="multiple" webkitdirectory id="btn-files" />
+                                                <button type="button" class="btn btn-primary" data-toggle="dropdown" aria-expanded="false">
+                                                    <svg t="1618042910076" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4221" width="16" height="16"><path d="M736.68 435.86a173.773 173.773 0 0 1 172.042 172.038c0.578 44.907-18.093 87.822-48.461 119.698-32.761 34.387-76.991 51.744-123.581 52.343-68.202 0.876-68.284 106.718 0 105.841 152.654-1.964 275.918-125.229 277.883-277.883 1.964-152.664-128.188-275.956-277.883-277.879-68.284-0.878-68.202 104.965 0 105.842zM285.262 779.307A173.773 173.773 0 0 1 113.22 607.266c-0.577-44.909 18.09-87.823 48.461-119.705 32.759-34.386 76.988-51.737 123.58-52.337 68.2-0.877 68.284-106.721 0-105.842C132.605 331.344 9.341 454.607 7.379 607.266 5.417 759.929 135.565 883.225 285.262 885.148c68.284 0.876 68.2-104.965 0-105.841z" fill="#ffffff" p-id="4222" data-spm-anchor-id="a313x.7781069.0.i9" class=""></path><path d="M339.68 384.204a173.762 173.762 0 0 1 172.037-172.038c44.908-0.577 87.822 18.092 119.698 48.462 34.388 32.759 51.743 76.985 52.343 123.576 0.877 68.199 106.72 68.284 105.843 0-1.964-152.653-125.231-275.917-277.884-277.879-152.664-1.962-275.954 128.182-277.878 277.879-0.88 68.284 104.964 68.199 105.841 0z" fill="#ffffff" p-id="4223" data-spm-anchor-id="a313x.7781069.0.i10" class=""></path><path d="M545.039 473.078c16.542 16.542 16.542 43.356 0 59.896l-122.89 122.895c-16.542 16.538-43.357 16.538-59.896 0-16.542-16.546-16.542-43.362 0-59.899l122.892-122.892c16.537-16.542 43.355-16.542 59.894 0z" fill="#ffffff" p-id="4224" data-spm-anchor-id="a313x.7781069.0.i14" class="selected"></path><path d="M485.17 473.078c16.537-16.539 43.354-16.539 59.892 0l122.896 122.896c16.538 16.533 16.538 43.354 0 59.896-16.541 16.538-43.361 16.538-59.898 0L485.17 532.979c-16.547-16.543-16.547-43.359 0-59.901z" fill="#ffffff" p-id="4225" data-spm-anchor-id="a313x.7781069.0.i15" class="selected"></path><path d="M514.045 634.097c23.972 0 43.402 19.433 43.402 43.399v178.086c0 23.968-19.432 43.398-43.402 43.398-23.964 0-43.396-19.432-43.396-43.398V677.496c0.001-23.968 19.433-43.399 43.396-43.399z" fill="#ffffff" p-id="4226" data-spm-anchor-id="a313x.7781069.0.i11" class="selected"></path></svg>
+                                                </button>
+                                                <div class="dropdown-menu" x-placement="bottom-start">
+                                                    <a v-on:click="clickUpload('#btn-file')" class="dropdown-item pointer">上传文件</a>
+                                                    <a v-on:click="clickUpload('#btn-files')" class="dropdown-item pointer">上传目录</a>
+                                                    <a href="jsvascript:;" class="dropdown-item pointer">支持拖拽上传</a>
+                                                </div>
+                                            </div>
+                                            <div class="btn-group ml-2">
+                                                <button type="button" class="btn btn-primary" data-toggle="dropdown" aria-expanded="false"> 
+                                                    <svg t="1618042418022" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="655" width="18" height="18"><path d="M802.128 741.586c-0.004 35.598-28.866 64.454-64.462 64.448H286.418c-35.598 0.006-64.46-28.85-64.464-64.448V290.448S221.586 226 286.418 226h137.664l136 106.358h177.586s64.336-5.514 64.464 58.91c0.126 64.424 0 81.29 0 81.29l-0.004 269.028z" fill="#dfecfd" p-id="656" data-spm-anchor-id="a313x.7781069.0.i4" class="selected"></path><path d="M737.676 836.034H286.418c-52.086 0.004-94.458-42.364-94.464-94.444V290.448c-0.024-4.026 0.546-41.62 27.55-68.778C231.148 209.958 252.208 196 286.418 196h148.002l136 106.358h166.298c1.124-0.06 2.706-0.118 4.672-0.118 45.078 0 90.62 27.51 90.742 88.968 0.122 61.87 0.012 79.788 0 81.464l-0.004 268.914c-0.004 52.08-42.376 94.448-94.452 94.448zM286.418 256c-16.438 0-22.406 6.002-24.366 7.974-9.43 9.484-10.098 26.142-10.098 26.302v451.31c0.002 18.994 15.458 34.45 34.452 34.448h451.27c18.996 0 34.452-15.456 34.454-34.452l0.004-269.25c0.002-0.168 0.126-17.626 0-81.006-0.02-9.44-0.058-29.086-30.742-29.086-0.582 0-1.03 0.012-1.31 0.024l-1.46 0.158-0.952-0.064h-187.924l-136-106.358h-127.328z" fill="#dfecfd" p-id="657" data-spm-anchor-id="a313x.7781069.0.i5" class=""></path><path d="M613.002 585.696H401.266c-16.568 0-30-13.432-30-30s13.432-30 30-30h211.736c16.568 0 30 13.432 30 30s-13.432 30-30 30z" fill="#4988fd" p-id="658" data-spm-anchor-id="a313x.7781069.0.i1" class=""></path><path d="M767.278 271.62H578.96c-16.568 0-30-13.432-30-30s13.432-30 30-30h188.316c16.568 0 30 13.432 30 30s-13.43 30-29.998 30z" fill="#dfecfd" p-id="659" data-spm-anchor-id="a313x.7781069.0.i6" class=""></path><path d="M512 680.304c-16.568 0-30-13.432-30-30V463c0-16.568 13.432-30 30-30s30 13.432 30 30v187.304c0 16.57-13.432 30-30 30z" fill="#4988fd" p-id="660" data-spm-anchor-id="a313x.7781069.0.i0" class=""></path></svg>
+                                                </button>
+                                                <div class="dropdown-menu" x-placement="bottom-start">
+                                                    <a v-on:click="setAddFileTitle('新建文件夹','yellow-folder.svg', 'false')" data-toggle="modal" data-target="#add-file-modal" class="dropdown-item pointer">新建目录</a>
+                                                    <a v-on:click="setAddFileTitle('新建文件')" data-toggle="modal" data-target="#add-file-modal" class="dropdown-item pointer">新建空白文件</a>
+                                                </div>
+                                            </div>
+                                            <button v-on:click="getData('',false,true)" type="button" class="btn btn-primary ml-2"><i class="mdi mdi-autorenew"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 渲染文件 - 开始 -->
+                    <div v-on:click="clearBoxSelect" class="row" id="files">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div v-for="(data, index) in dir_info.info" :key="index" v-on:dblclick="dblclick(data.name,data.info.type)" v-on:click="clickFile(data.name,data.info.type)" :mouse-item="index" class="file-item col-3 col-md-2 col-xl-1 text-center pointer file mouse-item">
+                                            <img :src="data.info.ico" height="60" class="mb-1">
+                                            <p>{{data.name}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 渲染文件 - 结束 -->
+                    
+                    <!-- 上传 tab - 开始 -->
+                    <div v-if="upload_is_show" class="upload">
+                        <div id="accordion" class="custom-accordion">
+                            <div class="card mb-0">
+                                <div class="card-header" id="headingOne">
+                                    <h5 class="m-0">
+                                        <a class="custom-accordion-title d-block pt-2 pb-2" data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                            <i class="upload-svg svg-primary">
+                                                <svg v-if="!uploads_status" viewBox="0 0 1024 1024"><path d="M936.533333 475.733333l-51.2 4.266667c0 10.666667 2.133333 21.333333 2.133334 32s0 21.333333-2.133334 32l51.2 4.266667c0-12.8 2.133333-23.466667 2.133334-36.266667s0-23.466667-2.133334-36.266667zM919.466667 381.866667c-6.4-23.466667-17.066667-44.8-27.733334-66.133334l-44.8 23.466667c10.666667 19.2 17.066667 38.4 23.466667 57.6l49.066667-14.933333zM787.2 185.6l-32 38.4c17.066667 12.8 32 27.733333 44.8 44.8l38.4-32c-14.933333-19.2-32-36.266667-51.2-51.2zM625.066667 153.6c19.2 6.4 40.533333 14.933333 57.6 23.466667l23.466666-44.8c-21.333333-10.666667-42.666667-19.2-66.133333-27.733334l-14.933333 49.066667zM512 136.533333c10.666667 0 21.333333 0 32 2.133334l4.266667-51.2C535.466667 85.333333 524.8 85.333333 512 85.333333s-23.466667 0-36.266667 2.133334l4.266667 51.2c10.666667-2.133333 21.333333-2.133333 32-2.133334zM398.933333 153.6L384 104.533333c-23.466667 6.4-44.8 17.066667-66.133333 27.733334L341.333333 177.066667c17.066667-8.533333 36.266667-17.066667 57.6-23.466667zM185.6 236.8l38.4 32c12.8-17.066667 27.733333-32 44.8-44.8l-32-38.4c-19.2 14.933333-36.266667 32-51.2 51.2zM104.533333 381.866667l49.066667 14.933333c6.4-19.2 14.933333-40.533333 23.466667-57.6l-44.8-23.466667c-10.666667 21.333333-19.2 42.666667-27.733334 66.133334zM136.533333 512c0-10.666667 0-21.333333 2.133334-32l-51.2-4.266667C85.333333 488.533333 85.333333 499.2 85.333333 512s0 23.466667 2.133334 36.266667l51.2-4.266667c-2.133333-10.666667-2.133333-21.333333-2.133334-32zM104.533333 642.133333c6.4 23.466667 17.066667 44.8 27.733334 66.133334l44.8-23.466667c-10.666667-19.2-17.066667-38.4-23.466667-57.6l-49.066667 14.933333zM226.133333 755.2l-38.4 32c14.933333 19.2 32 36.266667 51.2 51.2l32-38.4c-17.066667-14.933333-32-29.866667-44.8-44.8zM315.733333 891.733333c21.333333 10.666667 42.666667 19.2 66.133334 27.733334l14.933333-49.066667c-19.2-6.4-40.533333-14.933333-57.6-23.466667l-23.466667 44.8zM512 887.466667c-10.666667 0-21.333333 0-32-2.133334l-4.266667 51.2c12.8 0 23.466667 2.133333 36.266667 2.133334s23.466667 0 36.266667-2.133334l-4.266667-51.2c-10.666667 2.133333-21.333333 2.133333-32 2.133334zM625.066667 870.4l14.933333 49.066667c23.466667-6.4 44.8-17.066667 66.133333-27.733334L682.666667 846.933333c-17.066667 8.533333-36.266667 17.066667-57.6 23.466667zM755.2 797.866667l32 38.4c19.2-14.933333 36.266667-32 51.2-51.2l-38.4-32c-14.933333 17.066667-29.866667 32-44.8 44.8zM844.8 684.8l44.8 23.466667c10.666667-21.333333 19.2-42.666667 27.733333-66.133334l-49.066666-14.933333c-4.266667 19.2-12.8 38.4-23.466667 57.6zM539.733333 704V409.6l102.4 110.933333 38.4-38.4-168.533333-181.333333-168.533333 181.333333 38.4 38.4 102.4-110.933333V704z"></path>
+                                                </svg>
+                                                <svg v-else-if="uploads_status" t="1619802957877" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6460" width="48" height="48"><path d="M512 0a512 512 0 0 1 512 512 512 512 0 0 1-512 512A512 512 0 0 1 0 512 512 512 0 0 1 512 0z" fill="#D7FFDB" p-id="6461"></path><path d="M512 102.4a409.6 409.6 0 0 1 409.6 409.6 409.6 409.6 0 0 1-409.6 409.6A409.6 409.6 0 0 1 102.4 512 409.6 409.6 0 0 1 512 102.4z" fill="#23E249" opacity=".9" p-id="6462"></path><path d="M776.96 384L474.112 691.2l-8.96 8.448-8.96-8.448-187.648-189.952 61.184-61.952 135.424 136.96L716.8 321.28z" fill="#FFFFFF" p-id="6463"></path></svg>
+                                            </i>
+                                            <span class="ml-2">正在上传 · 剩余 {{preview.length}} 个项目</span>
+                                            <span class="float-right flex">
+                                                <span v-on:click="bubbling('取消')" class="svg-ico" style="padding:3px">
+                                                    <svg viewBox="0 0 1024 1024"><path d="M785.066667 273.066667l-34.133334-34.133334L512 475.733333 273.066667 238.933333l-34.133334 34.133334L475.733333 512 238.933333 750.933333l34.133334 34.133334L512 548.266667l238.933333 236.8 34.133334-34.133334L548.266667 512z"></path></svg>
+                                                </span>
+                                                <span v-on:click="bubbling('暂停')" class="svg-ico" style="padding:1px">
+                                                    <svg viewBox="0 0 1024 1024"><path d="M390.4 288h51.2v448h-51.2zM582.4 288h51.2v448h-51.2z"></path></svg>
+                                                </span>
+                                                <span v-on:click="bubbling('刷新')" class="svg-ico" style="padding:4px">
+                                                    <svg viewBox="0 0 1024 1024"><path d="M763.733333 512c0 138.666667-113.066667 251.733333-251.733333 251.733333-138.666667 0-251.733333-113.066667-251.733333-251.733333 0-138.666667 113.066667-251.733333 251.733333-251.733333h36.266667l-70.4 70.4 36.266666 36.266666 128-128-128-128-36.266666 36.266667 61.866666 61.866667H512C345.6 209.066667 209.066667 345.6 209.066667 512c0 166.4 136.533333 302.933333 302.933333 302.933333 166.4 0 302.933333-136.533333 302.933333-302.933333h-51.2z"></path></svg>
+                                                </span>
+                                                <!--<i class="mdi mdi-chevron-down accordion-arrow"></i>-->
+                                            </span>
+                                        </a>
+                                    </h5>
+                                </div>
+                                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                                    <div class="card-body">
+                                        <div class="slimscroll" style="max-height: 330px;">
+                                            <div class="timeline-alt pb-0 pt-0">
+                                                
+                                                <div v-for="(data, index) in preview" :key="index" class="uploads-preview">
+                                                    <div class="media mt-3 mr-3">
+                                                        <img class="mr-3" :src="data.ico" width="40">
+                                                        <div class="media-body">
+                                                            <h5 class="mt-0 mb-1">{{data.name}}</h5>
+                                                            <span class="font-13">{{data.size}}</span>
+                                                        </div>
+                                                        <span v-if="data.speed == 0" class="badge badge-warning-lighten"><i class="mdi mdi-spin mdi-timer-sand"></i></span>
+                                                        <span v-else-if="data.speed != 1" class="badge badge-info-lighten"><i class="mdi mdi-spin mdi-star"></i></span>
+                                                        <span v-else-if="data.speed == 1" class="badge badge-success-lighten">完成</span>
+                                                    </div>
+                                                    <div v-if="data.speed != 1 && data.speed != 0" class="progress-w-percent">
+                                                        <div class="progress progress-sm">
+                                                            <div class="progress-bar" role="progressbar" :style="'width: '+ data.speed * 100 +'%'" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 上传 tab - 结束 -->
+                    
+                    <!-- 鼠标右键菜单 - 开始 -->
+                    <div class="row">
+                        <ul id="mouse-menu" class="enlarge">
+                            <li v-if="mouse_menu_type">
+                                <svg t="1619905208649" style="margin-left:3px" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="18139" width="16" height="16"><path d="M321.108 542.98L790.33 779.504c-16.112 12.407-26.67 31.674-27.3 53.43L285.626 592.287c16.445-12.233 29.002-29.398 35.482-49.307z m-35.524-111.298l477.49-240.931A71.186 71.186 0 0 0 763 194c0 20.747 9.026 39.386 23.365 52.204L321.092 480.97c-6.49-19.904-19.057-37.064-35.508-49.288z" fill="#85A5FF" p-id="18140"></path><path d="M226 672c-88.366 0-160-71.634-160-160s71.634-160 160-160 160 71.634 160 160-71.634 160-160 160z m607 293c-71.797 0-130-58.203-130-130s58.203-130 130-130 130 58.203 130 130-58.203 130-130 130z m0-641c-71.797 0-130-58.203-130-130S761.203 64 833 64s130 58.203 130 130-58.203 130-130 130zM226 612c55.228 0 100-44.772 100-100s-44.772-100-100-100-100 44.772-100 100 44.772 100 100 100z m607 293c38.66 0 70-31.34 70-70s-31.34-70-70-70-70 31.34-70 70 31.34 70 70 70z m0-641c38.66 0 70-31.34 70-70s-31.34-70-70-70-70 31.34-70 70 31.34 70 70 70z" fill="#2F54EB" p-id="18141"></path></svg>
+                                <span class="ml-2">分享</span>
+                            </li>
+                			<li v-if="mouse_menu_type" v-on:click="delFile">
+                			    <svg t="1619905284485" style="margin-left:3px" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="21478" width="16" height="16"><path d="M519.620465 0c-103.924093 0-188.511256 82.467721-192.083349 185.820279H85.015814A48.91386 48.91386 0 0 0 36.101953 234.686512a48.91386 48.91386 0 0 0 48.913861 48.866232h54.010046V831.345116c0 102.852465 69.822512 186.844279 155.909954 186.844279h439.200744c86.087442 0 155.909953-83.491721 155.909954-186.844279V284.100465h48.91386a48.91386 48.91386 0 0 0 48.913861-48.890046 48.91386 48.91386 0 0 0-48.913861-48.866233h-227.756651A191.559442 191.559442 0 0 0 519.620465 0z m-107.234232 177.080558c3.548279-49.771163 46.627721-88.540279 99.851907-88.540279 53.224186 0 96.327442 38.745302 99.351813 88.540279h-199.20372z m-111.997024 752.044651c-30.981953 0-65.083535-39.15014-65.083535-95.041488V287.744h575.488v546.839814c0 55.915163-34.077767 95.041488-65.059721 95.041488H300.389209v-0.500093z" fill="#D81E06" p-id="21479"></path><path d="M368.116093 796.814884c24.361674 0 44.27014-21.670698 44.27014-48.818605v-278.623256c0-27.147907-19.908465-48.818605-44.27014-48.818604-24.33786 0-44.27014 21.670698-44.27014 48.818604v278.623256c0 27.147907 19.360744 48.818605 44.293954 48.818605z m154.933581 0c24.361674 0 44.293953-21.670698 44.293954-48.818605v-278.623256c0-27.147907-19.932279-48.818605-44.293954-48.818604-24.33786 0-44.27014 21.670698-44.270139 48.818604v278.623256c0 27.147907 19.932279 48.818605 44.293953 48.818605z m132.810419 0c24.33786 0 44.27014-21.670698 44.27014-48.818605v-278.623256c0-27.147907-19.932279-48.818605-44.27014-48.818604s-44.27014 21.670698-44.27014 48.818604v278.623256c0 27.147907 19.360744 48.818605 44.27014 48.818605z" fill="#D81E06" p-id="21480"></path></svg>
+                			    <span class="ml-2">删除</span>
+                			</li>
+                			<li v-if="!mouse_menu_type" v-on:click="getData('',false,true)">
+                			    <svg t="1619906246526" style="margin-left:3px" class="icon" viewBox="0 0 1077 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12409" width="18" height="18"><path d="M870.4 204.8a38.4 38.4 0 0 1-36.1472 38.336L832 243.2H678.4a38.4 38.4 0 0 1-2.2528-76.736L678.4 166.4h63.744A408 408 0 0 0 486.4 76.8C260.1856 76.8 76.8 260.1856 76.8 486.4c0 29.12 3.0336 57.8048 8.9856 85.7856a38.4 38.4 0 1 1-75.1104 16A488.192 488.192 0 0 1 0 486.4C0 217.7664 217.7664 0 486.4 0a484.7744 484.7744 0 0 1 307.2 109.248V51.2a38.4 38.4 0 0 1 36.1472-38.336L832 12.8a38.4 38.4 0 0 1 38.336 36.1472L870.4 51.2v153.6z" fill="#FF6F26" p-id="12410"></path><path d="M974.6688 480c0 268.6336-217.7792 486.4-486.4 486.4A484.7744 484.7744 0 0 1 179.2 855.6416V915.2a38.4 38.4 0 0 1-36.1472 38.336L140.8 953.6a38.4 38.4 0 0 1-38.336-36.1472L102.4 915.2v-153.6a38.4 38.4 0 0 1 36.1472-38.336L140.8 723.2h153.6a38.4 38.4 0 0 1 2.2528 76.736L294.4 800h-61.8752c71.5648 57.3184 161.024 89.6 255.744 89.6 226.2144 0 409.6-183.3728 409.6-409.6a411.392 411.392 0 0 0-8.9984-85.76 38.4 38.4 0 1 1 75.1232-16 488.192 488.192 0 0 1 10.6752 101.76z" fill="#303133" p-id="12411"></path></svg>
+                			    <span class="ml-2">刷新</span>
+            			    </li>
+                			<li v-if="!mouse_menu_type" v-on:click="setAddFileTitle('新建文件')" data-toggle="modal" data-target="#add-file-modal">
+                			    <svg t="1619904588492" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6439" width="24" height="24"><path d="M512 512m-460.8 0a460.8 460.8 0 1 0 921.6 0 460.8 460.8 0 1 0-921.6 0Z" fill="#DEECFF" p-id="6440"></path><path d="M281.6 243.2h422.4c21.76 0 38.4 16.64 38.4 38.4v460.8c0 21.76-16.64 38.4-38.4 38.4H281.6c-21.76 0-38.4-16.64-38.4-38.4V281.6c0-21.76 16.64-38.4 38.4-38.4z" fill="#207DFF" p-id="6441"></path><path d="M435.2 204.8c2.56-28.16 28.16-51.2 57.6-51.2s53.76 23.04 57.6 51.2h51.2c14.08 0 25.6 11.52 25.6 25.6v38.4c0 14.08-11.52 25.6-25.6 25.6H384c-14.08 0-25.6-11.52-25.6-25.6v-38.4c0-14.08 11.52-25.6 25.6-25.6h51.2z" fill="#ADCEFB" p-id="6442"></path><path d="M364.8 633.6c-35.84 0-64-28.16-64-64s28.16-64 64-64 64 28.16 64 64-28.16 64-64 64z m0-89.6c-14.08 0-25.6 11.52-25.6 25.6s11.52 25.6 25.6 25.6 25.6-11.52 25.6-25.6-11.52-25.6-25.6-25.6z" fill="#60A2FD" p-id="6443"></path><path d="M531.2 384h128c10.24 0 19.2 8.96 19.2 19.2s-8.96 19.2-19.2 19.2h-128c-10.24 0-19.2-8.96-19.2-19.2s8.96-19.2 19.2-19.2zM531.2 550.4h128c10.24 0 19.2 8.96 19.2 19.2s-8.96 19.2-19.2 19.2h-128c-10.24 0-19.2-8.96-19.2-19.2s8.96-19.2 19.2-19.2z" fill="#ADCEFB" p-id="6444"></path><path d="M308.48 385.28c7.68-7.68 19.2-7.68 26.88 0l35.84 35.84c7.68 7.68 7.68 19.2 0 26.88-7.68 7.68-19.2 7.68-26.88 0l-35.84-35.84c-7.68-7.68-7.68-20.48 0-26.88z" fill="#60A2FD" p-id="6445"></path><path d="M445.44 346.88c7.68 7.68 7.68 19.2 0 26.88l-72.96 72.96c-7.68 7.68-19.2 7.68-26.88 0-7.68-7.68-7.68-19.2 0-26.88l72.96-72.96c7.68-7.68 20.48-7.68 26.88 0z" fill="#60A2FD" p-id="6446"></path><path d="M678.4 716.8m-153.6 0a153.6 153.6 0 1 0 307.2 0 153.6 153.6 0 1 0-307.2 0Z" fill="#ADCEFB" p-id="6447"></path><path d="M716.8 812.8c-7.68 0-14.08-3.84-16.64-10.24-5.12-8.96-1.28-20.48 8.96-25.6 24.32-11.52 40.96-38.4 40.96-66.56s-15.36-53.76-40.96-66.56c-8.96-5.12-14.08-16.64-8.96-25.6 5.12-8.96 16.64-14.08 25.6-8.96 37.12 17.92 61.44 57.6 61.44 99.84s-24.32 81.92-61.44 99.84c-3.84 3.84-6.4 3.84-8.96 3.84z m-76.8 0c-2.56 0-5.12 0-8.96-2.56-37.12-17.92-61.44-57.6-61.44-99.84s24.32-81.92 61.44-99.84c8.96-5.12 20.48-1.28 25.6 8.96 5.12 8.96 1.28 20.48-8.96 25.6-24.32 11.52-40.96 38.4-40.96 66.56s15.36 53.76 40.96 66.56c8.96 5.12 14.08 16.64 8.96 25.6-2.56 5.12-8.96 8.96-16.64 8.96z" fill="#60A2FD" p-id="6448"></path><path d="M665.6 666.88h-5.12c-10.24-2.56-16.64-12.8-14.08-23.04l5.12-19.2-19.2-5.12c-10.24-2.56-16.64-12.8-14.08-23.04 2.56-10.24 12.8-16.64 23.04-14.08l37.12 8.96c5.12 1.28 8.96 3.84 11.52 8.96s3.84 10.24 2.56 14.08l-8.96 37.12c-1.28 10.24-8.96 15.36-17.92 15.36zM716.8 846.08h-5.12l-37.12-8.96c-10.24-2.56-16.64-12.8-14.08-23.04l8.96-37.12c2.56-10.24 12.8-16.64 23.04-14.08 10.24 2.56 16.64 12.8 14.08 23.04l-5.12 19.2 19.2 5.12c10.24 2.56 16.64 12.8 14.08 23.04-1.28 7.68-8.96 12.8-17.92 12.8z" fill="#60A2FD" p-id="6449"></path></svg>
+                			    <span class="ml-2">新建文件</span>
+                			</li>
+                			<li v-if="!mouse_menu_type" v-on:click="setAddFileTitle('新建文件夹','yellow-folder.svg', 'false')" data-toggle="modal" data-target="#add-file-modal">
+                			    <svg t="1619904903245" style="margin-left: 3px;" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11313" width="18" height="18"><path d="M809.2 924.48H235.9c-89.6 0-162.9-76.6-162.9-170.3v-511.4c0-93.7 73.3-170.3 162.9-170.3l115 2c20.1 0 39.5 7.6 54.7 21.5l86 80.9c15.1 13.9 34.5 21.5 54.7 21.5h263c89.6 0 162.9 76.6 162.9 170.3v385.5c-0.1 93.7-73.4 170.3-163 170.3z" fill="#6477FF" p-id="11314"></path><path d="M761.2 888.48H284c-116 0-210.9-94.9-210.9-210.9v-297c0-25.5 20.7-46.1 46.1-46.1h806.7c25.5 0 46.1 20.7 46.1 46.1v297c0.1 116-94.8 210.9-210.8 210.9z" fill="#465CDB" opacity=".69" p-id="11315"></path><path d="M829 738.48H216.1c-31.4 0-57-25.7-57-57v-318c0-31.4 25.7-57 57-57H829c31.4 0 57 25.7 57 57v317.9c0.1 31.4-25.6 57.1-57 57.1z" fill="#FFFFFF" p-id="11316"></path><path d="M831 719.48H218.1c-31.4 0-57-25.7-57-57v-318c0-31.4 25.7-57 57-57H831c31.4 0 57 25.7 57 57v317.9c0.1 31.4-25.6 57.1-57 57.1z" fill="#FFFFFF" opacity=".16" p-id="11317"></path><path d="M807.3 924.48H237.8c-90.6 0-164.8-74.1-164.8-164.8v-356.2h899v356.2c0.1 90.7-74.1 164.8-164.7 164.8z" fill="#6477FF" p-id="11318"></path><path d="M805.3 924.48H235.8c-90.6 0-164.8-74.1-164.8-164.8v-17.2h899v17.2c0.1 90.7-74.1 164.8-164.7 164.8z" fill="#465CDB" opacity=".14" p-id="11319"></path><path d="M595.6 598.48H413.1c-39.9 0-72.5-32.6-72.5-72.5s32.6-72.5 72.5-72.5h182.5c39.9 0 72.5 32.6 72.5 72.5s-32.6 72.5-72.5 72.5z" fill="#5D75CE" opacity=".52" p-id="11320"></path><path d="M585.5 583.48H423.6c-31.6 0-57.5-25.9-57.5-57.5s25.9-57.5 57.5-57.5h161.9c31.6 0 57.5 25.9 57.5 57.5s-25.9 57.5-57.5 57.5z" fill="#FFD629" p-id="11321"></path></svg>
+                			    <span class="ml-2">新建文件夹</span>
+                			</li>
+                			<li v-if="mouse_menu_type" v-on:click="getEditName" data-toggle="modal" data-target="#edit-file-name-modal">
+                			    <svg t="1619905380215" style="margin-left:3px" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="22939" width="17" height="17"><path d="M832 832v-640h-213.504V106.496h298.496v810.496h-298.496v-85.504l213.504 0.512zM341.504 505.856l205.312-205.312 106.496 106.496-205.312 205.312H341.504V505.856zM192 192v640h213.504v85.504H106.496V106.496h298.496v85.504H192z m378.88 84.48l41.472-41.472 106.496 106.496-41.472 41.472c0.512 0-106.496-106.496-106.496-106.496zM256 682.496h512V768H256v-85.504z" fill="#6415FF" p-id="22940"></path></svg>
+                			    <span class="ml-2">重命名</span>
+                			</li>
+                			<li v-if="mouse_menu_type">
+                			    <svg t="1619905617422" style="margin-left:2px" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="27890" width="20" height="20"><path d="M813.67 237.7c-139.63-6.85-242.43-70.85-280.14-98a28 28 0 0 0-35.85 2.67c-78.08 76.14-226.93 91-287.3 93.79A27.94 27.94 0 0 0 183.76 264v270.7c0 37.84 19.73 89.23 51.08 141.4a14.19 14.19 0 0 0 27-6.11 14 14 0 0 0-3.65-9.3l0.14-0.09c-28.59-47.32-46.7-93.2-46.7-125.84V264c63.36-3 220.41-18.72 305.5-101.71 42.44 30.62 149.43 96.14 295.12 103.3v278.46c0 89.13-165.64 324.25-298.14 324.25-56 0-125-49.12-180.66-108.36-0.13-0.14-0.26-0.05-0.38-0.15a14.05 14.05 0 0 0-10.89-5.36 14.21 14.21 0 0 0-9.88 24.46s0 0.07 0.06 0.11c61.19 65.78 136 117.25 201.76 117.25 151.94 0 326-250 326.11-352.19V265.61a27.93 27.93 0 0 0-26.56-27.91z" fill="#3585F9" p-id="27891"></path><path d="M525.05 439.74m-70.5 0a70.5 70.5 0 1 0 141 0 70.5 70.5 0 1 0-141 0Z" fill="#BAD4FF" p-id="27892"></path><path d="M533.45 450.33m-82.91 0a82.91 82.91 0 1 0 165.82 0 82.91 82.91 0 1 0-165.82 0Z" fill="#BAD4FF" p-id="27893"></path><path d="M498.27 503.03m13.73 0l0.01 0q13.73 0 13.73 13.73l0 144.84q0 13.73-13.73 13.73l-0.01 0q-13.73 0-13.73-13.73l0-144.84q0-13.73 13.73-13.73Z" fill="#3585F9" p-id="27894"></path><path d="M512 526.42a99.57 99.57 0 1 1 99.56-99.57A99.68 99.68 0 0 1 512 526.42z m0-171.67a72.1 72.1 0 1 0 72.1 72.1 72.19 72.19 0 0 0-72.1-72.1z" fill="#3585F9" p-id="27895"></path></svg>
+                			    <span class="ml-2">权限</span>
+                			</li>
+                			<li v-on:click="viewDetails" style="margin-left: 3px;" data-toggle="modal" data-target="#view-details-modal">
+                			    <svg t="1619905114060" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15394" width="18" height="18"><path d="M512 2.56C231.424 2.56 3.584 229.888 3.584 510.976S231.424 1018.88 512 1018.88s508.416-227.328 508.416-508.416S793.088 2.56 512 2.56z m0 941.568c-239.616 0-433.664-194.048-433.664-433.664C78.336 270.848 272.384 76.8 512 76.8s433.664 194.048 433.664 433.664-194.048 433.664-433.664 433.664z" fill="#F4DCCB" p-id="15395"></path><path d="M455.68 304.128c0-14.848 5.12-27.136 15.872-36.352 10.752-9.216 24.064-14.336 40.96-14.336s30.72 4.608 41.472 14.336 15.872 21.504 15.872 36.352c0 14.848-5.12 27.136-15.872 36.864s-24.576 14.848-40.96 14.848-29.696-5.12-40.448-14.848c-11.264-10.24-16.896-22.528-16.896-36.864z m7.68 443.904V412.16h97.792V747.52H463.36z" fill="#FF9D4D" p-id="15396"></path></svg>
+                			    <span class="ml-2">属性</span>
+                			</li>
+                		</ul>
+                    </div>
+                    <!-- 鼠标右键菜单 - 结束 -->
+                    
+                    <!-- 重命名 - model - 开始 -->
+                    <div id="edit-file-name-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content modal-filled bg-primary">
+                                <div class="modal-header">
+                                    <h4 class="modal-title" id="fill-primary-modalLabel">重命名</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img :src="edit_data.ico" style="height: 100px;">
+                                    <input v-model="edit_data.file_name" v-on:keyup.enter="editName" type="text" class="form-control mt-3" placeholder="文件名称">
+                                </div>
+                                <div class="modal-footer">
+                                    <button v-on:click="editName" type="button" class="btn btn-light" data-dismiss="modal">保存</button>
+                                    <button type="button" class="btn btn-outline-light" data-dismiss="modal">关闭</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 重命名 - model - 结束 -->
+                    
+                    <!-- 查看详细信息 - model - 开始 -->
+                    <div id="view-details-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content modal-filled bg-primary">
+                                <div class="modal-header">
+                                    <h4 class="modal-title" id="fill-primary-modalLabel">查看详细信息</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="card d-block mb-0">
+                                            <img class="card-img-top" :src="edit_data.ico">
+                                            <div class="card-body position-relative">
+                                                <h4 class="card-title">{{edit_data.file_name}}</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-widget-list">
+                                        <p>
+                                            <span><i class="mdi mdi-square text-dark"></i></span>
+                                            <span class="ml-2">权限</span>
+                                            <span class="float-right">{{file_other.perms}}</span>
+                                        </p>
+                                        <p>
+                                            <span><i class="mdi mdi-square text-warning"></i></span>
+                                            <span class="ml-2">文件大小</span>
+                                            <span class="float-right">{{file_info.size}}</span>
+                                        </p>
+                                        <p v-if="file_other.isDir">
+                                            <span><i class="mdi mdi-square text-danger"></i></span>
+                                            <span class="ml-2">文件数量</span>
+                                            <span class="float-right">{{file_info.file_count}}</span>
+                                        </p>
+                                        <p v-if="file_other.isDir">
+                                            <span><i class="mdi mdi-square text-success"></i></span>
+                                            <span class="ml-2">文件夹数量</span>
+                                            <span class="float-right">{{file_info.dir_count}}</span>
+                                        </p>
+                                        <p class="mb-0">
+                                            <span><i class="mdi mdi-square"></i></span>
+                                            <span class="ml-2">创建时间</span>
+                                            <span class="float-right">{{file_other.mtime}}</span>
+                                        </p>
+                                        <p class="mb-0">
+                                            <span><i class="mdi mdi-square text-info"></i></span>
+                                            <span class="ml-2">修改时间</span>
+                                            <span class="float-right">{{file_other.ctime}}</span>
+                                        </p>
+                                    </div>
+                                <div class="modal-footer pr-0">
+                                    <button type="button" class="btn btn-outline-light" data-dismiss="modal">关闭</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 查看详细信息 - model - 结束 -->
+                    
+                </div>
+                    
+                    <!-- 新建空白文件 或 文件夹 - model - 开始 -->
+                    <div id="add-file-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content modal-filled bg-primary">
+                                <div class="modal-header">
+                                    <h4 class="modal-title" id="fill-primary-modalLabel">{{add_file_title}}</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img :src="default_ico" style="height: 100px;">
+                                    <p class="mt-1">{{add_file_name}}</p>
+                                    <input v-model="add_file_name" type="text" id="add-file" class="form-control mt-3" placeholder="文件名称">
+                                </div>
+                                <div class="modal-footer">
+                                    <button v-on:click="addFile" type="button" class="btn btn-light" data-dismiss="modal">保存</button>
+                                    <button type="button" class="btn btn-outline-light" data-dismiss="modal">关闭</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 新建空白文件 或 文件夹 - model - 结束 -->
+                    
+                </div>
+                    
+            </div>
+            <!-- 内容 - 结束 -->
+            
+            <!-- 页脚 - 开始 -->
+            <i-footer></i-footer>
+            <!-- 页脚 - 结束 -->
+        </div>
+        
+        <!-- 右侧边栏 - 开始 -->
+        <i-right-side></i-right-side>
+        <!-- 右侧边栏 - 结束 -->
+    </div>
+
+<script src="<?= __ADMIN_LIBS__.'mouse.js'; ?>"></script>
+<script src="<?= __ADMIN_JS__.'vue/filesystem.js'; ?>"></script>
+
+
+<!-- 依赖 - 开始 -->
+<? require(dirname(dirname(__FILE__)).'/public/script.html'); ?>
+<!-- 依赖 - 结束 -->
+
+<!-- APP JS - 开始 -->
+<!-- APP JS - 结束 -->
+
+<!-- footer - 开始 -->
+<? require(dirname(dirname(__FILE__)).'/public/footer.html'); ?>
+<!-- footer - 结束 -->
