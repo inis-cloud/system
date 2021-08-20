@@ -1,11 +1,9 @@
 ThinkPHP 6.0
 ===============
 
-> 运行环境要求PHP7.1+，兼容PHP8.0。
+> 运行环境要求PHP7.2.5+，兼容PHP8.0。
 
-[官方应用服务市场](https://market.topthink.com) | [`ThinkAPI`——官方统一API服务](https://docs.topthink.com/think-api)
-
-ThinkPHPV6.0版本由[亿速云](https://www.yisu.com/)独家赞助发布。
+[inis官网](//inis.cc) | [inis详细介绍](//racns.com/inis.html) | [开发文档](//docs.inis.cc)
 
 ## 主要新特性
 
