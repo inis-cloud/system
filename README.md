@@ -1,4 +1,4 @@
-ThinkPHP 6.0
+inis system
 ===============
 
 > 运行环境要求PHP7.2.5+，兼容PHP8.0。
