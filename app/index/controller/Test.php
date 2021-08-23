@@ -50,13 +50,7 @@ class Test
     
     public function index(Request $request)
     {
-        
-        
-        
-        
-        
-        
-        
+        phpinfo();
         
         
         

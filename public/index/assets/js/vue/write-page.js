@@ -501,7 +501,7 @@
                     else if (id == 3) mode = ` class="nav-pills bg-nav-pills nav-justified"`
                     else if (id == 4) mode = ` type="right"`
                     else if (id == 5) mode = ` type="left"`
-                    content = `[tabs title="${this.insert_tabs.title}"${mode}]\n\t[item name="${this.insert_tabs.item_title}" class="${this.insert_tabs.text_color}" active="true"]\n\t在这里撰写内容1\n\t[/item]\n\t[item name="${this.insert_tabs.item_title}" class="${this.insert_tabs.text_color}"]\n\t在这里撰写内容2\n\t[/item]\n[/tabs]`
+                    content = `[tabs title="${this.insert_tabs.title || ''}"${mode}]\n\t[item name="${this.insert_tabs.item_title}" class="${this.insert_tabs.text_color}" active="true"]\n\t在这里撰写内容1\n\t[/item]\n\t[item name="${this.insert_tabs.item_title}" class="${this.insert_tabs.text_color}"]\n\t在这里撰写内容2\n\t[/item]\n[/tabs]`
                 }
                 
                 // 在焦点处插入标签

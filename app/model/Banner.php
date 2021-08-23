@@ -22,7 +22,7 @@ class Banner extends Model
         $data['count']  = $count;
         
         // 防止分页请求超出页码
-        if($config['page'] > $data['page']) $config['page'] = $data['page'];
+        if ($config['page'] > $data['page']) $config['page'] = $data['page'];
         
         $banner = self::whereOr($config['whereOr'])->withAttr('expand', function ($value){
             
@@ -43,8 +43,8 @@ class Banner extends Model
     // URL修改器
     public function getUrlAttr($value)
     {
-        if(empty($value)) return 'javascript:void(0);';
-        else return $value;
+        $value = (empty($value)) ? 'javascript:void(0);' : $value;
+        return $value;
     }
     
     // OPT字段获取器 - 获取前修改

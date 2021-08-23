@@ -5,7 +5,6 @@ namespace app\api\controller;
 
 use think\Request;
 use app\model\Log;
-use inis\utils\helper;
 use think\facade\Cache;
 use think\facade\Cookie;
 use think\facade\Session;
@@ -37,72 +36,23 @@ class Users extends Base
         // 获取请求参数
         $param = $request->param();
         
-        if(empty($param['page']))  $param['page']  = 1;
-        if(empty($param['limit'])) $param['limit'] = 5;
-        if(empty($param['order'])) $param['order'] = 'create_time asc';
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
         
-        $opt = [
-            'page'   =>  (int)$param['page'], 
-            'limit'  =>  (int)$param['limit'],
-            'order'  =>  (string)$param['order'],
-            'withoutField'=>['account','password','phone','email','level','remarks'],
-        ];
+        // 存在的方法
+        $method = ['one','all'];
         
-        // 显示隐藏字段
-        if (!empty($param['login-token'])) {
-            
-            $user  = $this->parseJWT($param['login-token']);
-            
-            if ($user['code'] == 200 and in_array($user['data']->level, ['admin'])) $opt['withoutField'] = ['password'];
-        }
+        $mode   = (empty($param['id'])) ? 'all' : 'one';
         
-        if (empty($param['id'])) {
-            
-            // 设置缓存名称
-            $cache_name = 'users?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                
-                // 获取数据库数据
-                $data = UsersModel::ExpandAll(null, $opt);
-                Cache::tag(['users'])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-            
-        }else{
-            
-            $data = [];
-            
-            // 设置缓存名称
-            $cache_name = 'users?id='.$param['id'];
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                // 获取数据库数据
-                $data = UsersModel::ExpandAll($param['id'], $opt);
-                Cache::tag(['users',$cache_name])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-        }
-
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param, $user);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
         return $this->create($data, $msg, $code);
     }
 
@@ -114,26 +64,25 @@ class Users extends Base
      */
     public function save(Request $request)
     {
+        // 获取请求参数
+        $param  = $request->param();
+        
         $data   = [];
         $code   = 400;
-        $msg    = 'ok';
+        $msg    = '参数不存在！';
         $result = [];
         
-        // 获取请求参数
-        $param = $request->param();
-        if (!empty($param['login-token'])) $user = $this->parseJWT($param['login-token'])['data'];
-        $mode  = !empty($param['mode'])  ? $param['mode']  : null;
+        // 存在的方法
+        $method = ['saves','remove','login','register'];
         
-        // 新增或者修改数据
-        if (empty($mode)) $result = $this->saves($param,$user);
-        // 删除数据
-        else if ($mode == 'delete')   $result = $this->remove($param,$user);
-        else if ($mode == 'login')    $result = $this->login($param['account'], $param['password']);
-        else if ($mode == 'register') $result = $this->register($param);
+        $mode   = (empty($param['mode'])) ? 'saves' : $param['mode'];
+        // 解析用户 token
+        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
         
-        if (!empty($result)) {
-            foreach ($result as $key => $val) $$key = $val;
-        }
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param,$user);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         // 清除缓存
         Cache::tag('users')->clear();
@@ -149,33 +98,7 @@ class Users extends Base
      */
     public function read(Request $request, $id)
     {
-        // 获取数据
-        $param  = $request->param();
         
-        $data   = [];
-        $code   = 400;
-        $msg    = 'error';
-        $header = [];
-        
-        if ($id == "login") {
-            
-            $account  = (!empty($param['account']))  ? $param['account']  : null;
-            $password = (!empty($param['password'])) ? $param['password'] : null;
-            
-            if (empty($account) or empty($password)) $msg = "帐号或密码不得为空！";
-            else {
-                
-                $result  = $this->login($account, $password);
-                foreach ($result as $key => $val) $$key = $val;
-                $header  = $result['header'];
-            }
-        } else if ($id == "register") {
-            
-            $result = $this->register($param);
-            foreach ($result as $key => $val) $$key = $val;
-        }
-        
-        return $this->create($data, $msg, $code)->header($header);
     }
 
     /**
@@ -201,20 +124,106 @@ class Users extends Base
         
     }
     
+    // 获取一条数据
+    public function one($param, $user)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = '无数据';
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $opt = [
+            'withoutField'=>['account','password','phone','email','level','remarks'],
+        ];
+        
+        // 设置缓存名称
+        $cache_name = 'users?id='.$param['id'];
+        
+        // 显示隐藏字段
+        if (isset($user['data']) and in_array($user['data']->level, ['admin'])) $opt['withoutField'] = ['password'];
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            // 获取数据库数据
+            $data = UsersModel::ExpandAll($param['id'], $opt);
+            Cache::tag(['users',$cache_name])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 获取全部数据
+    public function all($param, $user)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = '无数据';
+        
+        if (empty($param['page']))  $param['page']  = 1;
+        if (empty($param['limit'])) $param['limit'] = 5;
+        if (empty($param['order'])) $param['order'] = 'create_time asc';
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $opt = [
+            'page'   =>  (int)$param['page'], 
+            'limit'  =>  (int)$param['limit'],
+            'order'  =>  (string)$param['order'],
+            'withoutField'=>['account','password','phone','email','level','remarks'],
+        ];
+        
+        // 显示隐藏字段
+        if (isset($user['data']) and in_array($user['data']->level, ['admin'])) $opt['withoutField'] = ['password'];
+        
+        // 设置缓存名称
+        $cache_name = 'users?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            
+            // 获取数据库数据
+            $data = UsersModel::ExpandAll(null, $opt);
+            Cache::tag(['users'])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
     // 登录
-    public function login($account, $password)
+    public function login($param)
     {
         $data = [];
         $code = 400;
         $msg  = 'error';
         $header = [];
         
-        $ip   = (new helper)->GetClientIP();
+        $ip   = $this->helper->GetClientIP();
         $time = time() - $this->config['login']['error_time'];
         
         $factor1 = ['ip','=',$ip];
         $factor2 = ['create_time','>',$time];
-        $factor3 = ['content','=',$account];
+        $factor3 = ['content','=',$param['account']];
         
         $login_error = Log::where([$factor1,$factor2])->field(['id'])->select();
         $account_err = Log::where([$factor2,$factor3])->field(['id'])->select();
@@ -223,15 +232,15 @@ class Users extends Base
         if (count($login_error) >= $this->config['login']['error_count']) {
             
             // 秒转人性化时间
-            $second_to_time = (new helper)->NaturalSecond($this->config['login']['error_time']);
+            $second_to_time = $this->helper->NaturalSecond($this->config['login']['error_time']);
             
             $code = 403;
             $msg  = '您的错误次数达到'.$this->config['login']['error_count'].'次，该设备已被禁止'.$second_to_time.'内登陆此系统！';
             
         } else {
             
-            $map1 = ['account', 'like', $account];
-            $map2 = ['email'  , 'like', $account];
+            $map1 = ['account', 'like', $param['account']];
+            $map2 = ['email'  , 'like', $param['account']];
             
             $users= UsersModel::whereOr([$map1,$map2])->withoutField(['account','phone','remarks'])->find();
             
@@ -242,14 +251,14 @@ class Users extends Base
             }
             
             // 收集错误信息
-            if (!$users or !$this->verify_password($password, $users->password)) {
+            if (!$users or !$this->verify_password($param['password'], $users->password)) {
                 
                 $log = new Log;
                 $log->save([
                     'ip'     =>$ip,
                     'msg'    =>$msg,
                     'types'  =>'login',
-                    'content'=>$account,
+                    'content'=>$param['account'],
                 ]);
                 
                 $msg = "帐号或密码错误！";
@@ -339,7 +348,7 @@ class Users extends Base
                     }
                     
                     // 随机默认头像
-                    $users->head_img = (new helper)->RandomImg("local", "storage/users/anime/");
+                    $users->head_img = $this->helper->RandomImg("local", "storage/users/anime/");
                     
                     $users->save();
                     $verify_code->delete();

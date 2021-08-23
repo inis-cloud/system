@@ -22,7 +22,7 @@ class ArticleSort extends Model
         $data['count']  = $count;
         
         // 防止分页请求超出页码
-        if($config['page'] > $data['page']) $config['page'] = $data['page'];
+        if ($config['page'] > $data['page']) $config['page'] = $data['page'];
         
         $sort = self::whereOr($config['whereOr'])->withAttr('expand', function ($value,$data){
             

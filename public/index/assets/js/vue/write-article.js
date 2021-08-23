@@ -19,6 +19,9 @@
                 insert_btn: [],                // 插入按钮
                 insert_collapse: [],           // 插入收缩框
                 insert_tabs: [],               // 插入tabs
+                
+                opt: {password:''},            // opt字段
+                pwd_input_show: false,         // 显示设置访问密码框
             }
         },
         components: {
@@ -305,6 +308,7 @@
                                 // 过滤空字段
                                 this.sorts = this.sorts.filter((s)=>{ return s && s.trim() })
                             }
+                            $("#article-auth").empty()
                         }
                         
                         // 处理分类数据
@@ -327,9 +331,22 @@
                         })
                         // select2 标签 初始化
                         $("#tag-select2").select2({
-                            tags: true,
+                            // tags: true,  // 有输入法冲突BUG
                             data: this.article.tag,
                         })
+                        // select2 文章权限 初始化
+                        $("#article-auth").select2({
+                            // data: this.article.tag,
+                            minimumResultsForSearch: Infinity,
+                            data: [{id:"anyone",text:"公开"},{id:"private",text:"自己可见"},{id:"login",text:"登录可见"},{id:"password",text:"密码可见"}]
+                        })
+                        
+                        $('#article-auth').on('select2:select', (e) => {
+                            
+                            const data = e.params.data;
+                            this.pwd_input_show = (data.id == 'password') ? true : false
+                            
+                        });
                         
                         if (is_load) $.NotificationApp.send("提示！", "数据已刷新！", "top-right", "rgba(0,0,0,0.2)", "info");
                     }
@@ -348,10 +365,8 @@
                     sort_id[i]     = sort_value;
                 }
                 
-                // 已有的标签
-                let tag_id   = [];
-                // 新增的标签
-                let tag_name = [];
+                // 已有的标签 - 新增的标签
+                let [tag_id,tag_name]   = [[],[]];
                 
                 // 获取标签数据
                 for (i=0; i<$("#tag-select2").select2("data").length; i++){
@@ -368,7 +383,9 @@
                 
                 let font_count = document.querySelector('span.vditor-counter.vditor-tooltipped.vditor-tooltipped__nw').textContent
                 
-                let params = new FormData()
+                this.opt.auth = $("#article-auth").select2("data")[0]['id']
+                
+                let params = new FormData
                 params.append('id',id || '')
                 params.append('title',this.edit.title || '')
                 params.append('content',this.contentEditor.getValue() || '')
@@ -378,6 +395,7 @@
                 params.append('tag_id[]',tag_id || '')
                 params.append('tag_name[]',tag_name || '')
                 params.append('font_count',font_count || '')
+                for (let item in this.opt) params.append(`opt[${item}]`, this.opt[item] || '')
                 
                 // 提交数据
                 axios.post('/index/method/SaveArticle', params).then((res) => {
@@ -642,7 +660,7 @@
                     else if (id == 3) mode = ` class="nav-pills bg-nav-pills nav-justified"`
                     else if (id == 4) mode = ` type="right"`
                     else if (id == 5) mode = ` type="left"`
-                    content = `[tabs title="${this.insert_tabs.title}"${mode}]\n\t[item name="${this.insert_tabs.item_title}" class="${this.insert_tabs.text_color}" active="true"]\n\t在这里撰写内容1\n\t[/item]\n\t[item name="${this.insert_tabs.item_title}" class="${this.insert_tabs.text_color}"]\n\t在这里撰写内容2\n\t[/item]\n[/tabs]`
+                    content = `[tabs title="${this.insert_tabs.title || ''}"${mode}]\n\t[item name="${this.insert_tabs.item_title}" class="${this.insert_tabs.text_color}" active="true"]\n\t在这里撰写内容1\n\t[/item]\n\t[item name="${this.insert_tabs.item_title}" class="${this.insert_tabs.text_color}"]\n\t在这里撰写内容2\n\t[/item]\n[/tabs]`
                 }
                 
                 // 在焦点处插入标签

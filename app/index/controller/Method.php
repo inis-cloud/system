@@ -280,11 +280,11 @@ class Method extends Base
             if (empty($param['title'])) $param['title'] = '未命名文章';
             
             // 允许用户提交并存储的字段
-            $obtain = ['title','content','description','img_src','font_count','sort_id','tag_name','tag_id','last_update_time'];
+            $obtain = ['title','content','description','img_src','font_count','sort_id','tag_name','tag_id','last_update_time','opt'];
             
             // 修改文章
             if (!empty($param['id']))  $article = Article::find($param['id']);
-            else{
+            else {
                 
                 $article = new Article;
                 
@@ -297,6 +297,7 @@ class Method extends Base
                 if (in_array($key, $obtain)) {
                     // 分类ID转字符串存储
                     if($key == 'sort_id') $article->$key = '|'.implode("|",str_replace(',','|',$val)).'|';
+                    else if ($key == 'opt') $article->$key = json_encode($val, JSON_UNESCAPED_UNICODE);
                     else $article->$key = $val;
                 }
             }
@@ -310,7 +311,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('article')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($article,$code,$msg);
         }
     }
     

@@ -6,27 +6,10 @@ namespace app\api\controller;
 use think\Request;
 use app\model\Users;
 use app\model\Options;
-use inis\utils\helper;
-use think\facade\Config;
-use app\index\controller\Tool;
 use app\model\VerifyCode as VerifyCodeModel;
 
 class VerifyCode extends Base
 {
-    // 工具类
-    protected $tool;
-    // 助手函数
-    protected $helper;
-    // inis 配置文件
-    protected $config;
-    
-    public function __construct()
-    {
-        $this->tool   = new Tool;
-        $this->helper = new helper;
-        $this->config = Config::get('inis');
-    }
-    
     /**
      * 显示资源列表
      *

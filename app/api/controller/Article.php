@@ -6,7 +6,6 @@ use Parsedown;
 use think\Request;
 use app\model\Tag;
 use app\model\Visit;
-use inis\utils\helper;
 use think\facade\Cache;
 use inis\utils\markdown;
 use think\facade\Validate;
@@ -23,106 +22,24 @@ class Article extends Base
     public function index(Request $request)
     {
         // 获取请求参数
-        $param = $request->param();
+        $param  = $request->param();
         
-        if (empty($param['page']))  $param['page']  = 1;
-        if (empty($param['limit'])) $param['limit'] = 5;
-        if (empty($param['order'])) $param['order'] = 'is_top desc, create_time desc';
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
         
-        if (empty($param['id'])) {
-            
-            // 搜索功能
-            $search = (empty($param['search'])) ? '' : $param['search'];
-            $map1   = ['title'   , 'like', '%'.$search.'%'];
-            $map2   = ['content' , 'like', '%'.$search.'%'];
-            
-            // 设置缓存名称
-            $cache_name = 'article?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'].'&search='.$search;
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                
-                $opt = [
-                    'page'   =>  (int)$param['page'], 
-                    'limit'  =>  (int)$param['limit'],
-                    'order'  =>  (string)$param['order'],
-                    
-                    'where'  =>  [
-                        function ($query) use ($map1, $map2) {
-                            $query->where([$map1])->whereOr([$map2]);
-                        },
-                        ['is_show','=',1],
-                        ['delete_time','=',null],
-                    ]
-                ];
-                
-                // 获取数据库数据
-                $data = ArticleModel::ExpandAll(null, $opt);
-                Cache::tag(['article'])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-            
-        } else {
-            
-            // 设置缓存名称
-            $cache_name = 'article?id='.$param['id'];
-            // 校验数据是否存在
-            $check = ArticleModel::findOrEmpty($param['id']);
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                // 获取数据库数据
-                if ($check->isEmpty()) $data = [];
-                else $data = ArticleModel::ExpandAll((int)$param['id'], ['withoutField'=>null]);
-                Cache::tag(['article',$cache_name])->set($cache_name, json_encode($data));
-            }
-            
-            // 数据存在，文章数据转换
-            if (!$check->isEmpty()) {
-                if (empty($param['mode'])) $param['mode'] = 'html';
-                // setBreaksEnabled(true) 自动换行 setMarkupEscaped(true) 转义HTML setUrlsLinked(false) 防止自动链接
-                if ($param['mode'] == 'html' || $param['mode'] == 'htm') $data->content = Parsedown::instance()->setUrlsLinked(false)->text($data->content);
-            }
-            
-            // 解析自定义标签
-            $data->content = markdown::parse($data->content);
-            // 转化时间戳
-            $data->last_update_time = date('Y-m-d H:i:s', (int)$data->last_update_time);
-            
-            if (!Validate::isInteger($param['id'])) {
-                
-                // ID参数不合法
-                $data = [];
-                $msg  = 'ID参数不合法！';
-                $code = 400;
-                
-            } else if (empty($data)) {
-                
-                // 判断是否有值
-                $data = [];
-                $msg  = '无数据';
-                $code = 204;
-                
-            } else {
-                
-                $msg  = '数据请求成功！';
-                $code = 200;
-                // 浏览量自增
-                $this->visit($param);
-            }
-        }
+        // 存在的方法
+        $method = ['one','all'];
+        
+        $mode   = (empty($param['id'])) ? 'all' : 'one';
+        
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param, $user);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         return $this->create($data, $msg, $code);
     }
@@ -135,109 +52,25 @@ class Article extends Base
      */
     public function save(Request $request)
     {
-        $data = [];
-        $code = 403;
-        $msg  = 'ok';
-        
         // 获取请求参数
-        $param = $request->param();
-        $mode  = !empty($param['mode']) ? $param['mode'] : null;
+        $param  = $request->param();
         
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
+        
+        // 存在的方法
+        $method = ['saves','remove','move'];
+        
+        $mode   = (empty($param['mode'])) ? 'saves' : $param['mode'];
         // 解析用户 token
-        $user  = $this->parseJWT($param['login-token'])['data'];
+        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
         
-        // 允许用户提交并存储的字段
-        $obtain = ['title','content','description','img_src','font_count','sort_id','tag_id','is_show','is_top','opt'];
-        
-        if (empty($mode)) {
-            
-            if (empty($param['id'])) $article = new ArticleModel;
-            else $article = ArticleModel::find((int)$param['id']);
-            
-            // 判断字段是否允许存储，防提权
-            foreach ($param as $key => $val) if (in_array($key, $obtain)) {
-                // 分类ID转字符串存储
-                if ($key == 'sort_id') {
-                    
-                    if(is_array($val))        $article->$key = '|' . implode('|', array_filter($val)) . '|';
-                    else if (is_string($val)) $article->$key = '|' . implode('|', array_filter(explode(',', $val))) . '|';
-                    
-                } else $article->$key = $val;
-            }
-            
-            $article->users_id         = $user->id;
-            $article->last_update_time = time();
-            
-            if (empty($param['tag_id']))   $param['tag_id']   = [];
-            if (empty($param['tag_name'])) $param['tag_name'] = [];
-            
-            // 权限处理 - 防止修改非自己的数据
-            if (!empty($param['id']) and !in_array($user->level, ['admin'])) {
-                
-                $array_id     = [];
-                $user_article = ArticleModel::where(['users_id'=>$user->id])->field(['id'])->select();
-                foreach ($user_article as $val) array_push($array_id, $val->id);
-                
-                // 是自己的数据才允许修改
-                if (in_array((int)$param['id'], $array_id) and (int)$user->status == 1) {
-                    
-                    $code = 200;
-                    $article->save();
-                    // 插入标签数据
-                    (new Tag)->TagSave((int)$article->id, $param['tag_id'], $param['tag_name']);
-                    
-                } else {
-                    
-                    $code = 403;
-                    $msg  = "无权限！";
-                }
-                
-            } else if ((int)$user->status == 1) {
-                
-                $code = 200;
-                $article->save();
-                
-                // 插入标签数据
-                (new Tag)->TagSave((int)$article->id, $param['tag_id'], $param['tag_name']);
-                
-            } else $msg  = "无权限！";
-            
-        } else if ($mode == 'move') {   // typecho 迁移至 inis
-            
-            $result = self::move($param);
-            
-            foreach ($result as $key => $val) $$key = $val;
-            
-        } else if ($mode == 'delete') {   // 删除文章
-            
-            if (empty($param['id'])) {
-                
-                $code = 404;
-                $msg  = '请提交需要删除的文章ID';
-                
-            } else {
-                
-                if (!empty($param['destroy']) and $param['destroy'] == true) $destroy = true;
-                else $destroy = false;
-                
-                // 提交需要被删除的文章ID
-                $article_id = array_filter(explode(',', $param['id']));
-                // 属于用户的文章ID
-                $user_article_id = ArticleModel::where(['users_id'=>$user->id])->field(['id'])->column(['id']);
-                
-                // 管理员权限
-                if (in_array($user->level, ['admin'])) ArticleModel::destroy($article_id, $destroy);
-                else {
-                    $del_id = [];
-                    // 非管理员只能删除属于自己的文章
-                    foreach ($article_id as $val) if (in_array($val, $user_article_id)) $del_id[] = $val;
-                    if (!empty($del_id)) ArticleModel::destroy($del_id, $destroy);
-                }
-                
-                $code = 200;
-            }
-            
-        }
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param,$user);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         // 清除缓存
         Cache::tag('article')->clear();
@@ -316,7 +149,14 @@ class Article extends Base
             // 检查是否存在请求的缓存数据
             if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
             else {
+                
                 $data = ArticleModel::ExpandAll(null, $opt);
+                
+                // 屏蔽密码
+                if (!empty($data['data'])) foreach ($data['data'] as $key => $val) {
+                    if (!empty($val['opt']) and isset($val['opt']->password)) unset($val['opt']->password);
+                }
+                
                 Cache::tag(['article',$cache_name])->set($cache_name, json_encode($data));
             }
         }
@@ -348,15 +188,12 @@ class Article extends Base
     }
     
     // typecho 迁移至 inis
-    public function move(array $param = [])
+    public function move($param, $user)
     {
         $result = ['data'=>[],'code'=>403,'msg'=>'ok'];
         
         if (empty($param['login-token'])) $result['msg'] = 'login-token 未提交';
         else {
-            
-            // 解析用户 token
-            $user  = $this->parseJWT($param['login-token'])['data'];
             
             // 允许用户提交并存储的字段
             $obtain = ['id','title','content','description','img_src','font_count','sort_id','tag_id','is_show','is_top','views','create_time','update_time'];
@@ -374,10 +211,10 @@ class Article extends Base
                 } else $article->$key = $val;
             }
             
-            $article->users_id         = $user->id;
+            $article->users_id         = $user['data']->id;
             $article->last_update_time = time();
             
-            if ($user->level == 'admin') {
+            if ($user['data']->level == 'admin') {
                 $article->save();
                 $result['code'] = 200;
             } else $result['msg'] = '无权限';
@@ -408,7 +245,7 @@ class Article extends Base
         if (!isset($opt->article)) $opt->article = [['id'=>(int)$param['id'],'visit'=>1]];
         else {
             
-            if ((new helper)->InArray(['id',(int)$param['id']], $opt->article)) foreach ($opt->article as $key => $val) {
+            if ($this->helper->InArray(['id',(int)$param['id']], $opt->article)) foreach ($opt->article as $key => $val) {
                 if ($val->id == (int)$param['id']) $val->visit += 1;
             } else $opt->article[] = ['id'=>(int)$param['id'],'visit'=>1];
         }
@@ -416,5 +253,217 @@ class Article extends Base
         $visit->opt = json_encode($opt);
         
         $visit->save();
+    }
+    
+    // 获取一篇文章
+    public function one($param, $user)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = '无数据';
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        // 设置缓存名称
+        $cache_name = 'article?id='.$param['id'];
+        // 校验数据是否存在
+        $check = ArticleModel::find($param['id']);
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            // 获取数据库数据
+            if (empty($check)) $data = [];
+            else $data = ArticleModel::ExpandAll((int)$param['id'], ['withoutField'=>null]);
+            Cache::tag(['article',$cache_name])->set($cache_name, json_encode($data));
+        }
+        
+        // 数据存在，文章数据转换
+        if (!empty($check)) {
+            if (empty($param['mode'])) $param['mode'] = 'html';
+            // setBreaksEnabled(true) 自动换行 setMarkupEscaped(true) 转义HTML setUrlsLinked(false) 防止自动链接
+            if ($param['mode'] == 'html' || $param['mode'] == 'htm') $data->content = Parsedown::instance()->setUrlsLinked(false)->text($data->content);
+            // 解析自定义标签
+            $data->content = markdown::parse($data->content);
+            // 转化时间戳
+            $data->last_update_time = date('Y-m-d H:i:s', (int)$data->last_update_time);
+        }
+        
+        if (!Validate::isInteger($param['id'])) $msg  = 'ID参数不合法！';
+        else if (empty($data)) $code = 204;
+        else {
+            
+            $msg  = '数据请求成功！';
+            $code = 200;
+            // 浏览量自增
+            $this->visit($param);
+        }
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 获取全部文章
+    public function all($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = 'ok';
+        
+        if (empty($param['page']))  $param['page']  = 1;
+        if (empty($param['limit'])) $param['limit'] = 5;
+        if (empty($param['order'])) $param['order'] = 'is_top desc, create_time desc';
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        // 搜索功能
+        $search = (empty($param['search'])) ? '' : $param['search'];
+        $map1   = ['title'   , 'like', '%'.$search.'%'];
+        $map2   = ['content' , 'like', '%'.$search.'%'];
+        
+        // 设置缓存名称
+        $cache_name = 'article?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'].'&search='.$search;
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            
+            $opt = [
+                'page'   =>  (int)$param['page'], 
+                'limit'  =>  (int)$param['limit'],
+                'order'  =>  (string)$param['order'],
+                
+                'where'  =>  [
+                    function ($query) use ($map1, $map2) {
+                        $query->where([$map1])->whereOr([$map2]);
+                    },
+                    ['is_show','=',1],
+                    ['delete_time','=',null],
+                ]
+            ];
+            
+            // 获取数据库数据
+            $data = ArticleModel::ExpandAll(null, $opt);
+            
+            // 屏蔽密码
+            if (!empty($data['data'])) foreach ($data['data'] as $key => $val) {
+                if (!empty($val['opt']) and isset($val['opt']->password)) unset($val['opt']->password);
+            }
+            
+            Cache::tag(['article'])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 保存文章
+    public function saves($param, $user)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = 'ok';
+        
+        // 允许用户提交并存储的字段
+        $obtain = ['title','content','description','img_src','font_count','sort_id','tag_id','is_show','is_top','opt'];
+        
+        if (empty($param['id'])) $article = new ArticleModel;
+        else $article = ArticleModel::find((int)$param['id']);
+        
+        // 判断字段是否允许存储，防提权
+        foreach ($param as $key => $val) if (in_array($key, $obtain)) {
+            // 分类ID转字符串存储
+            if ($key == 'sort_id') {
+                
+                if(is_array($val))        $article->$key = '|' . implode('|', array_filter($val)) . '|';
+                else if (is_string($val)) $article->$key = '|' . implode('|', array_filter(explode(',', $val))) . '|';
+                
+            } else $article->$key = $val;
+        }
+        
+        $article->users_id         = $user['data']->id;
+        $article->last_update_time = time();
+        
+        if (empty($param['tag_id']))   $param['tag_id']   = [];
+        if (empty($param['tag_name'])) $param['tag_name'] = [];
+        
+        // 权限处理 - 防止修改非自己的数据
+        if (!empty($param['id']) and !in_array($user['data']->level, ['admin'])) {
+            
+            $array_id     = [];
+            $user_article = ArticleModel::where(['users_id'=>$user['data']->id])->field(['id'])->select();
+            foreach ($user_article as $val) array_push($array_id, $val->id);
+            
+            // 是自己的数据才允许修改
+            if (in_array((int)$param['id'], $array_id) and (int)$user['data']->status == 1) {
+                
+                $code = 200;
+                $article->save();
+                // 插入标签数据
+                (new Tag)->TagSave((int)$article->id, $param['tag_id'], $param['tag_name']);
+                
+            } else {
+                
+                $code = 403;
+                $msg  = "无权限！";
+            }
+            
+        } else if ((int)$user['data']->status == 1) {
+            
+            $code = 200;
+            $article->save();
+            
+            // 插入标签数据
+            (new Tag)->TagSave((int)$article->id, $param['tag_id'], $param['tag_name']);
+            
+        } else $msg  = "无权限！";
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 删除数据
+    public function remove($param, $user)
+    {
+        $data = [];
+        $code = 403;
+        $msg  = 'ok';
+        
+        if (empty($param['id'])) {
+                
+            $code = 404;
+            $msg  = '请提交需要删除的文章ID';
+            
+        } else {
+            
+            $destroy = (!empty($param['destroy']) and $param['destroy'] == true) ? true : false;
+            
+            // 提交需要被删除的文章ID
+            $article_id = array_filter(explode(',', $param['id']));
+            // 属于用户的文章ID
+            $user_article_id = ArticleModel::where(['users_id'=>$user['data']->id])->field(['id'])->column(['id']);
+            
+            // 管理员权限
+            if (in_array($user['data']->level, ['admin'])) ArticleModel::destroy($article_id, $destroy);
+            else {
+                $del_id = [];
+                // 非管理员只能删除属于自己的文章
+                foreach ($article_id as $val) if (in_array($val, $user_article_id)) $del_id[] = $val;
+                if (!empty($del_id)) ArticleModel::destroy($del_id, $destroy);
+            }
+            
+            $code = 200;
+        }
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
 }

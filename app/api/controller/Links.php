@@ -18,64 +18,22 @@ class Links extends Base
     public function index(Request $request)
     {
         // 获取请求参数
-        $param = $request->param();
+        $param  = $request->param();
         
-        if(empty($param['page']))  $param['page']  = 1;
-        if(empty($param['limit'])) $param['limit'] = 5;
-        if(empty($param['order'])) $param['order'] = 'create_time asc';
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        // 存在的方法
+        $method = ['one','all'];
         
-        $opt = [
-            'page'   =>  (int)$param['page'], 
-            'limit'  =>  (int)$param['limit'],
-            'order'  =>  (string)$param['order'],
-        ];
+        $mode   = (empty($param['id'])) ? 'all' : 'one';
         
-        if (empty($param['id'])) {
-            
-            // 设置缓存名称
-            $cache_name = 'links?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                
-                // 获取数据库数据
-                $data = LinksModel::ExpandAll(null, $opt);
-                Cache::tag(['links'])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-            
-        }else{
-            
-            $data = [];
-            
-            // 设置缓存名称
-            $cache_name = 'links?id='.$param['id'];
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                // 获取数据库数据
-                $data = LinksModel::ExpandAll($param['id']);
-                Cache::tag(['links',$cache_name])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-        }
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         return $this->create($data, $msg, $code);
     }
@@ -88,24 +46,25 @@ class Links extends Base
      */
     public function save(Request $request)
     {
-        $data   = [];
-        $code   = 400;
-        $msg    = 'ok';
-        $result = [];
-        
         // 获取请求参数
         $param = $request->param();
-        $user  = $this->parseJWT($param['login-token'])['data'];
-        $mode  = !empty($param['mode'])  ? $param['mode']  : null;
         
-        // 新增或者修改数据
-        if (empty($mode)) $result = $this->saves($param,$user);
-        // 删除数据
-        else if ($mode == 'delete') $result = $this->remove($param,$user);
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
         
-        if (!empty($result)) {
-            foreach ($result as $key => $val) $$key = $val;
-        }
+        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
+        
+        // 存在的方法
+        $method = ['saves','remove'];
+        
+        $mode   = !empty($param['mode']) ? $param['mode']  : 'saves';
+        
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param,$user);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         // 清除缓存
         Cache::tag('links')->clear();
@@ -215,6 +174,81 @@ class Links extends Base
         //
     }
     
+    // 获取一条数据
+    public function one($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = '无数据';
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        // 设置缓存名称
+        $cache_name = 'links?id='.$param['id'];
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            // 获取数据库数据
+            $data = LinksModel::ExpandAll($param['id']);
+            Cache::tag(['links',$cache_name])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 获取全部数据
+    public function all($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = '无数据';
+        
+        if (empty($param['page']))  $param['page']  = 1;
+        if (empty($param['limit'])) $param['limit'] = 5;
+        if (empty($param['order'])) $param['order'] = 'create_time asc';
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $opt = [
+            'page'   =>  (int)$param['page'], 
+            'limit'  =>  (int)$param['limit'],
+            'order'  =>  (string)$param['order'],
+        ];
+        
+        // 设置缓存名称
+        $cache_name = 'links?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            
+            // 获取数据库数据
+            $data = LinksModel::ExpandAll(null, $opt);
+            Cache::tag(['links'])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
     // 新增或者修改数据
     public function saves($param, $user)
     {
@@ -238,8 +272,8 @@ class Links extends Base
         }
         
         // 权限判断
-        if (!in_array($user->level, ['admin'])) $msg = '无权限';
-        else if ($user->status != 1) $msg = '账号被禁用';
+        if (!in_array($user['data']->level, ['admin'])) $msg = '无权限';
+        else if ($user['data']->status != 1) $msg = '账号被禁用';
         else {
             $code = 200;
             $links->save();
@@ -263,7 +297,7 @@ class Links extends Base
             $id = array_filter(explode(',', $id));
             
             // 存在该条数据
-            if (in_array($user->level, ['admin'])) {
+            if (in_array($user['data']->level, ['admin'])) {
                 
                 $code = 200;
                 LinksModel::destroy($id);

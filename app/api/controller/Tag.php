@@ -18,61 +18,24 @@ class Tag extends Base
     public function index(Request $request)
     {
         // 获取请求参数
-        $param = $request->param();
+        $param  = $request->param();
         
-        if (empty($param['page']))  $param['page']  = 1;
-        if (empty($param['limit'])) $param['limit'] = 5;
-        if (empty($param['order'])) $param['order'] = 'create_time desc';
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
         
-        $opt = [
-            'page'   =>  (int)$param['page'], 
-            'limit'  =>  (int)$param['limit'],
-            'order'  =>  (string)$param['order'],
-        ];
+        // 存在的方法
+        $method = ['one','all'];
         
-        if (empty($param['id'])) {
-            
-            // 设置缓存名称
-            $cache_name = 'tag?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                // 获取数据库数据
-                $data = TagModel::ExpandAll(null, $opt);
-                Cache::tag(['tag'])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-            
-        } else {
-            
-            // 设置缓存名称
-            $cache_name = 'tag?id='.$param['id'];
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                // 获取数据库数据
-                $data = TagModel::article((int)$param['id'], $opt);
-                Cache::tag(['tag',$cache_name])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-        }
+        $mode   = (empty($param['id'])) ? 'all' : 'one';
+        
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param, $user);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         return $this->create($data, $msg, $code);
     }
@@ -85,53 +48,23 @@ class Tag extends Base
      */
     public function save(Request $request)
     {
-        $data = [];
-        $code = 403;
-        $msg  = 'ok';
-        
         // 获取请求参数
-        $param = $request->param();
-        $mode  = !empty($param['mode']) ? $param['mode'] : null;
+        $param  = $request->param();
         
-        // 解析用户 token
-        $user  = $this->parseJWT($param['login-token'])['data'];
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
         
-        // 允许用户提交并存储的字段
-        $obtain = ['id','named','is_show','opt'];
+        // 存在的方法
+        $method = ['saves','remove'];
         
-        // 新增或者修改
-        if (empty($mode)) {
-            
-            if (empty($param['id'])) $tag = new TagModel;
-            else $tag = TagModel::find((int)$param['id']);
-            
-            // 判断字段是否允许存储，防提权
-            foreach ($param as $key => $val) if (in_array($key, $obtain)) {
-                // 分类ID转字符串存储
-                if ($key == 'named') $tag->name = $val;
-                else $tag->$key = $val;
-            }
-            
-            $code = 200;
-            
-            $tag->save();
-            
-        } else if ($mode == 'delete') {     // 删除
+        $mode   = (empty($param['mode'])) ? 'saves' : $param['mode'];
         
-            if (empty($param['id'])) {
-                    
-                $code = 404;
-                $msg  = '请提交需要删除的标签ID';
-                
-            } else {
-                
-                $id = array_filter(explode(',', $param['id']));
-                
-                TagModel::destroy($id);
-                
-                $code = 200;
-            }
-        }
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         // 清除缓存
         Cache::tag('tag')->clear();
@@ -239,5 +172,141 @@ class Tag extends Base
     public function delete($id)
     {
         //
+    }
+    
+    // 获取单条数据
+    public function one($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = '无数据';
+        
+        if (empty($param['page']))  $param['page']  = 1;
+        if (empty($param['limit'])) $param['limit'] = 5;
+        if (empty($param['order'])) $param['order'] = 'create_time desc';
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $opt = [
+            'page'   =>  (int)$param['page'], 
+            'limit'  =>  (int)$param['limit'],
+            'order'  =>  (string)$param['order'],
+        ];
+        
+        // 设置缓存名称
+        $cache_name = 'tag?id='.$param['id'].'&page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            
+            // 获取数据库数据
+            $data = TagModel::article((int)$param['id'], $opt);
+            
+            // 屏蔽密码
+            if (!empty($data['expand']['data'])) foreach ($data['expand']['data'] as $key => $val) {
+                if (!empty($val['opt']) and isset($val['opt']->password)) unset($val['opt']->password);
+            }
+            
+            Cache::tag(['tag',$cache_name])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 获取全部数据
+    public function all($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = '无数据';
+        
+        if (empty($param['page']))  $param['page']  = 1;
+        if (empty($param['limit'])) $param['limit'] = 5;
+        if (empty($param['order'])) $param['order'] = 'create_time desc';
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $opt = [
+            'page'   =>  (int)$param['page'], 
+            'limit'  =>  (int)$param['limit'],
+            'order'  =>  (string)$param['order'],
+        ];
+        
+        // 设置缓存名称
+        $cache_name = 'tag?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            // 获取数据库数据
+            $data = TagModel::ExpandAll(null, $opt);
+            Cache::tag(['tag'])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 保存数据
+    public function saves()
+    {
+        $data = [];
+        $code = 200;
+        $msg  = 'ok';
+        
+        // 允许用户提交并存储的字段
+        $obtain = ['id','named','is_show','opt'];
+        
+        if (empty($param['id'])) $tag = new TagModel;
+        else $tag = TagModel::find((int)$param['id']);
+        
+        // 判断字段是否允许存储，防提权
+        foreach ($param as $key => $val) if (in_array($key, $obtain)) {
+            // 分类ID转字符串存储
+            if ($key == 'named') $tag->name = $val;
+            else $tag->$key = $val;
+        }
+        
+        $tag->save();
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 删除数据
+    public function remove($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = 'ok';
+        
+        if (empty($param['id'])) $msg = '请提交需要删除的标签ID';
+        else {
+            
+            $id = array_filter(explode(',', $param['id']));
+            
+            TagModel::destroy($id);
+            
+            $code = 200;
+        }
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
 }

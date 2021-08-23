@@ -7,6 +7,7 @@ use think\Request;
 use think\facade\Db;
 use app\model\Users;
 use app\model\Links;
+use app\model\Banner;
 use app\model\Visit;
 use think\facade\Log;
 use app\model\Article;

@@ -6,7 +6,6 @@ namespace app\api\controller;
 use Parsedown;
 use think\Request;
 use app\model\Visit;
-use inis\utils\helper;
 use think\facade\Cache;
 use inis\utils\markdown;
 use app\model\Page as PageModel;
@@ -22,77 +21,22 @@ class Page extends Base
     public function index(Request $request)
     {
         // 获取请求参数
-        $param = $request->param();
+        $param  = $request->param();
         
-        if(empty($param['page']))  $param['page']  = 1;
-        if(empty($param['limit'])) $param['limit'] = 5;
-        if(empty($param['order'])) $param['order'] = 'create_time asc';
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
         
-        $id    = (!empty($param['id']))    ? $param['id']    : "";
-        $alias = (!empty($param['alias'])) ? $param['alias'] : "";
+        // 存在的方法
+        $method = ['one','all'];
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        $mode   = (empty($param['id']) and empty($param['alias'])) ? 'all' : 'one';
         
-        $opt = [
-            'page'   =>  (int)$param['page'], 
-            'limit'  =>  (int)$param['limit'],
-            'order'  =>  (string)$param['order'],
-            'withoutField'=>['content']
-        ];
-        
-        if (empty($id) and empty($alias)) {
-            
-            // 设置缓存名称
-            $cache_name = 'page?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                
-                // 获取数据库数据
-                $data = PageModel::ExpandAll(null, $opt);
-                Cache::tag(['page'])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-            
-        } else if (!empty($id) or !empty($alias)) {
-            
-            $data = [];
-            
-            // 设置缓存名称
-            $cache_name = 'page?id='.$id.'&alias='.$alias;
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                // 获取数据库数据
-                if (!empty($id)) $data = PageModel::ExpandAll($id);
-                else $data = PageModel::ExpandAll(null, ['where'=>['alias'=>$alias]])['data'][0];
-                Cache::tag(['page',$cache_name])->set($cache_name, json_encode($data));
-            }
-            
-            // 解析markdown语法
-            $data->content = Parsedown::instance()->setUrlsLinked(false)->setMarkupEscaped(true)->text($data->content);
-            // 解析自定义标签
-            $data->content = markdown::parse($data->content);
-            
-            // 浏览量自增
-            $this->visit($param);
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-        }
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         return $this->create($data, $msg, $code);
     }
@@ -210,6 +154,94 @@ class Page extends Base
         //
     }
     
+    // 获取一条数据
+    public function one($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = '无数据';
+        
+        $id    = (!empty($param['id']))    ? $param['id']    : "";
+        $alias = (!empty($param['alias'])) ? $param['alias'] : "";
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        // 设置缓存名称
+        $cache_name = 'page?id='.$id.'&alias='.$alias;
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            // 获取数据库数据
+            if (!empty($id)) $data = PageModel::ExpandAll($id);
+            else $data = PageModel::ExpandAll(null, ['where'=>['alias'=>$alias]])['data'][0];
+            Cache::tag(['page',$cache_name])->set($cache_name, json_encode($data));
+        }
+        
+        // 解析markdown语法
+        $data->content = Parsedown::instance()->setUrlsLinked(false)->setMarkupEscaped(true)->text($data->content);
+        // 解析自定义标签
+        $data->content = markdown::parse($data->content);
+        
+        // 浏览量自增
+        $this->visit($param);
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 获取全部数据
+    public function all($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = '无数据';
+        
+        if (empty($param['page']))  $param['page']  = 1;
+        if (empty($param['limit'])) $param['limit'] = 5;
+        if (empty($param['order'])) $param['order'] = 'create_time asc';
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $opt = [
+            'page'   =>  (int)$param['page'], 
+            'limit'  =>  (int)$param['limit'],
+            'order'  =>  (string)$param['order'],
+            'withoutField'=>['content']
+        ];
+        
+        // 设置缓存名称
+        $cache_name = 'page?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            
+            // 获取数据库数据
+            $data = PageModel::ExpandAll(null, $opt);
+            Cache::tag(['page'])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
     // 记录浏览量
     public function visit($param)
     {
@@ -231,7 +263,7 @@ class Page extends Base
         if (!isset($opt->page)) $opt->page = [['id'=>$id,'visit'=>1]];
         else {
             
-            if ((new helper)->InArray(['id',$id], $opt->page)) foreach ($opt->page as $key => $val) {
+            if ($this->helper->InArray(['id',$id], $opt->page)) foreach ($opt->page as $key => $val) {
                 if ($val->id == $id) $val->visit += 1;
             } else $opt->page[] = ['id'=>$id,'visit'=>1];
         }

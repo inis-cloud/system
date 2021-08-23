@@ -5,12 +5,10 @@ namespace app\api\controller;
 
 use think\Request;
 use app\model\Users;
-use inis\utils\helper;
 use app\model\Options;
 use app\model\Article;
 use think\facade\Cache;
 use inis\utils\markdown;
-use app\index\controller\Tool;
 use app\model\Comments as CommentsModel;
 
 /**
@@ -28,157 +26,24 @@ class Comments extends Base
     public function index(Request $request)
     {
         // 获取请求参数
-        $param = $request->param();
+        $param  = $request->param();
         
-        $page  = (!empty($param['page']))  ? $param['page']  : 1;
-        $limit = (!empty($param['limit'])) ? $param['limit'] : 5;
-        $order = (!empty($param['order'])) ? $param['order'] : 'create_time desc';
-        $mode  = (empty($param['mode'])) ? false : $param['mode'];
-        $tree  = (empty($param['tree'])  or $param['tree']  == 'true') ? true : false;
-        $type  = (empty($param['type'])) ? null : $param['type'];
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        // 存在的方法
+        $method = ['one','all','comments','group','type'];
         
-        $opt = [
-            'tree'   =>  $tree,
-            'page'   =>  $page, 
-            'limit'  =>  $limit,
-            'order'  =>  $order,
-            'where'  =>  []
-        ];
+        if (!empty($param['article_id'])) $mode = 'comments';
+        else if (!empty($param['id'])) $mode = 'one';
+        else $mode = (empty($param['mode'])) ? 'all' : $param['mode'];
         
-        if (!empty($type)) $opt['where'] = ['pid'=>0,'type'=>$type];
-        
-        // 获取文章下的评论
-        if (!empty($param['article_id'])) {
-            
-            // 设置缓存名称
-            $cache_name = 'comments?article_id='.$param['article_id'].'&page='.$page.'&limit='.$limit.'&order='.$order.'&tree='.$tree;
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                unset($opt['where']);
-                // 获取数据库数据
-                $data = Article::comments((int)$param['article_id'], $opt);
-                Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) {
-                $data = [];
-                $code = 204;
-            } else $msg = '数据请求成功！';
-            
-        } else if (!empty($param['id'])) {      // 获取单条评论
-        
-            // 设置缓存名称
-            $cache_name = 'comments?id='.$param['id'].'&tree='.$tree;
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                // 获取数据库数据
-                $data = CommentsModel::ExpandAll((int)$param['id']);
-                $data['son'] = CommentsModel::FindSon((int)$param['id'], $tree);
-                
-                if (!$tree) $data['son'] = (new helper)->BubbSort($data['son'], 'create_time');
-                
-                Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) {
-                $data = [];
-                $code = 204;
-            } else $msg = '数据请求成功！';
-            
-        } else if ($mode){   // 聚合查询
-            
-            // 设置缓存名称
-            $cache_name = 'comments?page='.$page.'&limit='.$limit.'&order='.$order.'&mode='.$mode.'&type='.$type.'&tree='.$tree;
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                
-                // 将全部评论合并 - 并统计用户评论次数
-                if ($mode == "group") {
-                    
-                    $opt['order'] = [];
-                    $opt['group'] = ['email'];
-                    $opt['where'] = [];
-                    $opt['field'] = ['id','email','nickname','url','expand','agent','article_id'];
-                    $opt['limit'] = (!empty($param['limit'])) ? (int)$param['limit'] : 20;
-                    $order = (empty($param['order'])) ? 'desc' : $param['order'];
-                    
-                    $data = CommentsModel::ExpandAll(null, $opt);
-                    foreach ($data['data'] as $key => $val) {
-                        $val['count'] = CommentsModel::where(['email'=>$val['email']])->count();
-                    }
-                    $data['data'] = (new helper)->BubbSort($data['data'], 'count', $order);
-                    
-                } else if ($mode == "type" and !empty($type)) {
-                    
-                    $opt['where'] = ['type'=>$type,'pid'=>0];
-                    $opt['order'] = 'create_time desc';
-                    $order = (empty($param['order'])) ? 'desc' : $param['order'];
-                    
-                    $data = CommentsModel::ExpandAll(null, $opt);
-                    
-                    foreach ($data['data'] as $key => $val) {
-                        // 解析自定义标签
-                        $val->content = markdown::parse($val->content);
-                    }
-                    
-                    // 找孙子
-                    foreach ($data['data'] as $key => $val) $data['data'][$key]['son'] = CommentsModel::FindSon($val['id'], $tree);
-                    // 冒泡排序
-                    if (!$tree) foreach ($data['data'] as $key => $val) $data['data'][$key]['son'] = (new helper)->BubbSort($val['son'], 'create_time', $order);
-                }
-                
-                Cache::tag(['comments'])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-            
-        } else {
-            
-            // 设置缓存名称
-            $cache_name = 'comments?page='.$page.'&limit='.$limit.'&order='.$order.'&type='.$type;
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                
-                // 获取全部评论
-                $data = CommentsModel::ExpandAll(null, $opt);
-                
-                foreach ($data['data'] as $key => $val) {
-                    // 解析自定义标签
-                    $val->content = markdown::parse($val->content);
-                }
-                
-                Cache::tag(['comments'])->set($cache_name, json_encode($data));
-            }
-            
-            $code = 200;
-            $msg  = '无数据！';
-            // 逆向思维，节省代码行数
-            if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
-        }
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         return $this->create($data, $msg, $code);
     }
@@ -206,7 +71,7 @@ class Comments extends Base
         $login_token = (!empty($param['login-token'])) ? $param['login-token'] : null;
         
         $param['agent'] = $header['user-agent'];
-        $param['ip']    = (new helper)->GetClientIP();
+        $param['ip']    = $this->helper->GetClientIP();
         
         // 允许用户提交并存储的字段
         $obtain = ['pid','content','nickname','email','url','ip','type','agent','users_id','article_id','opt'];
@@ -448,8 +313,6 @@ class Comments extends Base
     // 发起评论通知推送
     public function notice(array $param = [])
     {
-        $tool = new Tool;
-        
         // 获取邮箱服务配置信息
         $options  = Options::where(['keys'=>'email_serve'])->findOrEmpty();
         // 获取用户邮件模板
@@ -459,7 +322,7 @@ class Comments extends Base
         // 获取抄送邮箱
         $email    = array_unique(array_filter(explode(',',$options['opt']->email_cc)));
         // 获取站点地址
-        $admin_url= $tool->domain();
+        $admin_url= $this->tool->domain();
         
         $tags     = ['{ip}','{nickname}','{text}','{email}','{site}','{admin_url}','{content}'];
         $replace  = [$param['ip'],$param['nickname'],$param['content'],$param['email'],$site,$admin_url,$param['content']];
@@ -496,7 +359,7 @@ class Comments extends Base
                         // 模板变量替换
                         $template = str_replace($tags,$replace,$template);
                         // 发送评论信息到邮箱
-                        $tool->sendMail($email['email'],$site.'评论通知',$template);
+                        $this->tool->sendMail($email['email'],$site.'评论通知',$template);
                     }
                 }
             }
@@ -508,7 +371,7 @@ class Comments extends Base
             // 模板变量替换
             $template = str_replace($tags,$replace,$template);
             // 发送评论信息到邮箱
-            $tool->sendMail($email,$site.'评论通知',$template);
+            $this->tool->sendMail($email,$site.'评论通知',$template);
             
             // 用户间评论
             if (!empty($param['pid']) and (int)$param['pid'] != 0) {
@@ -524,7 +387,7 @@ class Comments extends Base
                         // 模板变量替换
                         $template = str_replace($tags,$replace,$template);
                         // 发送评论信息到邮箱
-                        $tool->sendMail($email['email'], $site.'评论通知',$template);
+                        $this->tool->sendMail($email['email'], $site.'评论通知',$template);
                     }
                 }
             }
@@ -626,5 +489,254 @@ class Comments extends Base
         }
         
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
+    }
+    
+    // 文章下的评论
+    public function comments($param)
+    {
+        $data  = [];
+        
+        $page  = (!empty($param['page']))  ? $param['page']  : 1;
+        $limit = (!empty($param['limit'])) ? $param['limit'] : 5;
+        $order = (!empty($param['order'])) ? $param['order'] : 'create_time desc';
+        $tree  = (empty($param['tree'])  or $param['tree']  == 'true') ? true : false;
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $opt = [
+            'tree'   =>  $tree,
+            'page'   =>  $page, 
+            'limit'  =>  $limit,
+            'order'  =>  $order,
+            'where'  =>  []
+        ];
+        
+        // 设置缓存名称
+        $cache_name = 'comments?article_id='.$param['article_id'].'&page='.$page.'&limit='.$limit.'&order='.$order.'&tree='.$tree;
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            unset($opt['where']);
+            // 获取数据库数据
+            $data = Article::comments((int)$param['article_id'], $opt);
+            Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 获取单条评论
+    public function one($param)
+    {
+        $tree  = (empty($param['tree'])  or $param['tree']  == 'true') ? true : false;
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $data = [];
+            
+        // 设置缓存名称
+        $cache_name = 'comments?id='.$param['id'].'&tree='.$tree;
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            // 获取数据库数据
+            $data = CommentsModel::ExpandAll((int)$param['id']);
+            $data['son'] = CommentsModel::FindSon((int)$param['id'], $tree);
+            
+            if (!$tree) $data['son'] = $this->helper->BubbSort($data['son'], 'create_time');
+            
+            Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 获取全部评论
+    public function all($param)
+    {
+        $data = [];
+        
+        $page  = (!empty($param['page']))  ? $param['page']  : 1;
+        $limit = (!empty($param['limit'])) ? $param['limit'] : 5;
+        $order = (!empty($param['order'])) ? $param['order'] : 'create_time desc';
+        $type  = (empty($param['type'])) ? null : $param['type'];
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $opt = [
+            'page'   =>  $page, 
+            'limit'  =>  $limit,
+            'order'  =>  $order,
+            'where'  =>  []
+        ];
+        
+        if (!empty($type)) $opt['where'] = ['pid'=>0,'type'=>$type];
+        
+        // 设置缓存名称
+        $cache_name = 'comments?page='.$page.'&limit='.$limit.'&order='.$order.'&type='.$type;
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            
+            // 获取全部评论
+            $data = CommentsModel::ExpandAll(null, $opt);
+            
+            foreach ($data['data'] as $key => $val) {
+                // 解析自定义标签
+                $val->content = markdown::parse($val->content);
+            }
+            
+            Cache::tag(['comments'])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 获取聚合评论
+    public function group($param)
+    {
+        $data  = [];
+        
+        $page  = (!empty($param['page']))  ? $param['page']  : 1;
+        $limit = (!empty($param['limit'])) ? $param['limit'] : 5;
+        $order = (!empty($param['order'])) ? $param['order'] : 'create_time desc';
+        $mode  = (empty($param['mode'])) ? false : $param['mode'];
+        $tree  = (empty($param['tree'])  or $param['tree']  == 'true') ? true : false;
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $opt = [
+            'tree'   =>  $tree,
+            'page'   =>  $page, 
+            'limit'  =>  $limit,
+            'order'  =>  $order,
+            'where'  =>  []
+        ];
+        
+        // 设置缓存名称
+        $cache_name = 'comments?page='.$page.'&limit='.$limit.'&order='.$order.'&mode='.$mode.'&tree='.$tree;
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+        
+            $opt['order'] = [];
+            $opt['group'] = ['email'];
+            $opt['where'] = [];
+            $opt['field'] = ['id','email','nickname','url','expand','agent','article_id'];
+            $opt['limit'] = (!empty($param['limit'])) ? (int)$param['limit'] : 20;
+            $order = (empty($param['order'])) ? 'desc' : $param['order'];
+            
+            $data = CommentsModel::ExpandAll(null, $opt);
+            foreach ($data['data'] as $key => $val) {
+                $val['count'] = CommentsModel::where(['email'=>$val['email']])->count();
+            }
+            $data['data'] = $this->helper->BubbSort($data['data'], 'count', $order);
+            
+            Cache::tag(['comments'])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 获取属性评论
+    public function type($param)
+    {
+        $data  = [];
+        
+        $page  = (!empty($param['page']))  ? $param['page']  : 1;
+        $limit = (!empty($param['limit'])) ? $param['limit'] : 5;
+        $order = (!empty($param['order'])) ? $param['order'] : 'create_time desc';
+        $mode  = (empty($param['mode'])) ? false : $param['mode'];
+        $tree  = (empty($param['tree'])  or $param['tree']  == 'true') ? true : false;
+        $type  = (empty($param['type'])) ? null : $param['type'];
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        $opt = [
+            'tree'   =>  $tree,
+            'page'   =>  $page, 
+            'limit'  =>  $limit,
+            'order'  =>  $order,
+            'where'  =>  []
+        ];
+        
+        if (!empty($type)) $opt['where'] = ['pid'=>0,'type'=>$type];
+        
+        // 设置缓存名称
+        $cache_name = 'comments?page='.$page.'&limit='.$limit.'&order='.$order.'&mode='.$mode.'&type='.$type.'&tree='.$tree;
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            
+            $opt['where'] = ['type'=>$type,'pid'=>0];
+            $opt['order'] = 'create_time desc';
+            $order = (empty($param['order'])) ? 'desc' : $param['order'];
+            
+            $data = CommentsModel::ExpandAll(null, $opt);
+            
+            foreach ($data['data'] as $key => $val) {
+                // 解析自定义标签
+                $val->content = markdown::parse($val->content);
+            }
+            
+            // 找孙子
+            foreach ($data['data'] as $key => $val) $data['data'][$key]['son'] = CommentsModel::FindSon($val['id'], $tree);
+            // 冒泡排序
+            if (!$tree) foreach ($data['data'] as $key => $val) $data['data'][$key]['son'] = $this->helper->BubbSort($val['son'], 'create_time', $order);
+            
+            Cache::tag(['comments'])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
 }

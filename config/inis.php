@@ -25,5 +25,5 @@ return [
         'path'     =>  "storage/random-img/img.txt",    // 外链模式需要带.txt文件名（如：storage/random-img/img.txt）， 本地模式指向文件夹即可（如：storage/random-img/）
     ],
     
-    'version'      => '1.2.0',                          // inis 版本号 - 请不要自行更改，后果自负
+    'version'      => '1.2.1',                          // inis 版本号 - 请不要自行更改，后果自负
 ];
