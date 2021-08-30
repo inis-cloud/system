@@ -159,6 +159,17 @@
                             }
                       },
                       {
+                            hotkey: "",
+                            name: "album",
+                            tipPosition: "s",
+                            tip: "插入评论可见",
+                            className: "right",
+                            icon: `<img style="margin: -4px 0 0 -6px;" src='/index/assets/svg/comments.svg' height="16" />`,
+                            click: () => {
+                                this.contentEditor.insertValue('[hide]\n此处为评论可见内容\n[/hide]')
+                            }
+                      },
+                      {
                           hotkey: "",
                           name: "doubt",
                           tipPosition: "s",

@@ -58,7 +58,7 @@ class VerifyCode extends Base
                 if (!$users->isEmpty()) {
                     $code = 412;
                     $msg  = '邮箱已存在！';
-                } elseif(!$verify_code->isEmpty()){
+                } else if (!$verify_code->isEmpty()) {
                     
                     // 验证码已经存在，避免重复记录
                     $verify_code->code = $chars;

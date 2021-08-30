@@ -15,14 +15,39 @@ class Article extends Model
     protected $deleteTime = 'delete_time';
     
     // 封装拓展字段数据 - 返回全部
-    public static function ExpandAll($id = null, array $opt = [])
+    public static function ExpandAll($id = null, array $opt = [], $user = [])
     {
         // 第二参数默认配置
-        $config = ['page'=>1,'limit'=>5,'order'=>'create_time desc','withoutField'=>['content'],'whereOr'=>[],'where'=>['is_show'=>1,'delete_time'=>null]];
+        $config = ['page'=>1,'limit'=>5,'order'=>'create_time desc','withoutField'=>['content'],'whereOr'=>[],'where'=>['is_show'=>1,'delete_time'=>null],
+            'is_all'=>true,'token'=>[]
+        ];
         
         // 重组第二参数
         foreach ($config as $key => $val) if(!in_array($key,$opt)) $config[$key] = $val;
         foreach ($opt as $key => $val) $config[$key] = $val;
+        
+        // 屏蔽登录可见 - 自己可见
+        if (empty($config['token']) and !$config['is_all']) {
+            $config['where'][] = function ($query) {
+                $map1 = ['opt->auth','<>','login'];
+                $map2 = ['opt->auth','<>','private'];
+                $map3 = ['opt','=',null];
+                $query->where([$map1, $map2])->whereOr([$map3]);
+            };
+        } else if (isset($config['token']['code']) and $config['token']['code'] == 200) {
+            // 登录之后的数据
+            $uid = $config['token']['data']['id'];
+            
+            $config['where'][] = function ($query) use ($uid) {
+                $map1 = ['opt->auth','=','private'];        // 自己可见的数据
+                $map2 = ['users_id','=',$uid];              // 属于自己的文章
+                $map3 = ['opt','=',null];                   // 未定义权限的数据
+                $map4 = ['opt->auth','=','anyone'];         // 公开的数据
+                $map5 = ['opt->auth','=','login'];          // 登录可见的数据
+                $map6 = ['opt->auth','=','password'];       // 密码可见的数据
+                $query->whereOr([[$map1,$map2], $map3, $map4, $map5, $map6]);
+            };
+        }
         
         // 文章总数量
         $count  = count(self::whereOr($config['whereOr'])->where($config['where'])->field(['id'])->select());
@@ -30,9 +55,11 @@ class Article extends Model
         $data['count']  = $count;
         
         // 防止分页请求超出页码
-        if($config['page'] > $data['page']) $config['page'] = $data['page'];
+        if ($config['page'] > $data['page']) $config['page'] = $data['page'];
         
         $article = self::withTrashed()->whereOr($config['whereOr'])->withAttr('expand',function ($value,$data) {
+            
+            $helper = new helper;
             
             $user = Users::field(['nickname','description','email','address_url','head_img','opt'])->findOrEmpty($data['users_id']);
             
@@ -88,9 +115,14 @@ class Article extends Model
             $value['comments'] = sizeof(Comments::where(['article_id'=>$data['id']])->field(['article_id'])->select());
             
             // 随机图 - 开启随机图 - 判断封面是否为空
-            $conf = Config::get('inis.random_img');
+            $conf = Config::get('inis.random.article');
+            
             if ($conf['enable']) {
-                $value['img_src'] = (!empty($data['img_src'])) ? $data['img_src'] : (new helper)->RandomImg($conf['type'],$conf['path']);
+                
+                // 判断是否存在唯一的随机数，防止返回随机结果一致
+                $path = (strpos($conf['path'], '?')) ? $conf['path'] . '&sole=' . $data['id'] : $conf['path'] . '?sole=' . $data['id'];
+                $value['img_src'] = (!empty($data['img_src'])) ? $data['img_src'] : $path;
+                
             } else $value['img_src'] = $data['img_src'];
             
             return $value;

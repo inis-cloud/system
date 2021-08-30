@@ -41,12 +41,14 @@ class handle
         // 需要校验登录请求方式
         $method = ['POST','PUT','DELETE'];
         // 允许免登陆的请求接口
-        $obtain = ['search','comments','verify-code'];
+        $obtain = ['search','comments','verify-code','test'];
         $allow  = ['users?mode=login','users?mode=register'];
         // 请求接口地址
         $path   = $request->pathinfo();
         
         $mode   = !empty($param['mode']) ? $param['mode'] : null;
+        
+        $request->param = 'ThinkPHP';
         
         // ↑↑↑ 前置中间件执行区域 ↑↑↑
         $reponse = $next($request);

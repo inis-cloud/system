@@ -84,7 +84,8 @@
                     preview: {
                         hljs: {
                             enable: true,       // 启用代码高亮
-                            lineNumber: true    // 启用行号
+                            lineNumber: true,   // 启用行号
+                            // style: 'monokai',   // 样式
                         },
                         markdown:{
                             autoSpace: true,    // 自动空格
@@ -92,6 +93,7 @@
                             toc: true,          // 插入目录
                             paragraphBeginningSpace: true,  // 首行缩进二字符
                             sanitize: true,     // 启用过滤 XSS
+                            // mark: true,         // 	启用 mark 标记
                         }
                     },
                     // 编辑器异步渲染完成后的回调方法
@@ -174,6 +176,17 @@
                             icon: `<img style="margin: -4px 0 0 -6px;" src='/index/assets/svg/album.svg' height="16" />`,
                             click: () => {
                                 this.contentEditor.insertValue('[album]\n支持Markdown格式和HTML格式的图片\n[/album]')
+                            }
+                      },
+                      {
+                            hotkey: "",
+                            name: "album",
+                            tipPosition: "s",
+                            tip: "插入评论可见",
+                            className: "right",
+                            icon: `<img style="margin: -4px 0 0 -6px;" src='/index/assets/svg/comments.svg' height="16" />`,
+                            click: () => {
+                                this.contentEditor.insertValue('[hide]\n此处为评论可见内容\n[/hide]')
                             }
                       },
                       {
@@ -289,26 +302,44 @@
                         
                         this.article = res.data.data
                         
-                        if(!inisHelper.is.empty(id)){
+                        let auth = [{id:"anyone",text:"公开"},{id:"private",text:"自己可见"},{id:"login",text:"登录可见"},{id:"password",text:"密码可见"}]
+                        
+                        if (!inisHelper.is.empty(id)) {
                             
                             this.edit = res.data.data.article
                             // 设置编辑器初始值
                             this.contentEditor.setValue(this.edit.content)
                             
                             // 标签和分类数据转数组
-                            if(inisHelper.is.empty(this.article.article.tag_id)) this.tags   = ''
+                            if (inisHelper.is.empty(this.article.article.tag_id)) this.tags   = ''
                             else {
                                 this.tags  = this.article.article.tag_id.split("|");
                                 // 过滤空字段
                                 this.tags  = this.tags.filter((s)=>{ return s && s.trim() })
                             }
-                            if(inisHelper.is.empty(this.article.article.sort_id)) this.sorts = ''
+                            if (inisHelper.is.empty(this.article.article.sort_id)) this.sorts = ''
                             else {
                                 this.sorts = this.article.article.sort_id.split("|");
                                 // 过滤空字段
                                 this.sorts = this.sorts.filter((s)=>{ return s && s.trim() })
                             }
+                            
                             $("#article-auth").empty()
+                            
+                            let opt = this.article.article.opt
+                            
+                            // select2 文章权限 初始化
+                            if (!inisHelper.is.empty(opt)) {
+                                if (!inisHelper.is.empty(opt.auth)) {
+                                    auth.forEach(item=>{
+                                        if (item.id == opt.auth) {
+                                            item.selected = true
+                                            this.pwd_input_show = (item.id === "password") ? true : false
+                                        }
+                                    })
+                                }
+                                this.opt = opt
+                            }
                         }
                         
                         // 处理分类数据
@@ -334,11 +365,11 @@
                             // tags: true,  // 有输入法冲突BUG
                             data: this.article.tag,
                         })
+                        
                         // select2 文章权限 初始化
                         $("#article-auth").select2({
-                            // data: this.article.tag,
                             minimumResultsForSearch: Infinity,
-                            data: [{id:"anyone",text:"公开"},{id:"private",text:"自己可见"},{id:"login",text:"登录可见"},{id:"password",text:"密码可见"}]
+                            data: auth
                         })
                         
                         $('#article-auth').on('select2:select', (e) => {

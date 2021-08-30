@@ -117,6 +117,7 @@ class inisTemplate
                 // 初始化方法
                 initData(){
                     this.getVersion()
+                    this.checkDomain()
                 },
                 // 获取更新
                 getUpdate() {
@@ -127,9 +128,21 @@ class inisTemplate
                             this.official_version.update_time_nature = inisHelper.time.nature(this.official_version.update_time)
                             this.official_version.update_time = inisHelper.time.to.date(this.official_version.update_time)
                         }
-                    }).catch(err=>{
-                        this.genuine = false
-                        $.NotificationApp.send("警告！", "您非正版用户，无法获取更新，如有能力，请支持正版！<span class=\"badge badge-danger-lighten\"><a href=\"//inis.cc\" target=\"_blank\">inis 官网</span>", "top-right", "rgba(0,0,0,0.2)", "error");
+                    })
+                },
+                // 正版校验
+                checkDomain(){
+                    // 获取当前域名
+                    let domain = window.location.protocol+"//"+window.location.host;
+                    axios.get(this.official_api + 'check', {
+                        params: {domain}
+                    }).then(res=>{
+                        if (res.data.code == 200) {
+                            if (!res.data.data.status) {
+                                this.genuine = false
+                                $.NotificationApp.send("警告！", "您非正版用户，无法获取更新，如有能力，请支持正版！<span class=\"badge badge-danger-lighten\"><a href=\"//inis.cc\" target=\"_blank\">inis 官网</span>", "top-right", "rgba(0,0,0,0.2)", "error");
+                            }
+                        }
                     })
                 },
                 // 获取本地版本号

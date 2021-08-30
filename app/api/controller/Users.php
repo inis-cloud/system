@@ -5,11 +5,13 @@ namespace app\api\controller;
 
 use think\Request;
 use app\model\Log;
+use app\model\Options;
 use think\facade\Cache;
 use think\facade\Cookie;
 use think\facade\Session;
 use app\model\VerifyCode;
 use think\facade\Validate;
+
 
 use app\model\Users as UsersModel;
 use app\validate\Users as UsersValidate;
@@ -242,7 +244,7 @@ class Users extends Base
             $map1 = ['account', 'like', $param['account']];
             $map2 = ['email'  , 'like', $param['account']];
             
-            $users= UsersModel::whereOr([$map1,$map2])->withoutField(['account','phone','remarks'])->find();
+            $users= UsersModel::whereOr([$map1,$map2])->withoutField(['remarks'])->find();
             
             // 帐号自动锁定
             if ($this->config['login']['auto_lock_account'] and count($account_err) >= $this->config['login']['account_error_count']) {
@@ -372,9 +374,11 @@ class Users extends Base
         $data   = [];
         $code   = 400;
         $msg    = 'ok';
+        $time   = time();
         
         // 允许用户提交并存储的字段
-        $obtain = ['account','password','nickname','sex','email','phone','head_img','description','status','level','address_url','remarks'];
+        $obtain = ['account','password','nickname','sex','email','phone','head_img','description','address_url'];
+        if (in_array($user['data']->level, ['admin'])) array_push($obtain, 'level', 'status', 'remarks');
         
         if (empty($param['id'])) $users = new UsersModel;
         else $users = UsersModel::find((int)$param['id']);
@@ -386,12 +390,74 @@ class Users extends Base
         }
         
         // 权限判断
-        if (!in_array($user->level, ['admin'])) $msg = '无权限';
-        else if ($user->status != 1) $msg = '账号被禁用';
+        if ($user['data']->status != 1) $msg = '账号被禁用';
         else {
+            
             $code = 200;
-            $users->save();
+            
+            $email   = UsersModel::where(['email'=>$param['email']])->findOrEmpty();
+            $account = UsersModel::where(['account'=>$param['account']])->findOrEmpty();
+            
+            // 修改了自己的信息
+            if ($user['data']->id == (int)$param['id']) {
+                
+                // 修改了邮箱信息 - 任何人都有权限
+                if ($user['data']->email   != $param['email']) {
+                    
+                    $code = 400;
+                    
+                    if (!$email->isEmpty()) $msg  = '邮箱已存在！';
+                    else if (empty($param['code'])) {
+                        
+                        $code = 201;
+                        $msg  = $this->verifyCode($param['email']);
+                        
+                    } else if (!empty($param['code'])) {
+                        
+                        $verify = VerifyCode::where(['content'=>$param['email'],'code'=>$param['code']])->findOrEmpty();
+                        
+                        if (!$verify->isEmpty()) {
+                            
+                            if ($verify->end_time >= $time) {
+                                
+                                $code = 200;
+                                $msg  = '保存成功！';
+                                $verify->delete();
+                                
+                            } else $msg = '验证码已失效，请重新获取！';
+                            
+                        } else $msg = '无效验证码！';
+                    }
+                    
+                }
+                // 修改了帐号信息
+                if ($user['data']->account != $param['account'] and !$account->isEmpty()) {
+                    $code = 400;
+                    $msg  = '帐号已存在！';
+                }
+                
+                if ($code == 200) $users->save();
+                
+            } else {
+                
+                // 邮箱信息
+                if (!$email->isEmpty()) {
+                    $code = 400;
+                    $msg  = '邮箱已存在！';
+                }
+                // 帐号信息
+                if (!$account->isEmpty()) {
+                    $code = 400;
+                    $msg  = '帐号已存在！';
+                }
+                
+                if (in_array($user['data']->level, ['admin']) and $code == 200) $users->save();
+                else $msg = '无权限';
+            }
         }
+        
+        // 删除已失效的验证码
+        VerifyCode::where('end_time','<',$time)->delete();
         
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
     }
@@ -411,7 +477,7 @@ class Users extends Base
             $id = array_filter(explode(',', $id));
             
             // 存在该条数据
-            if (in_array($user->level, ['admin'])) {
+            if (in_array($user['data']->level, ['admin'])) {
                 
                 $code = 200;
                 UsersModel::destroy($id);
@@ -424,5 +490,70 @@ class Users extends Base
         }
         
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
+    }
+    
+    // 创建验证码
+    public function verifyCode($email)
+    {
+        $time = time();
+        
+        // 验证码有效时间
+        $valid_time  = $this->config['valid_time'];
+        $verify_code = VerifyCode::where(['types'=>'email','content'=>$email])->findOrEmpty();
+        $chars       = $this->helper->VerifyCode(6, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+        // 秒转人性化时间
+        $valid_time_str = $this->helper->NaturalSecond($valid_time);
+        
+        if (!$verify_code->isEmpty()) {
+            
+            // 验证码已经存在，避免重复记录
+            $verify_code->code     = $chars;
+            $verify_code->end_time = $time + $valid_time;
+            $verify_code->save();
+            
+        } else {
+            
+            // 验证码不存在，则新建验证码
+            $verify_code  = new VerifyCode;
+            $end_time     = $time + $valid_time;
+            $verify_code->save([
+                'code'    => $chars,
+                'types'   => 'email',
+                'content' => $email,
+                'end_time'=> $end_time
+            ]);
+        }
+        
+        $msg  = '验证码已发送至邮箱，'.$valid_time_str.'内有效！';
+        
+        $this->sendEmail($email,$chars,$valid_time_str);
+        
+        return $msg;
+    }
+    
+    // 发送邮箱通知
+    public function sendEmail($email,$code,$valid_time)
+    {
+        // 获取邮箱服务配置信息
+        $options  = Options::where(['keys'=>'email_serve'])->findOrEmpty();
+        // 获取邮箱模板
+        $template = Options::where(['keys'=>'email_template_3'])->findOrEmpty()['value'];
+        // 获取站点名称
+        $site     = Options::field(['value'])->where(['keys'=>'title'])->find()['value'];
+        // 获取站点地址
+        $domain   = $this->tool->domain();
+        // 当前时间
+        $time     = date("Y-m-d H:i:s",time());
+        
+        // 模板变量替换
+        $template = str_replace('{email}'  , $email , $template);
+        $template = str_replace('{code}'   , $code  , $template);
+        $template = str_replace('{site}'   , $site  , $template);
+        $template = str_replace('{time}'   , $time  , $template);
+        $template = str_replace('{domain}' , $domain, $template);
+        $template = str_replace('{valid_time}' , $valid_time, $template);
+        
+        // 发送评论信息到邮箱
+        $this->tool->sendMail($email,$site.'邮箱换绑验证码',$template);
     }
 }

@@ -2,6 +2,9 @@
 // +----------------------------------------------------------------------
 // | INIS 设置
 // +----------------------------------------------------------------------
+use inis\utils\helper;
+
+$helper = new helper;
 
 return [
     
@@ -18,11 +21,19 @@ return [
         'default_password'   =>  'inis666.',            // 默认密码，用于创建账号时未填写密码的默认值
     ],
     
-    // 文章随机图
-    'random_img'   =>  [
-        'enable'   =>  true,                            // 是否启用随机图
-        'type'     =>  "link",                          // 外链：link  本地：local
-        'path'     =>  "storage/random-img/img.txt",    // 外链模式需要带.txt文件名（如：storage/random-img/img.txt）， 本地模式指向文件夹即可（如：storage/random-img/）
+    // 随机接口配置
+    'random'    =>  [
+        // 文章随机图配置
+        'article'      =>  [
+            'enable'   =>  true,                         // 是否启用随机图
+            'path'     =>  $helper->domain() . '/api/file/random',  // $helper->domain() 获取的是当前域名    
+        ],
+        'path'         =>  'storage/random/',
+    ],
+    
+    // 官方授权系统
+    'official'     =>  [
+        'api'      =>  'https://inis.cc/api/'
     ],
     
     'version'      => '1.2.1',                          // inis 版本号 - 请不要自行更改，后果自负

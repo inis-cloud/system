@@ -296,7 +296,7 @@ class Method extends Base
                 // 判断字段是否允许存储，防提权
                 if (in_array($key, $obtain)) {
                     // 分类ID转字符串存储
-                    if($key == 'sort_id') $article->$key = '|'.implode("|",str_replace(',','|',$val)).'|';
+                    if ($key == 'sort_id') $article->$key = '|'.implode("|",str_replace(',','|',$val)).'|';
                     else if ($key == 'opt') $article->$key = json_encode($val, JSON_UNESCAPED_UNICODE);
                     else $article->$key = $val;
                 }
@@ -424,7 +424,7 @@ class Method extends Base
             $msg  = '错误！';
             
             // 允许用户提交并存储的字段
-            $obtain = ['name','description'];
+            $obtain = ['name','description','opt'];
             
             $param['name'] = $param['sort_name'];
             
@@ -442,7 +442,11 @@ class Method extends Base
                 else {
                     
                     // 存储数据 - 判断字段是否允许存储，防提权
-                    foreach ($param as $key => $val) if (in_array($key, $obtain)) $sort->$key = $val;
+                    foreach ($param as $key => $val) if (in_array($key, $obtain)) {
+                        if ($key == 'opt') {
+                            $sort->$key = json_encode($val, JSON_UNESCAPED_UNICODE);
+                        } else $sort->$key = $val;
+                    }
                     
                     $code = 200;
                     $msg  = '保存成功呀！';
@@ -450,7 +454,11 @@ class Method extends Base
             } else {
                 
                 // 存储数据 - 判断字段是否允许存储，防提权
-                foreach ($param as $key => $val) if (in_array($key, $obtain)) $sort->$key = $val;
+                foreach ($param as $key => $val) if (in_array($key, $obtain)) {
+                    if ($key == 'opt') {
+                        $sort->$key = json_encode($val, JSON_UNESCAPED_UNICODE);
+                    } else $sort->$key = $val;
+                }
                 
                 $code = 200;
                 $msg  = '保存成功呀！';
@@ -460,7 +468,11 @@ class Method extends Base
             else {
                 
                 // 存储数据 - 判断字段是否允许存储，防提权
-                foreach ($param as $key => $val) if (in_array($key, $obtain)) $sort->$key = $val;
+                foreach ($param as $key => $val) if (in_array($key, $obtain)) {
+                    if ($key == 'opt') {
+                        $sort->$key = json_encode($val, JSON_UNESCAPED_UNICODE);
+                    } else $sort->$key = $val;
+                }
                 
                 $code = 200;
                 $msg  = '保存成功！';

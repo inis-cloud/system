@@ -14,7 +14,7 @@ class api
     
     // 设置 header
     protected $header = [
-        'Access-Control-Allow-Credentials' => 'true',
+        'Access-Control-Allow-Credentials' => true,
         'Access-Control-Max-Age'           => 1800,
         'Content-Type'                     => 'application/json;charset=utf-8',
         'Access-Control-Allow-Methods'     => 'GET, POST, PATCH, PUT, DELETE, OPTIONS, PATCH',
@@ -47,10 +47,13 @@ class api
         $site_conf = Options::where(['keys'=>'site_conf'])->findOrEmpty();
         
         $domain = Options::where(['keys'=>'domain'])->findOrEmpty();
-        $domain = array_filter(explode(",", $domain->value));
+        $domain = (!$domain->isEmpty()) ? array_filter(explode(",", $domain->value)) : ['*'];
+        
+        // 获取请求API域名
+        $headers = $request->header();
         
         // 判断域名白名单是否为空
-        if(empty($site_conf->opt->domain) or empty($domain) or ($site_conf->opt->domain->status == 0) or in_array('*',$domain)){
+        if (empty($site_conf->opt->domain) or empty($domain) or ($site_conf->opt->domain->status == 0) or in_array('*',$domain)) {
             
             $header['Access-Control-Allow-Origin'] = '*';
             
@@ -58,19 +61,15 @@ class api
             
             $http_prefix = 'http://';
             
-            // 获取请求API域名
-            $request_header = $request->header();
-            
-            if(!empty($request_header['origin'])){
+            if (!empty($headers['origin'])) {
                 
-                $origin = $request_header['origin'];
+                $origin = $headers['origin'];
                 
-                if(strstr($origin, 'http://')) $origin = str_replace('http://','',$origin);
-                elseif(strstr($origin, 'https://')){
+                if (strstr($origin, 'http://')) $origin = str_replace('http://','',$origin);
+                else if (strstr($origin, 'https://')) {
                     
                     $http_prefix = 'https://';
                     $origin = str_replace('https://','',$origin);
-                    
                 }
                 
                 // 处理HTTP请求，中间件代码
@@ -96,6 +95,14 @@ class api
             (!empty($token)) ? $token : $token = (!empty($params['token'])) ? $params['token'] : null;
             
             if ($token != $site_conf->opt->token->value) $reponse = json($result);
+        }
+        
+        if (empty($site_conf->opt->domain) or empty($domain) or ($site_conf->opt->domain->status == 0) or in_array('*',$domain)) {
+            
+        } else {
+            // 防止代理
+            $origin = !empty($headers['origin']) ? str_replace(['https','http',':','//'], '', $headers['origin']) : null;
+            if (!in_array($origin, $domain)) return json($result);
         }
         
         // 回调本身并返回response对象

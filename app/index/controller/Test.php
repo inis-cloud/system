@@ -50,8 +50,18 @@ class Test
     
     public function index(Request $request)
     {
-        phpinfo();
+        // $data = $this->File->readFile('./storage/random-img/img.txt', true);
         
+        // $path = ['./storage/random-img/img.txt','./storage/random-img/test.txt'];
+        // $data = $this->File->read($path, true);
+        
+        $data = $this->File->listDirInfo('storage/random-img/',true,'txt');
+        
+        foreach ($data as $key => $val) {
+            if (strpos($val, '使用说明.txt')) unset($data[$key]);
+        }
+        
+        return json($data);
         
         
         

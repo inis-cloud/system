@@ -183,6 +183,7 @@
                     
                     let params = new FormData
                     params.append("file", file || '')
+                    params.append("mode", 'file')
                     params.append("id", this.edit.id || 0)
                     
                     const config = {

@@ -94,6 +94,7 @@ class Article extends Base
         $page    = (!empty($param['page']))   ? $param['page']  : 1;
         $limit   = (!empty($param['limit']))  ? $param['limit'] : 5;
         $order   = (!empty($param['order']))  ? $param['order'] : 'create_time desc';
+        $user    = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
         
         // 是否开启了缓存
         $api_cache = $this->config['api_cache'];
@@ -110,6 +111,8 @@ class Article extends Base
             'order'=> $order,
             'where'=> [],
             'whereOr'=> [],
+            'is_all'=>false,
+            'token'=>$user
         ];
         
         // 设置缓存名称
@@ -273,40 +276,81 @@ class Article extends Base
         $check = ArticleModel::find($param['id']);
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = Cache::get($cache_name);
         else {
             // 获取数据库数据
             if (empty($check)) $data = [];
             else $data = ArticleModel::ExpandAll((int)$param['id'], ['withoutField'=>null]);
-            Cache::tag(['article',$cache_name])->set($cache_name, json_encode($data));
+            $data = json_encode($data);
+            Cache::tag(['article',$cache_name])->set($cache_name, $data);
         }
+        
+        $data = json_decode($data, true);
         
         // 数据存在，文章数据转换
         if (!empty($check)) {
             if (empty($param['mode'])) $param['mode'] = 'html';
             // setBreaksEnabled(true) 自动换行 setMarkupEscaped(true) 转义HTML setUrlsLinked(false) 防止自动链接
-            if ($param['mode'] == 'html' || $param['mode'] == 'htm') $data->content = Parsedown::instance()->setUrlsLinked(false)->text($data->content);
+            if ($param['mode'] == 'html' || $param['mode'] == 'htm') $data['content'] = Parsedown::instance()->setUrlsLinked(false)->text($data['content']);
             // 解析自定义标签
-            $data->content = markdown::parse($data->content);
+            $data['content'] = markdown::parse($data['content']);
             // 转化时间戳
-            $data->last_update_time = date('Y-m-d H:i:s', (int)$data->last_update_time);
+            $data['last_update_time'] = date('Y-m-d H:i:s', (int)$data['last_update_time']);
         }
         
         if (!Validate::isInteger($param['id'])) $msg  = 'ID参数不合法！';
         else if (empty($data)) $code = 204;
         else {
             
-            $msg  = '数据请求成功！';
-            $code = 200;
-            // 浏览量自增
-            $this->visit($param);
+            // 权限判断，防止不合理获取数据
+            if (!empty($data['opt'])) {
+                    
+                    if ($data['opt']['auth'] == 'password') {
+                        
+                        if (empty($param['password'])) {
+                            $code = 403;
+                            $data = [];
+                            $msg  = '未经授权';
+                        } else if ($param['password'] != $data['opt']['password']) {
+                            $code = 403;
+                            $data = [];
+                            $msg  = '密码错误';
+                        } else {
+                            
+                            $msg  = '数据请求成功！';
+                            $code = 200;
+                            // 浏览量自增
+                            $this->visit($param);
+                        }
+                        
+                    } else if ((empty($user) or $user['code'] != 200) and ($data['opt']['auth'] == 'login' or $data['opt']['auth'] == 'private')) {
+                        
+                        $code = 403;
+                        $data = [];
+                        $msg  = '未经授权';
+                        
+                    } else {
+                        
+                        $msg  = '数据请求成功！';
+                        $code = 200;
+                        // 浏览量自增
+                        $this->visit($param);
+                    }
+                    
+            } else {
+                
+                $msg  = '数据请求成功！';
+                $code = 200;
+                // 浏览量自增
+                $this->visit($param);
+            }
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
     
     // 获取全部文章
-    public function all($param)
+    public function all($param, $user)
     {
         $data = [];
         $code = 400;
@@ -337,14 +381,15 @@ class Article extends Base
                 'page'   =>  (int)$param['page'], 
                 'limit'  =>  (int)$param['limit'],
                 'order'  =>  (string)$param['order'],
-                
                 'where'  =>  [
                     function ($query) use ($map1, $map2) {
                         $query->where([$map1])->whereOr([$map2]);
                     },
                     ['is_show','=',1],
                     ['delete_time','=',null],
-                ]
+                ],
+                'is_all'=>  false,
+                'token' =>  $user
             ];
             
             // 获取数据库数据
