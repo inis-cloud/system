@@ -4,6 +4,7 @@ namespace app\index\controller;
 
 use app\model\Options;
 use app\BaseController;
+use think\facade\Config;
 use app\index\middleware\LoginCheck;
 
 abstract class Base extends BaseController
@@ -12,7 +13,10 @@ abstract class Base extends BaseController
     
     public function initialize()
     {
+        $config = Config::get('inis');
+        
         // 定义模板路径
+        define('__CDN__'       , $config['official']['cdn']);
         define('__ASSETS__'    , '/index/assets/');
         define('__ADMIN_JS__'  , '/index/assets/js/');
         define('__ADMIN_CSS__' , '/index/assets/css/');

@@ -373,6 +373,85 @@ img.rounded-circle.img-thumbnail {
     75% { transform:scale(0.4);opacity: 0.2; }
 }
 
+#configure #other .domain-textarea{
+    -webkit-box-shadow: 0 0 35px 0 rgb(154 161 171 / 15%);
+    box-shadow: 0 0 35px 0 rgb(154 161 171 / 15%);
+}
+#manage-comments .table tr td:nth-child(3){
+    word-wrap: break-word;
+    word-break: break-all;
+}
+.un-focus{
+    box-shadow:unset!important;
+}
+
+.mask{width: 100%;height: 100%;background:#000;position: absolute;top: 0px;left:0px;opacity: 0.4;z-index: 8000; display: none;-moz-user-select: none; -webkit-user-select: none;}
+.pop-ups{width: 70%;background:#fff; position: absolute;z-index: 9000;display: none;}
+.pop-ups-head{cursor: move;}
+#ace-editor{width: 100%;height:60vh;}
+.ace_layer.ace_print-margin-layer{display:none}
+#box-narrow{display:none}
+.read-load{width: 100%;height: 100%;background:#000;position: absolute;top: 0px;left:0px;opacity: 0.4;z-index: 8000; display: none;-moz-user-select: none; -webkit-user-select: none;}
+.card-body.flex-center.load{z-index:9000;}
+.card-body.load .spinner-border{width:1.3em;height:1.3em;}
+.pop-ups .tool ul {display:flex;list-style: none;margin: 0;padding: 0;}
+.pop-ups .tool ul{
+    /*position: absolute;*/
+    /*left: 0;*/
+    /*right: 0;*/
+    /*top: 0;*/
+    height: 35px;
+    background: #565656;
+    transition: top 500ms;
+}
+.pop-ups .tool ul li{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    float: left;
+    height: 35px;
+    line-height: 35px;
+    padding: 0 15px;
+    font-size: 13px;
+    text-align: center;
+    color: #fff;
+    border-right: 1px solid #4c4c4c;
+    cursor: pointer;
+}
+.pop-ups .tool ul .spinner-border{
+    width: 1.1em;
+    height: 1.1em;
+    border: .2em solid currentColor;
+    display: inline-block;
+    vertical-align: text-bottom;
+    border-right-color: transparent;
+    border-radius: 50%;
+    -webkit-animation: spinner-border .75s linear infinite;
+    animation: spinner-border .75s linear infinite;
+}
+#filesystem .path-array{
+    display:flex;
+    overflow-x: auto;
+    width: 100%;
+}
+#filesystem .path-array button{flex:unset}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @media (max-width:768px){
     .upload {
         width: auto;
@@ -452,36 +531,12 @@ img.rounded-circle.img-thumbnail {
     #update-info .modal-body .alert{
         margin: .75em 0 0 0!important;
     }
+    #filesystem .path-array{
+        width: 60%;
+    }
+    #filesystem .other {
+        display: flex;
+        margin-top: 15px;
+        margin-left: -10px;
+    }
 }
-
-
-
-
-
-
-
-#configure #other .domain-textarea{
-    -webkit-box-shadow: 0 0 35px 0 rgb(154 161 171 / 15%);
-    box-shadow: 0 0 35px 0 rgb(154 161 171 / 15%);
-}
-#manage-comments .table tr td:nth-child(3){
-    word-wrap: break-word;
-    word-break: break-all;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -12,7 +12,7 @@ class FileSystem extends Base
     // 构造器
     public function __construct()
     {
-        $this->File = new File();
+        $this->File = new File;
     }
     
     /** 
@@ -26,6 +26,9 @@ class FileSystem extends Base
             
             // 被获取的路径
             $path = (empty($param['path'])) ? './' : $param['path'];
+            // 避免提权，强制定义当前目录 ./
+            $path = (empty(array_filter(explode('/', $path)))) ? './' : $path;
+            
             // 文件图片路径
             $ico_path = '/index/assets/svg/filesystem/';
             
@@ -227,6 +230,69 @@ class FileSystem extends Base
         }
         
         return $upload;
+    }
+    
+    /** 
+     * @name 读取文件内容
+     */
+    public function read(Request $request)
+    {
+        if ($request->isPost())
+        {
+            $param = $request->param();
+            
+            $data  = [];
+            $code  = 400;
+            $msg   = 'ok';
+            
+            $file_path = !empty($param['path']) ? $param['path'] : null;
+            
+            if (empty($file_path)) $msg = "文件路径不得为空！";
+            else {
+                
+                // 重新定义路径，防止提权
+                $path_array = array_filter(explode('/', $file_path));
+                $path_file  = implode('/', $path_array);
+                
+                $code = 200;
+                $data['data'] = $this->File->readFile($path_file);
+                $data['info'] = $this->File->listInfo($path_file);
+            }
+            
+            return $this->create($data,$code,$msg);
+        }
+    }
+    
+    /** 
+     * @name 写入文件内容
+     */
+    public function write(Request $request)
+    {
+        if ($request->isPost())
+        {
+            $param = $request->param();
+            
+            $data  = [];
+            $code  = 400;
+            $msg   = 'ok';
+            
+            $file_path = !empty($param['path']) ? $param['path'] : null;
+            $text = !empty($param['text']) ? $param['text'] : null;
+            
+            if (empty($file_path)) $msg = "文件路径不得为空！";
+            else {
+                
+                // 重新定义路径，防止提权
+                $path_array = array_filter(explode('/', $file_path));
+                $path_file  = implode('/', $path_array);
+                
+                $this->File->writeFile($path_file, $text);
+                
+                $code = 200;
+            }
+            
+            return $this->create($data,$code,$msg);
+        }
     }
     
     // END

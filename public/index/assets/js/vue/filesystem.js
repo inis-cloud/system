@@ -14,6 +14,7 @@
                 default_ico: '',        // 默认的文件图标
                 add_file_title: '',     // 新建文件或文件夹标题
                 add_file_type: true,    // true = 文件; false = 文件夹
+                show_path_array: true,  // 显示数组模式的路径
                 
                 preview: [],            // 上传预览队列
                 preview_length: 0,      // 剩余文件数量
@@ -24,6 +25,13 @@
                 await_count: 3,         // 允许同步上传数量
                 uploads_id : 0,         // 用于辨别上传文件的唯一性
                 uplpading_id: [],       // 记录已经开始或完成上传的文件ID，避免重复上传
+                
+                aceEditor: [],          // 编辑器
+                file_data: "",          // 文件数据
+                loading: {
+                    read_file: false,   // 读取文件动画
+                    save_file: false,   // 保存编辑文件动画
+                },
             }
         },
         components: {
@@ -37,6 +45,7 @@
             window.onload = this.load()
             // 获取初始化数据
             this.getData()
+            this.dialogbox()
             // 初始化默认的数据
             this.add_file_title = '新建文件'
             this.default_ico    = '/index/assets/svg/filesystem/other.svg'
@@ -44,11 +53,7 @@
         methods: {
             
             // 获取数据
-            getData(name,type,load) {
-                
-                name = name || ''
-                type = type || false
-                load = load || false
+            getData(name = '', type = false, load = false){
                 
                 let path = ''
                 
@@ -57,7 +62,9 @@
                     path = inisHelper.get.cookie('filesystem-path')
                     path = !inisHelper.is.empty(path) ? path : this.path
                     path = inisHelper.is.empty(name)  ? path : path + name + '/'
-                } else path = name
+                } else {
+                    path = (name.substr(name.length - 1, name.length) != '/') ? name + '/' : name
+                }
                 
                 let params = new FormData
                 params.append('path', path)
@@ -67,6 +74,15 @@
                         this.dir_info = res.data.data
                         inisHelper.set.cookie('filesystem-path',this.dir_info.path,5)
                         if (load == true) $.NotificationApp.send("", "刷新成功！", "top-right", "rgba(0,0,0,0.2)", "info");
+                        let [path, array, list] = ['', [], this.dir_info.path.split('/')]
+                        list.forEach((item, index)=>{
+                            if (!inisHelper.is.empty(item)) {
+                                path += item + '/'
+                                array.push({item, path})
+                            }
+                        })
+                        this.dir_info.array = array
+                        this.show_path_array = true
                     }
                 })
             },
@@ -84,10 +100,23 @@
             },
             
             // 双击事件
-            dblclick(name,type){
+            dblclick(name = this.mouse_menu.file_name, type = this.mouse_menu.type){
                 // 文件
                 if (type == 'file') {
-                    // console.log('this file name:', name)
+                    
+                    this.loading.read_file = true
+                    let params = new FormData
+                    let path   = this.dir_info.path
+                    
+                    params.append("path", path + name)
+                    
+                    axios.post("/index/file/read", params).then(res=>{
+                        if (res.data.code == 200) {
+                            this.file_data = res.data.data
+                            this.openDialog()
+                        } else $.NotificationApp.send("错误！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
+                        this.loading.read_file = false
+                    })
                 }
             },
             
@@ -183,7 +212,7 @@
                     if (res.data.code == 200) {
                         this.getData()
                         this.add_file_name = ''
-                        $.NotificationApp.send("", "创建成功！", "top-right", "rgba(0,0,0,0.2)", "success");
+                        $.NotificationApp.send("", "创建成功！", "top-right", "rgba(0,0,0,0.2)", "info");
                     }
                 })
             },
@@ -203,7 +232,7 @@
                 axios.post('/index/file/delFile', params).then(res=>{
                     if (res.data.code == 200) {
                         this.getData()
-                        $.NotificationApp.send("", "删除成功！", "top-right", "rgba(0,0,0,0.2)", "success");
+                        $.NotificationApp.send("", "删除成功！", "top-right", "rgba(0,0,0,0.2)", "info");
                     }
                 })
             },
@@ -413,6 +442,9 @@
     				        let mouse_item  = event.path[item].getAttribute('mouse-item')
     				        self.mouse_menu = self.dir_info.info[mouse_item].info
     				        self.mouse_menu.item = mouse_item
+    				        // 得到右键的文件数据
+    				        // console.log(self.mouse_menu)
+    				        // console.log(self.dir_info)
     				    }
     				    if (!inisHelper.is.empty(className)) arr.push(className.split(' '))
     				}
@@ -649,6 +681,202 @@
                     }
                 })
             },
+            
+            // 弹窗
+            dialogbox(){
+                
+                let popUps     = document.querySelector("#pop-ups")
+                let mask       = document.querySelector("#mask")
+                let popUpsDrag = document.querySelector("#pop-ups-drag")
+                let popUpsClose= document.querySelector("#pop-ups-close")
+                let boxFill    = document.querySelector("#box-fill")
+                let boxNarrow  = document.querySelector("#box-narrow")
+                let aceEditor  = document.querySelector("#ace-editor")
+                    
+                // 禁止选中对话框内容
+                if (document.attachEvent) {
+                    // ie的事件监听，拖拽div时禁止选中内容，firefox与chrome已在css中设置过-moz-user-select: none; -webkit-user-select: none;
+                    popUps.attachEvent('onselectstart', ()=>{
+                      return false;
+                    });
+                }
+                
+                // 声明需要用到的变量
+                let mx = 0,my = 0;      // 鼠标x、y轴坐标（相对于left，top）
+                let dx = 0,dy = 0;      // 对话框坐标（同上）
+                let isDraging = false;  // 不可拖动
+                
+                // 鼠标按下
+                popUpsDrag.addEventListener('mousedown',(e)=>{
+                    e  = e || window.event;
+                    mx = e.pageX;            // 点击时鼠标X坐标
+                    my = e.pageY;            // 点击时鼠标Y坐标
+                    dx = popUps.offsetLeft;
+                    dy = popUps.offsetTop;
+                    isDraging = true;        // 标记对话框可拖动
+                });
+    
+                // 鼠标移动更新窗口位置
+                document.onmousemove = (e) => {
+                    e = e || window.event;
+                    let x = e.pageX;                        // 移动时鼠标X坐标
+                    let y = e.pageY;                        // 移动时鼠标Y坐标
+                    if(isDraging){                          // 判断对话框能否拖动
+                        let moveX = dx + x - mx;            // 移动后对话框新的left值
+                        let moveY = dy + y - my;            // 移动后对话框新的top值
+                        let pageW = document.documentElement.clientWidth;
+                        let pageH = document.documentElement.clientHeight;
+                        let dialogW = popUps.offsetWidth;
+                        let dialogH = popUps.offsetHeight;
+                        let maxX = pageW - dialogW;         // X轴可拖动最大值
+                        let maxY = pageH - dialogH;         // Y轴可拖动最大值
+                        moveX = Math.min(Math.max(0,moveX),maxX);     // X轴可拖动范围
+                        moveY = Math.min(Math.max(0,moveY),maxY);     // Y轴可拖动范围
+                        popUps.style.left = moveX +'px';    // 重新设置对话框的left
+                        popUps.style.top  =  moveY +'px';   // 重新设置对话框的top
+                    };
+                };
+    
+                // 鼠标离开
+                popUpsDrag.addEventListener("mouseup", ()=>{
+                    isDraging = false;
+                }, true)
+    
+                // 点击关闭对话框
+                popUpsClose.addEventListener("click", ()=>{
+                    popUps.style.setProperty("display","none")
+                    mask.style.setProperty("display","none")
+                }, true)
+    
+                // 窗口大小改变时，对话框始终居中
+                window.onresize = () => {
+                    this.autoCenter(popUps);
+                };
+                
+                // 窗口全屏
+                boxFill.addEventListener("click", ()=>{
+                    popUps.style.setProperty("top", "0")
+                    popUps.style.setProperty("left", "0")
+                    popUps.style.setProperty("width", "100%")
+                    aceEditor.style.setProperty("height", "calc(100vh - 46px)")
+                    boxFill.style.setProperty("display", "none")
+                    boxNarrow.style.setProperty("display", "block")
+                    // 更改编辑器的大小
+                    this.aceEditor.resize()
+                }, true)
+                
+                // 窗口小屏
+                boxNarrow.addEventListener("click", ()=>{
+                    popUps.style.setProperty("width", "70%")
+                    aceEditor.style.setProperty("height", "60vh")
+                    boxFill.style.setProperty("display", "block")
+                    boxNarrow.style.setProperty("display", "none")
+                    this.autoCenter(popUps)
+                    // 更改编辑器的大小
+                    this.aceEditor.resize()
+                }, true)
+            },
+            
+            // 弹出对话框
+            openDialog(){
+                // 点击弹出对话框
+                let popUps     = document.querySelector("#pop-ups")
+                let mask       = document.querySelector("#mask")
+                popUps.style.setProperty("display","block")
+                mask.style.setProperty("display","block")
+                this.autoCenter(popUps);
+                
+                this.initAce();
+            },
+            
+            // 自动居中对话框
+            autoCenter(el){
+                
+                let bodyW = document.documentElement.clientWidth;
+                let bodyH = document.documentElement.clientHeight;
+                // 获取对话框宽、高
+                let elW = el.offsetWidth;
+                let elH = el.offsetHeight;
+    
+                el.style.left = (bodyW - elW) / 2 + 'px';
+                el.style.top  = (bodyH - elH) / 2 + 'px';
+            },
+            
+            // 初始化 ace 编辑器
+            initAce(){
+                let self = this
+                this.aceEditor = ace.edit("ace-editor");
+                // 启用提示菜单
+                ace.require("ace/ext/language_tools");
+                this.aceEditor.setOptions({
+                    wrap:"free",                        // 自动换行,设置为off关闭
+                    enableBasicAutocompletion: true,    // 自动提示语法
+                    enableSnippets: true,               // 自动提示语法
+                    enableLiveAutocompletion: true      // 代码补全
+                });
+                // 设置编辑器主题
+                this.aceEditor.setTheme("ace/theme/monokai");
+                // 设置字体大小
+                this.aceEditor.setFontSize(14);
+                // 设置编辑器内容
+                this.aceEditor.getSession().setValue(this.file_data.data)
+                // 设置编辑器语言
+                this.aceEditor.getSession().setMode("ace/mode/" + this.file_data.info.ext);
+                // 自定义命令或快捷键
+                this.aceEditor.commands.addCommand({
+                    // 命令名称
+                    name: 'save',
+                    // 快捷键
+                    bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
+                    exec: (editor) => {
+                        self.saveEditFile()
+                    },
+                    readOnly: true // false 只读模式
+                });
+            },
+            // 保存编辑文件
+            saveEditFile(){
+                this.loading.save_file = true
+                let params = new FormData
+                let path   = this.dir_info.path
+                
+                params.append("path", path + this.file_data.info.file_name)
+                params.append("text", this.aceEditor.getValue())
+                
+                axios.post("/index/file/write", params).then(res=>{
+                    if (res.data.code == 200) {
+                        $.NotificationApp.send("提示！", "保存成功！", "top-right", "rgba(0,0,0,0.2)", "info");
+                    } else $.NotificationApp.send("错误！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
+                    this.loading.save_file = false
+                })
+            },
+            // 刷新编辑文件
+            refreshEditFile(){
+                this.loading.read_file = true
+                let params = new FormData
+                let path   = this.dir_info.path
+                
+                params.append("path", path + this.file_data.info.file_name)
+                
+                axios.post("/index/file/read", params).then(res=>{
+                    if (res.data.code == 200) {
+                        this.file_data = res.data.data
+                        this.aceEditor.setValue(this.file_data.data)
+                    } else $.NotificationApp.send("错误！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
+                    this.loading.read_file = false
+                })
+            }
+        },
+        computed: {
+            file_data:{
+                get(){
+                    return this.file_data
+                },
+                set(value){
+                    if (value.info.ext == "js") value.info.ext = "javascript"
+                    else if (value.info.ext == "txt") value.info.ext = "text"
+                }
+            }
         },
         watch: {
             // 上传队列
