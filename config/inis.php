@@ -37,5 +37,5 @@ return [
         'cdn'      =>  'https://cdn.inis.cc/'           // 静态文件加速
     ],
     
-    'version'      => '1.2.5',                          // inis 版本号 - 请不要自行更改，后果自负
+    'version'      => '1.2.6',                          // inis 版本号 - 请不要自行更改，后果自负
 ];

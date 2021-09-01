@@ -106,13 +106,14 @@ class Article extends Base
         $msg  = 'ok';
         
         $opt  = [
-            'page' => $page,
-            'limit'=> $limit,
-            'order'=> $order,
-            'where'=> [],
-            'whereOr'=> [],
-            'is_all'=>false,
-            'token'=>$user
+            'page'   =>  $page,
+            'limit'  =>  $limit,
+            'order'  =>  $order,
+            'where'  =>  [],
+            'whereOr'=>  [],
+            'is_all' =>  false,
+            'token'  =>  $user,
+            'api'    =>  true
         ];
         
         // 设置缓存名称
@@ -389,7 +390,8 @@ class Article extends Base
                     ['delete_time','=',null],
                 ],
                 'is_all'=>  false,
-                'token' =>  $user
+                'token' =>  $user,
+                'api'   =>  true
             ];
             
             // 获取数据库数据

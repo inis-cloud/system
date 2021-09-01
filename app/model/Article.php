@@ -19,7 +19,7 @@ class Article extends Model
     {
         // 第二参数默认配置
         $config = ['page'=>1,'limit'=>5,'order'=>'create_time desc','withoutField'=>['content'],'whereOr'=>[],'where'=>['is_show'=>1,'delete_time'=>null],
-            'is_all'=>true,'token'=>[]
+            'is_all'=>true,'token'=>[],'api'=>false
         ];
         
         // 重组第二参数
@@ -139,8 +139,10 @@ class Article extends Model
         
         // 只有单条数据
         if (!empty($id) and is_numeric($id)) $result = $article[0];
-        else if (is_array($id)) $result = $article;
-        else $result = $data;
+        else if (is_array($id)) {
+            if ($config['api']) $result = $data;
+            else $result = $article;
+        } else $result = $data;
         
         return $result;
     }
