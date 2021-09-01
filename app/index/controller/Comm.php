@@ -27,9 +27,12 @@ class Comm extends BaseController
         $this->config = Config::get('inis');
         
         // 定义模板路径
-        define('__ADMIN_JS__', '/index/assets/js/');
-        define('__ADMIN_CSS__', '/index/assets/css/');
-        define('__ADMIN_IMG__', '/index/assets/images/');
+        // 定义模板路径
+        define('__CDN__'       , $this->config['official']['cdn']);
+        define('__VERSION__'   , $this->config['version']);
+        define('__ADMIN_JS__'  , '/index/assets/js/');
+        define('__ADMIN_CSS__' , '/index/assets/css/');
+        define('__ADMIN_IMG__' , '/index/assets/images/');
         define('__ADMIN_LIBS__', '/index/assets/libs/');
         
         // 配置站点信息

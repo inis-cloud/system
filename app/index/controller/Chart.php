@@ -54,7 +54,13 @@ class Chart extends Base
             $code  = 200;
             $msg   = 'ok';
             
-            $data['version'] = !empty($this->config['version']) ? $this->config['version'] : '1.0';
+            $official = [
+                'api'      =>  'https://inis.cc/api/',          // 用于检查更新
+                'cdn'      =>  'https://cdn.inis.cc/'           // 静态文件加速
+            ];
+            
+            $data['official']= !empty($this->config['official']) ? $this->config['official'] : $official;
+            $data['version'] = !empty($this->config['version'])  ? $this->config['version']  : '1.0';
             
             return $this->create($data,$code,$msg);
         }

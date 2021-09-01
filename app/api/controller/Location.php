@@ -119,7 +119,7 @@ class Location extends Base
         $cache_name = 'location?ip='.$ip;
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name), true);
         else {
             
             // 获取数据
@@ -163,7 +163,7 @@ class Location extends Base
         $cache_name = 'geocode?location='.$location;
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name), true);
         else {
             
             // 获取数据
@@ -176,7 +176,6 @@ class Location extends Base
             else $data = $result;
             
             Cache::tag(['gothe',$cache_name])->set($cache_name, json_encode($data));
-            
         }
         
         $code = 200;
@@ -211,7 +210,7 @@ class Location extends Base
         $cache_name = 'weather?city='.$adcode.'&type='.$type;
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name), true);
         else {
             
             // 获取数据

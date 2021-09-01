@@ -50,9 +50,6 @@ class Test
     
     public function index(Request $request)
     {
-        $data = $this->File->listInfo('./index.php');
-        return json($data);
-        
         
         
         

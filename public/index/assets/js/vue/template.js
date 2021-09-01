@@ -107,7 +107,13 @@ class inisTemplate
                     official_version: [],                               // 官方版本
                     is_show_update: false,                              // 显示更新
                     genuine: true,                                      // 正版
-                    official_api: 'https://inis.cc/api/',               // inis 官方API地址
+                    official: {                                         // 官方服务地址
+                        api:"https://inis.cc/api/",
+                        cdn:"https://cdn.inis.cc/",
+                    },
+                    loading: {                                          // 加载状态
+                        updating: false,                                // 更新中
+                    }
                 }
             },
             mounted() {
@@ -121,7 +127,7 @@ class inisTemplate
                 },
                 // 获取更新
                 getUpdate() {
-                    axios.get(this.official_api + 'version').then(res=>{
+                    axios.get(this.official.api + 'version').then(res=>{
                         if (res.data.code == 200) {
                             this.official_version = res.data.data
                             this.checkUpdate()
@@ -134,7 +140,7 @@ class inisTemplate
                 checkDomain(){
                     // 获取当前域名
                     let domain = window.location.protocol+"//"+window.location.host;
-                    axios.get(this.official_api + 'check', {
+                    axios.get(this.official.api + 'check', {
                         params: {domain}
                     }).then(res=>{
                         if (res.data.code == 200) {
@@ -149,6 +155,7 @@ class inisTemplate
                 getVersion(){
                     axios.post('/index/chart/version').then(res=>{
                         if (res.data.code == 200) {
+                            this.official     = res.data.data.official
                             this.self_version = res.data.data.version
                             this.getUpdate()
                         }
@@ -165,16 +172,17 @@ class inisTemplate
                 // 更新方法
                 update() {
                     this.updatePackage()
+                    this.loading.updating = true
                 },
                 // 获取更新包地址
                 updatePackage(){
                     
                     let params = {mode:'update'}
                     
-                    axios.get(this.official_api + 'download', {params}).then(res=>{
+                    axios.get(this.official.api + 'download', {params}).then(res=>{
                         if (res.data.code == 200) {
                             this.downloadUpdate(res.data.data.file)
-                        }
+                        } else this.loading.updating = false
                     })
                 },
                 // 下载更新包
@@ -186,7 +194,7 @@ class inisTemplate
                     axios.post('/index/handle/downloadUpdate', params).then(res=>{
                         if (res.data.code == 200) {
                             this.unzipUpdate()
-                        }
+                        } else this.loading.updating = false
                     })
                 },
                 // 解压更新
@@ -197,6 +205,7 @@ class inisTemplate
                             this.getVersion()
                             $.NotificationApp.send("提示！", "更新完成！", "top-right", "rgba(0,0,0,0.2)", "info");
                         }
+                        this.loading.updating = false
                     })
                 },
                 // 动态图标
@@ -346,7 +355,11 @@ class inisTemplate
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-dismiss="modal">取消</button>
-                            <button v-on:click="update()" v-if="is_show_update" type="button" class="btn btn-primary">立即更新</button>
+                            <button v-on:click="update()" v-if="is_show_update && !loading.updating" type="button" class="btn btn-primary">立即更新</button>
+                            <button v-if="is_show_update && loading.updating" type="button" class="btn btn-primary flex-center">
+                                <div class="spinner-border text-light mr-1" style="width: 1.3em;height: 1.3em;" role="status"></div>
+                                更新中...
+                            </button>
                             <button v-else-if="!is_show_update" type="button" class="btn btn-primary" data-dismiss="modal">知道了</button>
                         </div>
                     </div>
@@ -355,16 +368,7 @@ class inisTemplate
             </teleport>
             `
         }
-        // <h5 class="mt-0">
-        //                         <span class="float-left">
-        //                             最新版本：<span class="text-success">{{official_version.title}} - {{official_version.version}}</span>
-        //                         </span>
-        //                         <span class="float-right">
-        //                             更新时间：<span class="text-success">{{official_version.update_time}}</span>
-        //                         </span>
-        //                     </h5>
-                            
-        //                     <p v-html="official_version.content"></p>
+        
         const result = {top}
         
         return result[opt]

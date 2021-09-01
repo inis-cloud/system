@@ -17,6 +17,7 @@ abstract class Base extends BaseController
         
         // 定义模板路径
         define('__CDN__'       , $config['official']['cdn']);
+        define('__VERSION__'   , $config['version']);
         define('__ASSETS__'    , '/index/assets/');
         define('__ADMIN_JS__'  , '/index/assets/js/');
         define('__ADMIN_CSS__' , '/index/assets/css/');

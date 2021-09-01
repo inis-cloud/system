@@ -194,7 +194,19 @@
                     event.target.value = ''
                 }
             },
-        }
+        },
+        computed: {
+            article_sort:{
+                get:function(){
+                    return this.article_sort
+                },
+                set:function(value){
+                    value.sort.data.forEach(item=>{
+                        if (inisHelper.is.empty(item.opt)) item.opt = {"head_img":""}
+                    })
+                }
+            }
+        },
     }).mount('#manage-article-sort')
 
 }(window.jQuery);

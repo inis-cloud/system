@@ -26,27 +26,33 @@ class Article extends Model
         foreach ($config as $key => $val) if(!in_array($key,$opt)) $config[$key] = $val;
         foreach ($opt as $key => $val) $config[$key] = $val;
         
+        $auth = [
+            "self"     => [],   // 自己发布的文章
+            "empty"    => [],   // 未设置权限文章
+            "anyone"   => [],   // 公开权限的文章
+            "private"  => [],   // 自己可见的文章
+            "password" => [],   // 密码可见的文章
+        ];
+        $uid  = (isset($config['token']['code']) and $config['token']['code'] == 200) ? $config['token']['data']['id'] : null;
+        $opt  = Article::field(['id','opt'])->select();
+        
+        foreach ($opt as $val) {
+            if (empty($val['opt'])) $auth['empty'][] = $val['id'];
+            else {
+                if ($val['opt']['auth'] == 'anyone') $auth['anyone'][] = $val['id'];
+                else if ($val['opt']['auth'] == 'password') $auth['password'][] = $val['id'];
+                else if ($val['opt']['auth'] == 'private') $auth['private'][] = $val['id'];
+            }
+            if ($val['users_id'] == $uid) $auth['self'][] = $val['id'];
+        }
+        
         // 屏蔽登录可见 - 自己可见
         if (empty($config['token']) and !$config['is_all']) {
-            $config['where'][] = function ($query) {
-                $map1 = ['opt->auth','<>','login'];
-                $map2 = ['opt->auth','<>','private'];
-                $map3 = ['opt','=',null];
-                $query->where([$map1, $map2])->whereOr([$map3]);
-            };
+            // 数组合并去重
+            $id = array_unique(array_merge($auth['anyone'], $auth['empty'], $auth['password']));
         } else if (isset($config['token']['code']) and $config['token']['code'] == 200) {
-            // 登录之后的数据
-            $uid = $config['token']['data']['id'];
-            
-            $config['where'][] = function ($query) use ($uid) {
-                $map1 = ['opt->auth','=','private'];        // 自己可见的数据
-                $map2 = ['users_id','=',$uid];              // 属于自己的文章
-                $map3 = ['opt','=',null];                   // 未定义权限的数据
-                $map4 = ['opt->auth','=','anyone'];         // 公开的数据
-                $map5 = ['opt->auth','=','login'];          // 登录可见的数据
-                $map6 = ['opt->auth','=','password'];       // 密码可见的数据
-                $query->whereOr([[$map1,$map2], $map3, $map4, $map5, $map6]);
-            };
+            // 数组合并去重
+            $id = array_unique(array_merge($auth['private'], $auth['self'], $auth['empty'], $auth['anyone'], $auth['login'], $auth['password']));
         }
         
         // 文章总数量
@@ -258,7 +264,7 @@ class Article extends Model
     // OPT字段获取器 - 获取前修改
     public function getOptAttr($value)
     {
-        $value = (!empty($value)) ? json_decode((is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value)) : $value;
+        $value = (!empty($value)) ? json_decode((is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value), true) : $value;
         return $value;
     }
 }
