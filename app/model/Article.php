@@ -28,6 +28,7 @@ class Article extends Model
         
         $auth = [
             "self"     => [],   // 自己发布的文章
+            "login"    => [],   // 登录可见的文章
             "empty"    => [],   // 未设置权限文章
             "anyone"   => [],   // 公开权限的文章
             "private"  => [],   // 自己可见的文章
@@ -39,11 +40,13 @@ class Article extends Model
         foreach ($opt as $val) {
             if (empty($val['opt'])) $auth['empty'][] = $val['id'];
             else {
-                if ($val['opt']['auth'] == 'anyone') $auth['anyone'][] = $val['id'];
+                if ($val['opt']['auth'] == 'anyone')        $auth['anyone'][]   = $val['id'];
                 else if ($val['opt']['auth'] == 'password') $auth['password'][] = $val['id'];
-                else if ($val['opt']['auth'] == 'private') $auth['private'][] = $val['id'];
+                else if ($val['opt']['auth'] == 'login')    $auth['login'][]    = $val['id'];
+                else if ($val['opt']['auth'] == 'private')  {
+                    if ($val['users_id'] == $uid) $auth['private'][]  = $val['id'];
+                }
             }
-            if ($val['users_id'] == $uid) $auth['self'][] = $val['id'];
         }
         
         // 屏蔽登录可见 - 自己可见

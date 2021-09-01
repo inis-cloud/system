@@ -104,6 +104,7 @@ class Article extends Base
         $data = [];
         $code = 200;
         $msg  = 'ok';
+        $uid  = null;
         
         $opt  = [
             'page'   =>  $page,
@@ -116,8 +117,11 @@ class Article extends Base
             'api'    =>  true
         ];
         
+        // 防止登录后有权限的文章不隐藏
+        if (!empty($user)) if (!empty($user['code']) == 200) $uid = $user['data']['id'];
+        
         // 设置缓存名称
-        $cache_name = 'article/sql?page='.$page.'&limit='.$limit.'&order='.$order.'&where='.$where.'&whereOr='.$whereOr;
+        $cache_name = 'article/sql?page='.$page.'&limit='.$limit.'&order='.$order.'&where='.$where.'&whereOr='.$whereOr.'&uid='.$uid;
         
         // SQL API
         if ($id == 'sql') {
@@ -356,6 +360,7 @@ class Article extends Base
         $data = [];
         $code = 400;
         $msg  = 'ok';
+        $uid  = null;
         
         if (empty($param['page']))  $param['page']  = 1;
         if (empty($param['limit'])) $param['limit'] = 5;
@@ -371,8 +376,11 @@ class Article extends Base
         $map1   = ['title'   , 'like', '%'.$search.'%'];
         $map2   = ['content' , 'like', '%'.$search.'%'];
         
+        // 防止登录后有权限的文章不隐藏
+        if (!empty($user)) if (!empty($user['code']) == 200) $uid = $user['data']['id'];
+        
         // 设置缓存名称
-        $cache_name = 'article?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'].'&search='.$search;
+        $cache_name = 'article?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'].'&search='.$search.'&uid='.$uid;
         
         // 检查是否存在请求的缓存数据
         if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
