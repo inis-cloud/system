@@ -658,7 +658,7 @@ class Handle extends Base
             
             $url = (!empty($param['file_path'])) ? $param['file_path'] : null;
             
-            $this->File->download($url,'../','inis update.zip',0);
+            $this->File->downloadFile($url, '../', 'inis update.zip');
             
             return $this->create($data,$code,$msg);
         }
@@ -685,11 +685,17 @@ class Handle extends Base
                 // 关闭zip文件
                 $zip->close();
                 
-                if (!empty($DBUPDATE)) {
-                    // 执行额外SQL语句
-                    if (!empty($DBUPDATE['query'])) foreach ($DBUPDATE['query'] as $val) Db::execute($val);
-                    // 导入数据
-                    if (!empty($DBUPDATE['data']))  foreach ($DBUPDATE['data']  as $key => $val) Db::name($key)->limit(1)->insertAll($val);
+                try {
+                    
+                    if (!empty($DBUPDATE)) {
+                        // 执行额外SQL语句
+                        if (!empty($DBUPDATE['query'])) foreach ($DBUPDATE['query'] as $val) Db::execute($val);
+                        // 导入数据
+                        if (!empty($DBUPDATE['data']))  foreach ($DBUPDATE['data']  as $key => $val) Db::name($key)->limit(1)->insertAll($val);
+                    }
+                    
+                } catch (\Exception $e) {
+                    $msg = $e->getMessage();
                 }
             }
             

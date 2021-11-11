@@ -26,8 +26,14 @@ class FileSystem extends Base
             
             // 被获取的路径
             $path = (empty($param['path'])) ? './' : $param['path'];
-            // 避免提权，强制定义当前目录 ./
-            $path = (empty(array_filter(explode('/', $path)))) ? './' : $path;
+            
+            // 避免提权，强制定义当前目录 ./ - 防跨站
+            $path = explode('/', $path);
+            // 过滤返回上一级操作
+            foreach ($path as $key => $val) if ($val == '..') unset($path[$key]);
+            // 过滤空数组并合并数组
+            $path = implode('/', array_merge(array_filter($path)));
+            $path = (empty($path)) ? './' : $path . '/';
             
             // 文件图片路径
             $ico_path = '/index/assets/svg/filesystem/';

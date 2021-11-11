@@ -12,6 +12,7 @@ use app\model\Users;
 use app\model\Links;
 use Metowolf\Meting;
 use inis\music\Music;
+use app\model\Placard;
 use Firebase\JWT\JWT;
 use inis\utils\File;
 use inis\utils\helper;
@@ -48,9 +49,72 @@ class Test
         $this->config = Config::get('inis');
     }
     
+    /*
+     * 保存文件方法
+     */
+    public function saveFile($url, $file, $path = './', $filename = '')
+    {
+        if (empty($filename)) $filename = pathinfo($url, PATHINFO_BASENAME);
+        // $filename = pathinfo($url, PATHINFO_BASENAME);
+        $resource = fopen($path . $filename, 'a');
+        fwrite($resource, $file);
+        fclose($resource);
+    }
+    
+    /*
+     * 下载文件方法 - 比上面的下载方法好用
+     */
+    public function downloadFile($url, $path = './', $filename = '')
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+        // 避免https 的ssl验证
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSLVERSION, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $file = curl_exec($ch);
+        if (curl_exec($ch) === false) echo 'Curl error: ' . curl_error($ch);
+        curl_close($ch);
+        $this->saveFile($url, $file, $path, $filename);
+    }
+    
+    // 保存文件方法
+    public function saveAsImage($url, $file, $path)
+    {
+        $filename = pathinfo($url, PATHINFO_BASENAME);
+        $resource = fopen($path . $filename, 'a');
+        fwrite($resource, $file);
+        fclose($resource);
+    }
+     
+    // 下载文件方法
+    public function downloadImage($url, $path)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+        //避免https 的ssl验证
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSLVERSION, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $file = curl_exec($ch);
+        if(curl_exec($ch) === false) echo 'Curl error: ' . curl_error($ch);
+        curl_close($ch);
+        $this->saveAsImage($url, $file, $path);
+    }
+    
     public function index(Request $request)
     {
+        $url = 'https://inis.cc/storage/sql/inis.sql';
         
+        $res = $this->File->downloadFile($url, './');
+        
+        return json($res);
         
         
         

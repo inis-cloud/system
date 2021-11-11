@@ -465,6 +465,7 @@ class inisTemplate
                             <ul class="side-nav-second-level" aria-expanded="false">
                                 <li><a href="/index/ManageBanner">管理轮播</a></li>
                                 <li><a href="/index/music">管理音乐</a></li>
+                                <li><a href="/index/placard">管理公告</a></li>
                             </ul>
                         </li>
                         

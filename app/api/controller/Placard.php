@@ -3,14 +3,11 @@ declare (strict_types = 1);
 
 namespace app\api\controller;
 
-use Parsedown;
 use think\Request;
-use app\model\Visit;
 use think\facade\Cache;
-use inis\utils\markdown;
-use app\model\Page as PageModel;
+use app\model\Placard as PlacardModel;
 
-class Page extends Base
+class Placard extends Base
 {
     /**
      * 显示资源列表
@@ -31,7 +28,7 @@ class Page extends Base
         // 存在的方法
         $method = ['one','all'];
         
-        $mode   = (empty($param['id']) and empty($param['alias'])) ? 'all' : 'one';
+        $mode   = (empty($param['id'])) ? 'all' : 'one';
         
         // 动态方法且方法存在
         if (in_array($mode, $method)) $result = $this->$mode($param);
@@ -49,7 +46,30 @@ class Page extends Base
      */
     public function save(Request $request)
     {
-        //
+        // // 获取请求参数
+        // $param = $request->param();
+        
+        // $data   = [];
+        // $code   = 400;
+        // $msg    = '参数不存在！';
+        // $result = [];
+        
+        // $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
+        
+        // // 存在的方法
+        // $method = ['saves','remove'];
+        
+        // $mode   = !empty($param['mode']) ? $param['mode']  : 'saves';
+        
+        // // 动态方法且方法存在
+        // if (in_array($mode, $method)) $result = $this->$mode($param,$user);
+        // // 动态返回结果
+        // if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        // // 清除缓存
+        // Cache::tag('links')->clear();
+        
+        // return $this->create($data, $msg, $code);
     }
 
     /**
@@ -87,7 +107,7 @@ class Page extends Base
         ];
         
         // 设置缓存名称
-        $cache_name = 'page/sql?page='.$page.'&limit='.$limit.'&order='.$order.'&where='.$where.'&whereOr='.$whereOr;
+        $cache_name = 'placard/sql?page='.$page.'&limit='.$limit.'&order='.$order.'&where='.$where.'&whereOr='.$whereOr;
         
         // SQL API
         if ($id == 'sql') {
@@ -123,8 +143,8 @@ class Page extends Base
             // 检查是否存在请求的缓存数据
             if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
             else {
-                $data = PageModel::ExpandAll(null, $opt);
-                Cache::tag(['page',$cache_name])->set($cache_name, json_encode($data));
+                $data = PlacardModel::ExpandAll(null, $opt);
+                Cache::tag(['placard',$cache_name])->set($cache_name, json_encode($data));
             }
         }
         
@@ -161,33 +181,21 @@ class Page extends Base
         $code = 400;
         $msg  = '无数据';
         
-        $id    = (!empty($param['id']))    ? $param['id']    : "";
-        $alias = (!empty($param['alias'])) ? $param['alias'] : "";
-        
         // 是否开启了缓存
         $api_cache = $this->config['api_cache'];
         // 是否获取缓存
         $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         
         // 设置缓存名称
-        $cache_name = 'page?id='.$id.'&alias='.$alias;
+        $cache_name = 'placard?id='.$param['id'];
         
         // 检查是否存在请求的缓存数据
         if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
         else {
             // 获取数据库数据
-            if (!empty($id)) $data = PageModel::ExpandAll($id);
-            else $data = PageModel::ExpandAll(null, ['where'=>['alias'=>$alias]])['data'][0];
-            Cache::tag(['page',$cache_name])->set($cache_name, json_encode($data));
+            $data = PlacardModel::ExpandAll($param['id']);
+            Cache::tag(['placard',$cache_name])->set($cache_name, json_encode($data));
         }
-        
-        // 解析markdown语法
-        $data->content = Parsedown::instance()->setUrlsLinked(false)->text($data->content);
-        // 解析自定义标签
-        $data->content = markdown::parse($data->content);
-        
-        // 浏览量自增
-        $this->visit($param);
         
         $code = 200;
         $msg  = '无数据！';
@@ -218,19 +226,18 @@ class Page extends Base
             'page'   =>  (int)$param['page'], 
             'limit'  =>  (int)$param['limit'],
             'order'  =>  (string)$param['order'],
-            'withoutField'=>['content']
         ];
         
         // 设置缓存名称
-        $cache_name = 'page?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
+        $cache_name = 'placard?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
         
         // 检查是否存在请求的缓存数据
         if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
         else {
             
             // 获取数据库数据
-            $data = PageModel::ExpandAll(null, $opt);
-            Cache::tag(['page'])->set($cache_name, json_encode($data));
+            $data = PlacardModel::select();
+            Cache::tag(['placard'])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
@@ -242,34 +249,66 @@ class Page extends Base
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
     
-    // 记录浏览量
-    public function visit($param)
+    // 新增或者修改数据
+    public function saves($param, $user)
     {
-        if (!empty($param['alias'])) $page = PageModel::where(['alias'=>$param['alias']])->field(['id'])->findOrEmpty();
+        // $data   = [];
+        // $code   = 400;
+        // $msg    = 'ok';
         
-        $id = (!empty($param['id'])) ? (int)$param['id'] : $page->id;
+        // // 允许用户提交并存储的字段
+        // $obtain = ['name','url','head_img','description','sort_id','is_show'];
         
-        $today = strtotime(date('Y-m-d',time()));
+        // if (empty($param['id'])) $links = new LinksModel;
+        // else $links = LinksModel::find((int)$param['id']);
         
-        $visit = Visit::where(['create_time'=>$today])->findOrEmpty();
-        if ($visit->isEmpty()) {
-            $visit = new Visit;
-            $visit->opt = json_encode(['article'=>[],'page'=>[]]);
-            $visit->create_time = $today;
-        }
+        // // 解决 TP6 抢占 name 参数的问题
+        // if (!empty($param['named'])) $param['name'] = $param['named'];
         
-        if (!empty($visit->opt)) $opt = json_decode($visit->opt);
+        // // 存储数据
+        // foreach ($param as $key => $val) {
+        //     // 判断字段是否允许存储，防提权
+        //     if (in_array($key, $obtain)) $links->$key = $val;
+        // }
         
-        if (!isset($opt->page)) $opt->page = [['id'=>$id,'visit'=>1]];
-        else {
+        // // 权限判断
+        // if (!in_array($user['data']->level, ['admin'])) $msg = '无权限';
+        // else if ($user['data']->status != 1) $msg = '账号被禁用';
+        // else {
+        //     $code = 200;
+        //     $links->save();
+        // }
+        
+        // return ['data'=>$data,'msg'=>$msg,'code'=>$code];
+    }
+    
+    // 删除数据
+    public function remove($param, $user)
+    {
+        // $data = [];
+        // $code = 400;
+        // $msg  = 'ok';
+        
+        // $id = !empty($param['id']) ? $param['id']  : null;
+        
+        // if (empty($id)) $msg = '请提交 id';
+        // else {
             
-            if ($this->helper->InArray(['id',$id], $opt->page)) foreach ($opt->page as $key => $val) {
-                if ($val->id == $id) $val->visit += 1;
-            } else $opt->page[] = ['id'=>$id,'visit'=>1];
-        }
+        //     $id = array_filter(explode(',', $id));
+            
+        //     // 存在该条数据
+        //     if (in_array($user['data']->level, ['admin'])) {
+                
+        //         $code = 200;
+        //         LinksModel::destroy($id);
+                
+        //     } else {
+                
+        //         $code = 403;
+        //         $msg  = '无权限';
+        //     }
+        // }
         
-        $visit->opt = json_encode($opt);
-        
-        $visit->save();
+        // return ['data'=>$data,'msg'=>$msg,'code'=>$code];
     }
 }

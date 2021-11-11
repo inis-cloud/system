@@ -67,7 +67,7 @@ class Handle extends BaseController
             $url = (!empty($param['file_path'])) ? $param['file_path'] : null;
             // 先删除原来的数据库文件
             $this->File->unlinkFile('storage/runtime/db.sql');
-            $this->File->download($url,'storage/runtime','db.sql');
+            $this->File->downloadFile($url, './storage/runtime/', 'db.sql');
             
             return $this->create($data,$code,$msg);
         }

@@ -4,7 +4,7 @@
 
 </head>
 <? require(dirname(dirname(__FILE__)).'/public/body.html'); ?>
-    <div class="wrapper" id="music">
+    <div class="wrapper" id="placard">
         
         <!-- 侧边栏 - 开始 -->
         <i-left-side></i-left-side>
@@ -45,7 +45,7 @@
                                         </a>
                                     </form>
                                 </div>
-                                <h4 class="page-title">音乐管理</h4>
+                                <h4 class="page-title">管理公告</h4>
                             </div>
                         </div>
                     </div>
@@ -61,17 +61,17 @@
                                             <div class="card-body pt-0 pb-0">
                                                 <div class="app-search d-block">
                                                     <div class="input-group">
-                                                        <input v-model="search_value" v-on:keyup.enter.native="initData('','',true)" type="text" class="form-control" placeholder="名称或描述" data-toggle="tooltip" data-original-title="支持模糊查询">
+                                                        <input v-model="search_value" v-on:keyup.enter.native="initData('','',true)" type="text" class="form-control" placeholder="标题或内容" data-toggle="tooltip" data-original-title="支持模糊查询">
                                                         <span class="mdi mdi-magnify"></span>
                                                         <div class="input-group-append">
                                                             <button v-on:click="initData('','',true)" class="btn btn-primary" type="button">搜索</button>
                                                         </div>
-                                                        <button v-on:click="edit = {}" data-toggle="modal" data-target="#fill-edit-modal" type="button" class="btn btn-primary d-none d-lg-block ml-2">添加歌单</button>
-                                                        <button v-on:click="deleteMusic()" type="button" class="btn btn-primary d-none d-lg-block ml-2">批量删除</button>
+                                                        <button v-on:click="edit = {}" data-toggle="modal" data-target="#fill-edit-modal" type="button" class="btn btn-primary d-none d-lg-block ml-2">添加公告</button>
+                                                        <button v-on:click="deletePlacard()" type="button" class="btn btn-primary d-none d-lg-block ml-2">批量删除</button>
                                                         <a v-on:click="edit = {}" data-toggle="modal" data-target="#fill-edit-modal" href="#" class="btn btn-primary d-lg-none d-block ml-1">
                                                             <i class="mdi mdi-plus-circle"></i>
                                                         </a>
-                                                        <a v-on:click="deleteMusic" href="#" class="btn btn-primary d-lg-none d-block ml-1">
+                                                        <a v-on:click="deletePlacard" href="#" class="btn btn-primary d-lg-none d-block ml-1">
                                                             <svg t="1603942959679" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5903" width="14" height="14"><path d="M973.312 187.904h-172.544V121.856c0-60.928-49.664-111.104-110.592-111.616H334.336c-61.44 0-111.616 50.176-111.616 111.616v66.048H50.688c-22.528 0-40.448 18.432-40.448 40.448 0 22.528 18.432 40.448 40.448 40.448H972.8c22.528 0 40.448-18.432 40.448-40.448 0.512-22.528-17.92-40.448-39.936-40.448zM304.128 121.856c0-16.896 13.824-30.208 30.208-30.208h355.328c16.384 0 29.696 13.312 29.696 29.696v66.56H304.128V121.856zM831.488 330.752c-22.528 0-40.448 18.432-40.448 40.448v531.456c0 16.896-13.824 30.208-30.208 30.208h-496.64c-16.896 0-30.208-13.824-30.208-30.208v-532.48c0-22.528-18.432-40.448-40.448-40.448-22.528 0-40.448 18.432-40.448 40.448v531.968c0 61.44 50.176 111.616 111.616 111.616h496.64c61.44 0 111.616-50.176 111.616-111.616V371.2c-1.024-22.528-19.456-40.448-41.472-40.448z" fill="#fff" p-id="5904" data-spm-anchor-id="a313x.7781069.0.i11" class=""></path><path d="M405.504 532.992c-22.528 0-40.448 18.432-40.448 40.448v202.24c0 18.432 12.8 34.304 29.696 38.912l-1.536 1.536h17.408v-0.512c19.968-2.56 35.328-19.456 35.328-39.936V573.44c0-22.016-17.92-40.448-40.448-40.448zM405.504 329.728c-22.528 0-40.448 18.432-40.448 40.448v88.064c0 18.432 12.8 34.304 29.696 38.912l-1.536 1.536h17.408v-0.512c19.968-2.56 35.328-19.456 35.328-39.936V370.176c0-22.016-17.92-40.448-40.448-40.448zM623.616 329.728l-17.408-0.512 1.536 1.536c-16.896 4.608-29.696 20.48-29.696 38.912v202.24c0 22.528 18.432 40.448 40.448 40.448s40.448-18.432 40.448-40.448V370.176c0-20.48-15.36-37.376-35.328-40.448zM623.616 647.168l-17.408-0.512 1.536 1.536c-16.896 4.608-29.696 20.48-29.696 38.912v88.064c0 22.528 18.432 40.448 40.448 40.448s40.448-18.432 40.448-40.448v-88.576c0-19.968-15.36-36.864-35.328-39.424z" fill="#fff" p-id="5905" data-spm-anchor-id="a313x.7781069.0.i12" class="selected"></path></svg>
                                                         </a>
                                                     </div>
@@ -97,15 +97,15 @@
                                                             <label class="custom-control-label" for="select-all"></label>
                                                         </div>
                                                     </th>
-                                                    <th>名称</th>
-                                                    <th>描述</th>
-                                                    <th>显示</th>
+                                                    <th>标题</th>
+                                                    <th>内容</th>
+                                                    <th>分类</th>
                                                     <th>创建时间</th>
                                                     <th>操作</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr v-for="data in music.data" :key="data.id">
+                                                <tr v-for="data in placard.data" :key="data.id">
                                                     <td>
                                                         <div class="custom-control custom-checkbox">
                                                             <input :name="data.id" type="checkbox" class="custom-control-input checkbox-item" :id="'select-' + data.id">
@@ -113,15 +113,14 @@
                                                         </div>
                                                     </td>
                                                     <td v-on:click="initData(data.id)" data-toggle="modal" data-target="#fill-edit-modal" class="table-user pointer">
-                                                        <img :src="data.head_img || ''" class="mr-1 rounded-circle">
-                                                        {{data.title}}
+                                                        {{data.title || ''}}
                                                     </td>
-                                                    <td>{{data.description || '无'}}</td>
+                                                    <td>{{data.content || '无'}}</td>
                                                     <td>
-                                                        <div>
-                                                            <input v-on:click="isEnable(data.id)" v-model="is_show" :value="data.id" :id="'show-' + data.id" type="checkbox" data-switch="success">
-                                                            <label :for="'show-' + data.id" data-on-label="Yes" data-off-label="No" class="mb-0 d-block"></label>
-                                                        </div>
+                                                        <span v-if="data.type == 'all'" class="badge badge-dark-lighten badge-pill">{{sort[data.type] || '无'}}</span>
+                                                        <span v-if="data.type == 'web'" class="badge badge-primary-lighten badge-pill">{{sort[data.type] || '无'}}</span>
+                                                        <span v-if="data.type == 'qq'" class="badge badge-info-lighten badge-pill">{{sort[data.type] || '无'}}</span>
+                                                        <span v-if="data.type == 'wechat'" class="badge badge-success-lighten badge-pill">{{sort[data.type] || '无'}}</span>
                                                     </td>
                                                     <td>{{natureTime(data.create_time)}}</td>
                                                     <td>
@@ -131,7 +130,7 @@
                                                                 </path>
                                                             </svg>
                                                         </a>
-                                                        <a v-on:click="deleteMusic(data.id)" type="button" class="btn btn-outline-danger btn-sm">
+                                                        <a v-on:click="deletePlacard(data.id)" type="button" class="btn btn-outline-danger btn-sm">
                                                             <svg t="1603942959679" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5903" width="14" height="14">
                                                                 <path d="M973.312 187.904h-172.544V121.856c0-60.928-49.664-111.104-110.592-111.616H334.336c-61.44 0-111.616 50.176-111.616 111.616v66.048H50.688c-22.528 0-40.448 18.432-40.448 40.448 0 22.528 18.432 40.448 40.448 40.448H972.8c22.528 0 40.448-18.432 40.448-40.448 0.512-22.528-17.92-40.448-39.936-40.448zM304.128 121.856c0-16.896 13.824-30.208 30.208-30.208h355.328c16.384 0 29.696 13.312 29.696 29.696v66.56H304.128V121.856zM831.488 330.752c-22.528 0-40.448 18.432-40.448 40.448v531.456c0 16.896-13.824 30.208-30.208 30.208h-496.64c-16.896 0-30.208-13.824-30.208-30.208v-532.48c0-22.528-18.432-40.448-40.448-40.448-22.528 0-40.448 18.432-40.448 40.448v531.968c0 61.44 50.176 111.616 111.616 111.616h496.64c61.44 0 111.616-50.176 111.616-111.616V371.2c-1.024-22.528-19.456-40.448-41.472-40.448z" fill="#d81e06" p-id="5904" data-spm-anchor-id="a313x.7781069.0.i11" class="">
                                                                 </path>
@@ -157,14 +156,14 @@
                                     <div v-else-if="!page_is_load && is_page_show" class="btn-group mt-2" style="float: right">
                                         <button type="button" class="btn btn-light" v-on:click="initData('',1)">首页</button>
                                         <button v-for="(item, index) in page_list" :key="index" v-on:click="initData('',item)" class="btn btn-light">{{item}}</button>
-                                        <button type="button" class="btn btn-light" v-on:click="initData('',music.page)">末页</button>
+                                        <button type="button" class="btn btn-light" v-on:click="initData('',placard.page)">末页</button>
                                         <div class="btn-group">
                                             <button class="btn btn-light dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">其他</button>
                                             <div class="dropdown-menu dropdown-menu-animated">
                                                 <a class="dropdown-item" href="#" v-on:click="initData('',page-1)">上一页</a>
                                                 <a class="dropdown-item" href="#" v-on:click="initData('',page+1)">下一页</a>
-                                                <a class="dropdown-item" href="#">共 {{music.page}} 页</a>
-                                                <a class="dropdown-item" href="#">共 {{music.count}} 条数据</a>
+                                                <a class="dropdown-item" href="#">共 {{placard.page}} 页</a>
+                                                <a class="dropdown-item" href="#">共 {{placard.count}} 条数据</a>
                                             </div>
                                         </div>
                                     </div>
@@ -177,55 +176,32 @@
                     <!-- 编辑用户 - 结束 -->
                     <div id="fill-edit-modal" class="modal fade" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
                         <!-- modal-dialog-centered -->
-                        <div class="modal-dialog">
+                        <div class="modal-dialog modal-lg">
                             <div class="modal-content modal-filled bg-primary">
                                 <div class="modal-header">
                                     <h4 class="modal-title" id="fill-primary-modalLabel">{{title}}</h4>
                                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                                 </div>
                                 <div class="modal-body">
-                                    <p class="m-0">推荐使用 [QQ音乐] 分享的歌单地址</p>
                                     <div class="row">
                                         <div class="card-body pb-0">
                                             <div class="form-group row mb-3">
-                                                <label class="col-3 col-form-label">名称</label>
+                                                <label class="col-3 col-form-label">标题</label>
                                                 <div class="col-9">
-                                                    <input v-model="edit.title" type="text" class="form-control">
+                                                    <input v-model="edit.title" type="text" class="form-control" placeholder="公告的标题">
                                                 </div>
                                             </div>
                                             <div class="form-group row mb-3">
-                                                <label class="col-3 col-form-label">地址</label>
+                                                <label class="col-3 col-form-label">分类</label>
                                                 <div class="col-9">
-                                                    <input v-model="edit.url" type="text" class="form-control" placeholder="网易或QQ音乐歌单地址">
+                                                    <select id="type-select2" class="form-control select2" data-toggle="select2"></select>
                                                 </div>
                                             </div>
                                             <div class="form-group row mb-3">
-                                                <label class="col-3 col-form-label">头像</label>
+                                                <label class="col-3 col-form-label">公告内容</label>
                                                 <div class="col-9">
-                                                    <div class="input-group">
-                                                        <input v-model="edit.head_img" type="text" class="form-control" placeholder="填写头像地址或点击按钮上传">
-                                                        <div class="input-group-append">
-                                                            <input v-show="false" v-on:change="upload($event)" type="file" id="input-file" />
-                                                            <button v-on:click="clickUpload" class="btn btn-dark" type="button">上传</button>
-                                                        </div>
-                                                    </div>
-                                                    <div v-if="speed != 1 && speed != 0" class="progress-w-percent users-upload-head">
-                                                        <div class="progress progress-sm">
-                                                            <div class="progress-bar" role="progressbar" :style="'width: '+ speed * 100 +'%'" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
-                                                        </div>
-                                                    </div>
+                                                    <textarea v-model="edit.content" class="form-control domain-textarea" rows="4" placeholder="请填写公告内容"></textarea>
                                                 </div>
-                                            </div>
-                                            <div class="form-group row mb-3">
-                                                <label class="col-3 col-form-label">描述</label>
-                                                <div class="col-9">
-                                                    <textarea v-model="edit.description" class="form-control domain-textarea" rows="3" placeholder="用于描述歌单信息"></textarea>
-                                                </div>
-                                            </div>
-                                            <div class="conf-switch mr-3">
-                                                <span class="mr-2">是否允许API获取歌单数据：</span>
-                                                <input v-model="music_is_show" v-on:click="isEnable(edit.id, true)" type="checkbox" id="music_is_show" data-switch="success"/>
-                                                <label for="music_is_show" data-on-label="Yes" data-off-label="No"></label>
                                             </div>
                                         </div>
                                     </div>
@@ -255,7 +231,7 @@
         <!-- 右侧边栏 - 结束 -->
     </div>
     
-    <script src="<?= __ADMIN_JS__.'vue/music.js?v='.__VERSION__; ?>"></script>
+    <script src="<?= __ADMIN_JS__.'vue/placard.js?v='.__VERSION__; ?>"></script>
     
     <!-- 依赖 - 开始 -->
     <? require(dirname(dirname(__FILE__)).'/public/script.html'); ?>

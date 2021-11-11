@@ -14,6 +14,7 @@ use app\model\Links;
 use app\model\Users;
 use app\model\Music;
 use app\model\Banner;
+use app\model\Placard;
 use app\model\Options;
 use app\model\Article;
 use think\facade\View;
@@ -791,6 +792,49 @@ class Index extends Base
             
             return $this->create($data,$code,$msg);
         }
+    }
+    
+    /*
+     * #name 管理公告
+     */
+    public function placard(Request $request)
+    {
+        if ($request->isPost()){
+            
+            // 获取请求参数
+            $param = $request->param();
+            
+            if (empty($param['page']))  $param['page']  = 1;
+            if (empty($param['limit'])) $param['limit'] = 10;
+            if (empty($param['order'])) $param['order'] = 'create_time desc';
+            $search = (empty($param['search'])) ? '' : $param['search'];
+            
+            $map1 = ['title'  , 'like', '%'.$search.'%'];
+            $map2 = ['content', 'like', '%'.$search.'%'];
+            
+            $opt = [
+                'page'   =>  (int)$param['page'], 
+                'limit'  =>  (int)$param['limit'],
+                'order'  =>  (string)$param['order'],
+                'whereOr'=>  [$map1,$map2],
+            ];
+            
+            // 获取数据
+            $placard = Placard::ExpandAll(null, $opt);
+            
+            $data = ['placard'=>$placard,'sort'=>$this->config['placard']];
+            
+            // 查询操作
+            if (!empty($param['id'])) {
+                $data['edit'] = Placard::ExpandAll($param['id'], ['where'=>null]);
+            }
+            
+            $code = 200;
+            $msg  = 'ok';
+            
+            return $this->create($data,$code,$msg);
+        }
+        return View::engine('php')->fetch('/page/placard');
     }
 
     // END

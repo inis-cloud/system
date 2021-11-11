@@ -9,15 +9,16 @@ use app\index\middleware\LoginCheck;
 
 abstract class Base extends BaseController
 {
+    protected $config = [];
     protected $middleware = [LoginCheck::class];
     
     public function initialize()
     {
-        $config = Config::get('inis');
+        $this->config = Config::get('inis');
         
         // 定义模板路径
-        define('__CDN__'       , $config['official']['cdn']);
-        define('__VERSION__'   , $config['version']);
+        define('__CDN__'       , $this->config['official']['cdn']);
+        define('__VERSION__'   , $this->config['version']);
         define('__ASSETS__'    , '/index/assets/');
         define('__ADMIN_JS__'  , '/index/assets/js/');
         define('__ADMIN_CSS__' , '/index/assets/css/');

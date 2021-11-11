@@ -71,7 +71,7 @@ class ArticleSort extends Model
             foreach ($article as $val) $article_id[] = $val['id'];
             
             // 获取分类下的文章
-            if(!empty($article_id)) $data['data'] = Article::ExpandAll($article_id, ['order'=>$config['order']]);
+            if(!empty($article_id)) $data['data'] = Article::ExpandAll($article_id, ['order'=>$config['order'],'limit'=>$config['limit']]);
             else $data['data'] = [];
             
             $sort['expand'] = $data;

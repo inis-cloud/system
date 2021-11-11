@@ -2,16 +2,16 @@
 return [
     'data'=>[
         'users'  =>  [
-            ['account'=>'admin','password'=>'$2y$10$4DOhSpDbEZYLeNCVyFd3fuyQ3Bq7LACZs4xj4/rQmsv0nEOsqs9t2','nickname'=>'inis','sex'=>'保密','email'=>'admin@qq.com','head_img'=>'//q.qlogo.cn/g?b=qq&nk=97783391&s=640','level'=>'admin','create_time'=>1625587200,'update_time'=>1625587200]
+            ['account'=>'admin','password'=>'$2y$10$4DOhSpDbEZYLeNCVyFd3fuyQ3Bq7LACZs4xj4/rQmsv0nEOsqs9t2','nickname'=>'inis','sex'=>'保密','email'=>'admin@qq.com','head_img'=>'//q.qlogo.cn/g?b=qq&nk=97783391&s=640','level'=>'admin','create_time'=>time(),'update_time'=>time()]
         ],
         'article'=>  [
-            ['title'=>'欢迎使用，inis 博客系统','description'=>'当你看到这篇文章，就表示您的系统已经搭建成功！','content'=>'当你看到这篇文章，就表示您的系统已经搭建成功！','font_count'=>18,'users_id'=>1,'create_time'=>1625587200,'update_time'=>1625587200]
+            ['title'=>'欢迎使用，inis 博客系统','description'=>'当你看到这篇文章，就表示您的系统已经搭建成功！','content'=>'当你看到这篇文章，就表示您的系统已经搭建成功！','font_count'=>18,'users_id'=>1,'create_time'=>time(),'update_time'=>time(),'last_update_time'=>time()]
         ],
         'music'  =>  [
-            ['title'=>'默认歌单','url'=>'https://c.y.qq.com/base/fcgi-bin/u?__=ZhpZFd43','head_img'=>'//q.qlogo.cn/g?b=qq&nk=97783391&s=640','create_time'=>1625587200,'update_time'=>1625587200]
+            ['title'=>'默认歌单','url'=>'https://c.y.qq.com/base/fcgi-bin/u?__=ZhpZFd43','head_img'=>'//q.qlogo.cn/g?b=qq&nk=97783391&s=640','create_time'=>time(),'update_time'=>time()]
         ],
         'page'   =>  [
-            ['title'=>'友链库','alias'=>'links','content'=>'###个人信息[tabs class="nav-bordered"][item name="自我介绍"active="true"][info class="alert-primary bg-white text-primary"]-愿你出走半生，归来仍是少年！[/info][/item][item name="博主友链信息"color="#ff0000"font-weight="bold"][info class="alert-danger bg-white text-danger"]-名称：-地址：-描述：你有多努力，就有多特殊！-头像：`友链申请须知：`**如果你想申请本站的友链，你可以在你的博客上随便找个位置填写上我的友链信息，然后在本页评论区向我提交你的友链信息，我会根据你提交的信息拜访贵方博客，根据评定后在本站相对于的位置填写你的友链信息**[/info][/item][/tabs]##友链申请说明[tabs class="nav-bordered"][item name="内页友链申请"active="true"][info class="alert-warning"]申请条件：`任意博友`[/info][tag class="badge-danger"]内页友链申请不做任何限制，所有人都可以申请[/tag][/item][item name="推荐友链申请"][info class="alert-success"]申请条件：站内文章不少于`20篇`，且质量优良[/info][tag class="badge-danger"]推荐友链限制，为了更好的共同学习和互动[/tag][/item][item name="全站友链申请"color="#ff0000"font-weight="bold"][info class="alert-danger"]申请条件：站内`原创高质量`文章不少于`30篇`，且非常活跃的博主[/info][tag class="badge-danger"]全站友链位置有限[/tag][/item][/tabs]','create_time'=>1625587200,'update_time'=>1625587200]
+            ['title'=>'友链库','alias'=>'links','content'=>'###个人信息[tabs class="nav-bordered"][item name="自我介绍"active="true"][info class="alert-primary bg-white text-primary"]-愿你出走半生，归来仍是少年！[/info][/item][item name="博主友链信息"color="#ff0000"font-weight="bold"][info class="alert-danger bg-white text-danger"]-名称：-地址：-描述：你有多努力，就有多特殊！-头像：`友链申请须知：`**如果你想申请本站的友链，你可以在你的博客上随便找个位置填写上我的友链信息，然后在本页评论区向我提交你的友链信息，我会根据你提交的信息拜访贵方博客，根据评定后在本站相对于的位置填写你的友链信息**[/info][/item][/tabs]##友链申请说明[tabs class="nav-bordered"][item name="内页友链申请"active="true"][info class="alert-warning"]申请条件：`任意博友`[/info][tag class="badge-danger"]内页友链申请不做任何限制，所有人都可以申请[/tag][/item][item name="推荐友链申请"][info class="alert-success"]申请条件：站内文章不少于`20篇`，且质量优良[/info][tag class="badge-danger"]推荐友链限制，为了更好的共同学习和互动[/tag][/item][item name="全站友链申请"color="#ff0000"font-weight="bold"][info class="alert-danger"]申请条件：站内`原创高质量`文章不少于`30篇`，且非常活跃的博主[/info][tag class="badge-danger"]全站友链位置有限[/tag][/item][/tabs]','create_time'=>time(),'update_time'=>time()]
         ],
         'links_sort'=>[
             ['name'=>'默认分组','description'=>'这是默认的友链分组']

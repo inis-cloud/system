@@ -14,6 +14,7 @@ use app\model\Links;
 use app\model\Users;
 use app\model\Music;
 use app\model\Banner;
+use app\model\Placard;
 use app\model\Options;
 use app\model\Article;
 use app\model\AuthRule;
@@ -1088,6 +1089,67 @@ class Method extends Base
             
             // 清除缓存
             Cache::tag('options')->clear();
+            
+            return $this->create($data,$code,$msg);
+        }
+    }
+    
+    /** 
+     * @name 新增和修改公告
+     */
+    public function SavePlacard(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $param = $request->param();
+            
+            $data = [];
+            $code = 200;
+            $msg  = 'ok';
+            
+            // 允许用户提交并存储的字段
+            $obtain = ['title','type','content'];
+            
+            if (empty($param['id'])) $placard = new Placard;
+            else $placard = Placard::find($param['id']);
+            
+            // 存储数据
+            foreach ($param as $key => $val) {
+                // 判断字段是否允许存储，防提权
+                if (in_array($key, $obtain)) $placard->$key = $val;
+            }
+            
+            $placard->save();
+            
+            // 清理缓存
+            Cache::tag('placard')->clear();
+            
+            return $this->create($data,$code,$msg);
+        }
+    }
+    
+    /** 
+     * @name 删除公告
+     */
+    public function deletePlacard(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $param = $request->param();
+            
+            $data = [];
+            $code = 200;
+            $msg  = 'ok';
+            
+            $id = (empty($param['id'])) ? '' : $param['id'];
+            
+            // 字符串转数组并去空处理
+            $id_arr = array_filter(explode(',', $id));
+            
+            Placard::destroy($id_arr);
+            
+            // 清除缓存
+            Cache::tag('placard')->clear();
             
             return $this->create($data,$code,$msg);
         }

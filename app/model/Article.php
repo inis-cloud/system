@@ -40,11 +40,14 @@ class Article extends Model
         foreach ($opt as $val) {
             if (empty($val['opt'])) $auth['empty'][] = $val['id'];
             else {
-                if ($val['opt']['auth'] == 'anyone')        $auth['anyone'][]   = $val['id'];
-                else if ($val['opt']['auth'] == 'password') $auth['password'][] = $val['id'];
-                else if ($val['opt']['auth'] == 'login')    $auth['login'][]    = $val['id'];
-                else if ($val['opt']['auth'] == 'private')  {
-                    if ($val['users_id'] == $uid) $auth['private'][]  = $val['id'];
+                if (empty($val['opt']['auth'])) $auth['empty'][] = $val['id'];
+                else {
+                    if ($val['opt']['auth'] == 'anyone')        $auth['anyone'][]   = $val['id'];
+                    else if ($val['opt']['auth'] == 'password') $auth['password'][] = $val['id'];
+                    else if ($val['opt']['auth'] == 'login')    $auth['login'][]    = $val['id'];
+                    else if ($val['opt']['auth'] == 'private')  {
+                        if ($val['users_id'] == $uid) $auth['private'][]  = $val['id'];
+                    }
                 }
             }
         }
@@ -201,18 +204,30 @@ class Article extends Model
         $map2   = ['content' , 'like', '%'.$value.'%'];
         $map3   = ['is_show'=>1];
         
-        $whereOr = [$map1,$map2];
+        $whereOr = [];
         $where   = $map3;
         
         // 精准分类搜索
         if (!empty($sort_id)) {
             // 搜索内容为空，返回分类下的全部数据
             if (empty($value)) $whereOr = [];
-            $where = [['sort_id' , 'like', '%|'.$sort_id.'|%'],['is_show','=',1]];
+            $where = [
+                function ($query) use ($map1, $map2) {
+                    $query->where([$map1])->whereOr([$map2]);
+                },
+                ['sort_id' , 'like', '%|'.$sort_id.'|%'],
+                ['is_show','=',1]
+            ];
         }
         
         // 防止显示隐藏文章
         if (empty($value)) $whereOr = $map3;
+        else if (empty($sort_id)) $where = [
+            function ($query) use ($map1, $map2) {
+                $query->where([$map1])->whereOr([$map2]);
+            },
+            ['is_show','=',1]
+        ];
         
         $opt = [
             'page'   =>  $opt['page'], 

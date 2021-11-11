@@ -74,7 +74,7 @@ class handle
                     $login_token = (isset($header['login-token'])) ? $header['login-token'] : $param['login-token'];
                     
                     try{
-                    
+                        
                         JWT::$leeway = 60;
                         $decoded = JWT::decode($login_token, $this->key, ['HS256']);
                         $arr = (array) $decoded;

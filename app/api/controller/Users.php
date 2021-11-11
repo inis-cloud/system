@@ -288,7 +288,7 @@ class Users extends Base
                     
                     // 单点登录字段
                     $login_auth = md5(md5('inis-'.time()));
-                    if (empty($users->opt)) $users->opt = ['login_auth'=>$login_auth];
+                    if (empty($users->opt)) $users->opt = json_encode(['login_auth'=>$login_auth], JSON_UNESCAPED_UNICODE);
                     else $users->opt->login_auth = $login_auth;
                     $users->last_login_time = time();
                     $users->save();
@@ -377,7 +377,7 @@ class Users extends Base
         $time   = time();
         
         // 允许用户提交并存储的字段
-        $obtain = ['account','password','nickname','sex','email','phone','head_img','description','address_url'];
+        $obtain = ['account','password','nickname','sex','email','phone','head_img','description','address_url','longtext'];
         if (in_array($user['data']->level, ['admin'])) array_push($obtain, 'level', 'status', 'remarks');
         
         if (empty($param['id'])) $users = new UsersModel;

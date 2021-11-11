@@ -31,6 +31,14 @@ return [
         'path'         =>  'storage/random/',
     ],
     
+    // 公告配置
+    'placard'   => [
+        'all'   =>  '全部',
+        'web'   =>  '网站',
+        'qq'    =>  'QQ小程序',
+        'wechat'=>  '微信小程序'
+    ],
+    
     // 官方授权系统
     'official'     =>  [
         'api'      =>  'https://inis.cc/api/',          // 用于检查更新

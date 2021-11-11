@@ -38,22 +38,38 @@ class api
      */
     public function handle($request, Closure $next, ?array $header = [])
     {
-        $params = $request->param();
+        $params  = $request->param();
         
-        $result = ['code'=>403,'msg'=>'禁止非法操作！','data'=>[]];
+        $result  = ['code'=>403,'msg'=>'禁止非法操作！','data'=>[]];
         
-        $header = !empty($header) ? array_merge($this->header, $header) : $this->header;
+        $header  = !empty($header) ? array_merge($this->header, $header) : $this->header;
         
         $site_conf = Options::where(['keys'=>'site_conf'])->findOrEmpty();
         
-        $domain = Options::where(['keys'=>'domain'])->findOrEmpty();
-        $domain = (!$domain->isEmpty()) ? array_filter(explode(",", $domain->value)) : ['*'];
+        $domain  = Options::where(['keys'=>'domain'])->findOrEmpty();
+        $domain  = (!$domain->isEmpty()) ? array_filter(explode(",", $domain->value)) : ['*'];
+        
+        // 允许免校验接口
+        $allow   = ['file/random'];
         
         // 获取请求API域名
         $headers = $request->header();
+        // 请求接口地址
+        $pathinfo= $request->pathinfo();
+        
+        // 域名白名单配置为空
+        $map1 = empty($site_conf->opt->domain);
+        // 域名白名单配置为空
+        $map2 = empty($domain);
+        // 域名白名单关闭
+        $map3 = ($site_conf->opt->domain->status == 0);
+        // 域名白名单放行全部
+        $map4 = in_array('*',$domain);
+        // 允许免校验接口
+        $map5 = in_array($pathinfo,$allow);
         
         // 判断域名白名单是否为空
-        if (empty($site_conf->opt->domain) or empty($domain) or ($site_conf->opt->domain->status == 0) or in_array('*',$domain)) {
+        if ($map1 or $map2 or $map3 or $map4 or $map5) {
             
             $header['Access-Control-Allow-Origin'] = '*';
             
@@ -77,9 +93,6 @@ class api
                 
             } else return json($result);
         }
-        
-        // // 获取请求方式
-        // if ($request->method(true) === 'OPTIONS') $reponse->code(204);
         
         // ↑↑↑ 前置中间件执行区域 ↑↑↑
         $reponse = $next($request)->header($header);

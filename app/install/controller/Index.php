@@ -41,7 +41,7 @@ class Index extends BaseController
             $msg  = 'ok';
             
             $php['version'] = PHP_VERSION;
-            $php['check']   = (version_compare(PHP_VERSION,'7.2.5','ge')) ? true : false;
+            $php['check']   = (version_compare(PHP_VERSION,'7.4','ge')) ? true : false;
             
             try {
                 
