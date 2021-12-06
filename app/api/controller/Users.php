@@ -36,14 +36,12 @@ class Users extends Base
     public function index(Request $request)
     {
         // 获取请求参数
-        $param = $request->param();
+        $param  = $request->param();
         
         $data   = [];
         $code   = 400;
         $msg    = '参数不存在！';
         $result = [];
-        
-        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
         
         // 存在的方法
         $method = ['one','all'];
@@ -51,7 +49,7 @@ class Users extends Base
         $mode   = (empty($param['id'])) ? 'all' : 'one';
         
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param, $user);
+        if (in_array($mode, $method)) $result = $this->$mode($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
@@ -78,11 +76,9 @@ class Users extends Base
         $method = ['saves','remove','login','register'];
         
         $mode   = (empty($param['mode'])) ? 'saves' : $param['mode'];
-        // 解析用户 token
-        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
         
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param,$user);
+        if (in_array($mode, $method)) $result = $this->$mode($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
@@ -127,7 +123,7 @@ class Users extends Base
     }
     
     // 获取一条数据
-    public function one($param, $user)
+    public function one($param)
     {
         $data = [];
         $code = 400;
@@ -146,7 +142,7 @@ class Users extends Base
         $cache_name = 'users?id='.$param['id'];
         
         // 显示隐藏字段
-        if (isset($user['data']) and in_array($user['data']->level, ['admin'])) $opt['withoutField'] = ['password'];
+        if (isset($this->user['data']) and in_array($this->user['data']->level, ['admin'])) $opt['withoutField'] = ['password'];
         
         // 检查是否存在请求的缓存数据
         if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
@@ -166,7 +162,7 @@ class Users extends Base
     }
     
     // 获取全部数据
-    public function all($param, $user)
+    public function all($param)
     {
         $data = [];
         $code = 400;
@@ -189,7 +185,7 @@ class Users extends Base
         ];
         
         // 显示隐藏字段
-        if (isset($user['data']) and in_array($user['data']->level, ['admin'])) $opt['withoutField'] = ['password'];
+        if (isset($this->user['data']) and in_array($this->user['data']->level, ['admin'])) $opt['withoutField'] = ['password'];
         
         // 设置缓存名称
         $cache_name = 'users?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
@@ -369,7 +365,7 @@ class Users extends Base
     }
     
     // 新增或者修改数据
-    public function saves($param, $user)
+    public function saves($param)
     {
         $data   = [];
         $code   = 400;
@@ -378,7 +374,7 @@ class Users extends Base
         
         // 允许用户提交并存储的字段
         $obtain = ['account','password','nickname','sex','email','phone','head_img','description','address_url','longtext'];
-        if (in_array($user['data']->level, ['admin'])) array_push($obtain, 'level', 'status', 'remarks');
+        if (in_array($this->user['data']->level, ['admin'])) array_push($obtain, 'level', 'status', 'remarks');
         
         if (empty($param['id'])) $users = new UsersModel;
         else $users = UsersModel::find((int)$param['id']);
@@ -390,7 +386,7 @@ class Users extends Base
         }
         
         // 权限判断
-        if ($user['data']->status != 1) $msg = '账号被禁用';
+        if ($this->user['data']->status != 1) $msg = '账号被禁用';
         else {
             
             $code = 200;
@@ -399,10 +395,10 @@ class Users extends Base
             $account = UsersModel::where(['account'=>$param['account']])->findOrEmpty();
             
             // 修改了自己的信息
-            if ($user['data']->id == (int)$param['id']) {
+            if ($this->user['data']->id == (int)$param['id']) {
                 
                 // 修改了邮箱信息 - 任何人都有权限
-                if ($user['data']->email   != $param['email']) {
+                if ($this->user['data']->email   != $param['email']) {
                     
                     $code = 400;
                     
@@ -431,7 +427,7 @@ class Users extends Base
                     
                 }
                 // 修改了帐号信息
-                if ($user['data']->account != $param['account'] and !$account->isEmpty()) {
+                if ($this->user['data']->account != $param['account'] and !$account->isEmpty()) {
                     $code = 400;
                     $msg  = '帐号已存在！';
                 }
@@ -451,7 +447,7 @@ class Users extends Base
                     $msg  = '帐号已存在！';
                 }
                 
-                if (in_array($user['data']->level, ['admin']) and $code == 200) $users->save();
+                if (in_array($this->user['data']->level, ['admin']) and $code == 200) $users->save();
                 else $msg = '无权限';
             }
         }
@@ -463,7 +459,7 @@ class Users extends Base
     }
     
     // 删除数据
-    public function remove($param, $user)
+    public function remove($param)
     {
         $data = [];
         $code = 400;
@@ -477,7 +473,7 @@ class Users extends Base
             $id = array_filter(explode(',', $id));
             
             // 存在该条数据
-            if (in_array($user['data']->level, ['admin'])) {
+            if (in_array($this->user['data']->level, ['admin'])) {
                 
                 $code = 200;
                 UsersModel::destroy($id);
@@ -535,11 +531,12 @@ class Users extends Base
     public function sendEmail($email,$code,$valid_time)
     {
         // 获取邮箱服务配置信息
-        $options  = Options::where(['keys'=>'email_serve'])->findOrEmpty();
+        $options  = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
         // 获取邮箱模板
-        $template = Options::where(['keys'=>'email_template_3'])->findOrEmpty()['value'];
+        $templates= (!empty($options->value)) ? json_decode($options->value) : [];
+        $template = (!empty($templates)) ? $templates->template_3 : '';
         // 获取站点名称
-        $site     = Options::field(['value'])->where(['keys'=>'title'])->find()['value'];
+        $site     = Options::field(['opt'])->where(['keys'=>'site'])->find()['opt']->title;
         // 获取站点地址
         $domain   = $this->tool->domain();
         // 当前时间

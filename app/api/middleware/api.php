@@ -18,7 +18,7 @@ class api
         'Access-Control-Max-Age'           => 1800,
         'Content-Type'                     => 'application/json;charset=utf-8',
         'Access-Control-Allow-Methods'     => 'GET, POST, PATCH, PUT, DELETE, OPTIONS, PATCH',
-        'Access-Control-Allow-Headers'     => 'Authorization, token, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-CSRF-TOKEN, X-Requested-With',
+        'Access-Control-Allow-Headers'     => 'Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-CSRF-TOKEN, X-Requested-With',
     ];
     
     // 构造器
@@ -44,10 +44,9 @@ class api
         
         $header  = !empty($header) ? array_merge($this->header, $header) : $this->header;
         
-        $site_conf = Options::where(['keys'=>'site_conf'])->findOrEmpty();
+        $security= Options::where(['keys'=>'config:security'])->findOrEmpty();
         
-        $domain  = Options::where(['keys'=>'domain'])->findOrEmpty();
-        $domain  = (!$domain->isEmpty()) ? array_filter(explode(",", $domain->value)) : ['*'];
+        $domain  = (!$security->isEmpty()) ? array_filter(explode(",", $security->value)) : ['*'];
         
         // 允许免校验接口
         $allow   = ['file/random'];
@@ -58,11 +57,11 @@ class api
         $pathinfo= $request->pathinfo();
         
         // 域名白名单配置为空
-        $map1 = empty($site_conf->opt->domain);
+        $map1 = empty($security->opt->domain);
         // 域名白名单配置为空
         $map2 = empty($domain);
         // 域名白名单关闭
-        $map3 = ($site_conf->opt->domain->status == 0);
+        $map3 = ($security->opt->domain->status == 0);
         // 域名白名单放行全部
         $map4 = in_array('*',$domain);
         // 允许免校验接口
@@ -99,7 +98,7 @@ class api
         // ↓↓↓ 后置中间件执行区域 ↓↓↓
         
         // 执行 Token 验证
-        if ($site_conf->opt->token->status == 1) {
+        if ($security->opt->token->status == 1) {
             
             // 获取 header token
             $token = $request->header('token', $request->request('token'));
@@ -107,10 +106,10 @@ class api
             // 三元赋值 token
             (!empty($token)) ? $token : $token = (!empty($params['token'])) ? $params['token'] : null;
             
-            if ($token != $site_conf->opt->token->value) $reponse = json($result);
+            if ($token != $security->opt->token->value) $reponse = json($result);
         }
         
-        if (empty($site_conf->opt->domain) or empty($domain) or ($site_conf->opt->domain->status == 0) or in_array('*',$domain)) {
+        if (empty($security->opt->domain) or empty($domain) or ($security->opt->domain->status == 0) or in_array('*',$domain)) {
             
         } else {
             // 防止代理

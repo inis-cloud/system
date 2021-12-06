@@ -46,14 +46,15 @@ abstract class BaseController
     {
         $this->app     = $app;
         $this->request = $this->app->request;
-
+        
         // 控制器初始化
         $this->initialize();
     }
 
     // 初始化
     protected function initialize()
-    {}
+    {
+    }
 
     /**
      * 验证数据

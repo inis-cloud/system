@@ -8,7 +8,7 @@ $helper = new helper;
 
 return [
     
-    'api_cache'          =>  true,                      // 开启API缓存
+    'api_cache'          =>  false,                      // 开启API缓存
     'jwt_key'            =>  'inis-!@#$%*&',            // JWT KEY - 用于校验 TOKEN 是否合法
     'valid_time'         =>  5 * 60,                    // 验证码有效时间 - 单位秒
     
@@ -25,10 +25,10 @@ return [
     'random'    =>  [
         // 文章随机图配置
         'article'      =>  [
-            'enable'   =>  true,                         // 是否启用随机图
+            'enable'   =>  true,                                    // 是否启用随机图
             'path'     =>  $helper->domain() . '/api/file/random',  // $helper->domain() 获取的是当前域名    
         ],
-        'path'         =>  'storage/random/',
+        'path'         =>  'storage/random/',                       // 配置随机路径
     ],
     
     // 公告配置
@@ -42,8 +42,8 @@ return [
     // 官方授权系统
     'official'     =>  [
         'api'      =>  'https://inis.cc/api/',          // 用于检查更新
-        'cdn'      =>  'https://cdn.inis.cc/'           // 静态文件加速
+        'cdn'      =>  'https://cdn.inis.cc/system/default/'           // 静态文件加速
     ],
     
-    'version'      => '1.2.7',                          // inis 版本号 - 请不要自行更改，后果自负
+    'version'      => '1.3.0',                          // inis 版本号 - 请不要自行更改，后果自负
 ];

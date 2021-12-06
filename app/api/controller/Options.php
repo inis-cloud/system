@@ -46,15 +46,12 @@ class Options extends Base
     public function save(Request $request)
     {
         // 获取请求参数
-        $param = $request->param();
+        $param  = $request->param();
         
         $data   = [];
         $code   = 400;
         $msg    = '参数不存在！';
         $result = [];
-        
-        // 解析用户 token
-        $user   = $this->parseJWT($param['login-token']);
         
         $mode   = empty($param['mode']) ? 'saves' : $param['mode'];
         
@@ -62,7 +59,7 @@ class Options extends Base
         $method = ['saves','remove'];
         
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param, $user);
+        if (in_array($mode, $method)) $result = $this->$mode($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
@@ -80,7 +77,23 @@ class Options extends Base
      */
     public function read(Request $request, $id)
     {
+        // 获取请求参数
+        $param  = $request->param();
         
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
+        
+        // 存在的方法
+        $method = ['list'];
+        
+        // 动态方法且方法存在
+        if (in_array($id, $method)) $result = $this->$id($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        return $this->create($data, $msg, $code);
     }
 
     /**
@@ -121,7 +134,7 @@ class Options extends Base
         $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         
         // 禁止访问字段
-        $prohibit = ['site_conf','domain','email_serve'];
+        $prohibit = ['config:security','config:email-serve'];
         
         if (in_array($key, $prohibit)) {
             
@@ -170,12 +183,20 @@ class Options extends Base
         // 检查是否存在请求的缓存数据
         if (Cache::has($cache_name) and $api_cache and $cache == 'true') $data = json_decode(Cache::get($cache_name));
         else {
-            // 获取数据库数据
-            $opt = (new OptionsModel)->GetOpt();
-            // 允许获取的默认字段
-            $obtain = ['title','keywords','description','copy','site_ico','site_img','site_url'];
-            // 遍历获取默认的字段
-            foreach ($obtain as $val) $data[$val] = $opt[$val];
+            
+            // 站点信息 和 作者信息
+            $array = ['site','webmaster'];
+            
+            foreach ($array as $val) {
+                
+                $item = OptionsModel::where(['keys'=>$val])->findOrEmpty();
+                
+                if (!$item->isEmpty()) {
+                    unset($item['keys']);
+                    $data[$val] = $item;
+                } else $data[$val] = [];
+            }
+            
             Cache::tag(['options'])->set($cache_name, json_encode($data));
         }
         
@@ -189,7 +210,7 @@ class Options extends Base
     }
     
     // 新增或者修改数据
-    public function saves($param, $user)
+    public function saves($param)
     {
         $data = [];
         $code = 400;
@@ -238,7 +259,7 @@ class Options extends Base
             $options->value = $value;
             
             // 是否拥有权限
-            if (in_array($user['data']->level, ['admin'])) {
+            if (in_array($this->user['data']->level, ['admin'])) {
                 $code = 200;
                 $options->save();
             } else {
@@ -251,7 +272,7 @@ class Options extends Base
     }
     
     // 删除数据
-    public function remove($param, $user)
+    public function remove($param)
     {
         $data = [];
         $code = 400;
@@ -265,7 +286,7 @@ class Options extends Base
             $options = OptionsModel::where(['keys'=>$keys])->findOrEmpty();
             
             // 存在该条数据
-            if (!$options->isEmpty() and in_array($user['data']->level, ['admin'])) {
+            if (!$options->isEmpty() and in_array($this->user['data']->level, ['admin'])) {
                 
                 $code = 200;
                 $options->delete();
@@ -280,5 +301,37 @@ class Options extends Base
         }
         
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
+    }
+    
+    // 配置字段列表
+    public function list($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = '无数据';
+        
+        // 是否开启了缓存
+        $api_cache = $this->config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        
+        // 设置缓存名称
+        $cache_name = 'options/list';
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache == 'true') $data = json_decode(Cache::get($cache_name));
+        else {
+            // 获取数据库数据
+            $data = OptionsModel::column('keys');
+            Cache::tag(['options',$cache_name])->set($cache_name, json_encode($data));
+        }
+        
+        $code = 200;
+        $msg  = '无数据！';
+        // 逆向思维，节省代码行数
+        if (empty($data)) $code = 204;
+        else $msg = '数据请求成功！';
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
 }

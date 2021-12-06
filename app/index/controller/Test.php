@@ -15,6 +15,7 @@ use inis\music\Music;
 use app\model\Placard;
 use Firebase\JWT\JWT;
 use inis\utils\File;
+use inis\utils\FileDB;
 use inis\utils\helper;
 use inis\utils\markdown;
 use app\model\Article;
@@ -47,74 +48,55 @@ class Test
         $this->File   = new File;
         $this->helper = new helper;
         $this->config = Config::get('inis');
-    }
-    
-    /*
-     * 保存文件方法
-     */
-    public function saveFile($url, $file, $path = './', $filename = '')
-    {
-        if (empty($filename)) $filename = pathinfo($url, PATHINFO_BASENAME);
-        // $filename = pathinfo($url, PATHINFO_BASENAME);
-        $resource = fopen($path . $filename, 'a');
-        fwrite($resource, $file);
-        fclose($resource);
-    }
-    
-    /*
-     * 下载文件方法 - 比上面的下载方法好用
-     */
-    public function downloadFile($url, $path = './', $filename = '')
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-        // 避免https 的ssl验证
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSLVERSION, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        $file = curl_exec($ch);
-        if (curl_exec($ch) === false) echo 'Curl error: ' . curl_error($ch);
-        curl_close($ch);
-        $this->saveFile($url, $file, $path, $filename);
-    }
-    
-    // 保存文件方法
-    public function saveAsImage($url, $file, $path)
-    {
-        $filename = pathinfo($url, PATHINFO_BASENAME);
-        $resource = fopen($path . $filename, 'a');
-        fwrite($resource, $file);
-        fclose($resource);
-    }
-     
-    // 下载文件方法
-    public function downloadImage($url, $path)
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-        //避免https 的ssl验证
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSLVERSION, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        $file = curl_exec($ch);
-        if(curl_exec($ch) === false) echo 'Curl error: ' . curl_error($ch);
-        curl_close($ch);
-        $this->saveAsImage($url, $file, $path);
+        
+        header("Access-Control-Allow-Origin: *");
+		header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
+		header('Access-Control-Allow-Methods: GET, POST, PUT,DELETE,OPTIONS,PATCH');
     }
     
     public function index(Request $request)
     {
-        $url = 'https://inis.cc/storage/sql/inis.sql';
+        $data   = 200;
         
-        $res = $this->File->downloadFile($url, './');
+        // $FileDB = new FileDB('t1');
         
-        return json($res);
+        // 查询
+        // $data = $FileDB->select();
+        $data = FileDB::table('t1') ->select();
+        // 单条插入
+        $data = FileDB::table('t1')->insert(['a' => 1232, 'dt' => date('Y-m-d H:i:s'), 'rand' => rand(1, 100),'array'=>[1,2,3,4,5]]);
+        // 批量插入
+        $data = FileDB::table('t1')->insertAll([
+            ['a' => 123, 'dt' => date('Y-m-d H:i:s'), 'rand' => rand(1, 100)],
+            ['a' => 124, 'dt' => date('Y-m-d H:i:s'), 'rand' => rand(1, 100)],
+        ]);
+        // 更新
+        $data = FileDB::table('t1')->where('id', '=', '1')->update(['c' => 200]);
+        // 删除
+        $data = FileDB::table('t1')->where('id', '=', '3')->delete();
+        // 单条查询
+        $data = FileDB::table('t1')->find(2);
+        // 排序
+        $data = FileDB::table('t1')->order('rand DESC')->select();
+        
+        return json($data);
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         

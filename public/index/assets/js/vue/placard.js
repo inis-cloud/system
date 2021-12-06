@@ -4,7 +4,13 @@
         data() {
             return {
                 placard: {},        // 公告数据
-                edit: {},           // 编辑用户
+                edit: {             // 编辑用户
+                    opt: {
+                        url: 'aa',
+                        article_id: '',
+                        jump: 'outside'
+                    }
+                },
                 title: '',          // 模态框标题
                 page: 1,            // 当前页码
                 is_load: true,      // 数据加载动画
@@ -13,6 +19,7 @@
                 is_page_show: true, // 是否显示分页
                 search_value: '',   // 搜索的内容
                 sort: [],           // 公告分类
+                jump: 'outside',    // 跳转方式
             }
         },
         components: {
@@ -25,6 +32,12 @@
             this.initData()
         },
         methods: {
+            
+            // 初始化数据
+            initState(){
+                
+                this.edit = {opt:{jump:'outside',article_id:'',url:''}}
+            },
             
             // 获取初始化数据
             initData(id = '', page = this.page, is_load = false){
@@ -54,10 +67,12 @@
                         }
                         
                         // 编辑数据
-                        if (!inisHelper.is.empty(res.data.data.edit)) {
+                        if (inisHelper.is.empty(res.data.data.edit)) this.initState()
+                        else {
                             this.edit = res.data.data.edit
                             // 重置分类数据
                             $("#type-select2").empty()
+                            $("#inside-select2").empty()
                             type = []
                             for (let item in sort) {
                                 if (this.edit.type == item) type.push({'id':item,text:sort[item],selected:true})
@@ -70,6 +85,30 @@
                             minimumResultsForSearch: Infinity,
                             data: type,
                         })
+                        
+                        let article = res.data.data.article
+                        article.forEach(item=>{
+                            item.text = item.title
+                            delete item.title
+                            if (!inisHelper.is.empty(res.data.data.edit)) {
+                                if (!inisHelper.is.empty(this.edit.opt)) {
+                                    if (!inisHelper.is.empty(this.edit.opt.jump)) {
+                                        if (item.id == this.edit.opt.article_id) item.selected = true
+                                    }
+                                } 
+                            }
+                        })
+                        
+                        // 站内跳转单选框
+                        $("#inside-select2").select2({
+                            minimumResultsForSearch: Infinity,
+                            data: article,
+                        })
+                        
+                        let edit = this.edit
+                        if (!inisHelper.is.empty(edit.opt)) {
+                            if (!inisHelper.is.empty(edit.opt.jump)) this.jump = edit.opt.jump
+                        }
                         
                         // 是否显示分页
                         if(inisHelper.is.empty(this.placard.data) || this.placard.page == 1) this.is_page_show = false
@@ -112,6 +151,12 @@
                     // 获取 select2 分类单选框数据
                     const type    = $('#type-select2').select2('data')[0]['id'];
                     params.append("type", type || '')
+                    
+                    // 获取 select2 站内跳转单选框数据
+                    const inside = $('#inside-select2').select2('data')[0].id;
+                    params.append("opt[jump]", this.jump || '')
+                    params.append("opt[article_id]", inside || '')
+                    params.append("opt[url]", this.edit.opt.url || '')
                     
                     axios.post('/index/method/SavePlacard', params).then((res) => {
                         if (res.data.code == 200) {
@@ -196,6 +241,7 @@
                     
                     if (inisHelper.is.empty(newValue.id)) self.title = '添加公告'
                     else self.title = '修改公告'
+                    
                 },
                 immediate: true,
                 deep: true,

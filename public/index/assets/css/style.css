@@ -1,3 +1,5 @@
+@import "./media.css";
+
 html::-webkit-scrollbar {
     width: 4px;
     height: 10px;
@@ -396,10 +398,6 @@ img.rounded-circle.img-thumbnail {
 .card-body.load .spinner-border{width:1.3em;height:1.3em;}
 .pop-ups .tool ul {display:flex;list-style: none;margin: 0;padding: 0;}
 .pop-ups .tool ul{
-    /*position: absolute;*/
-    /*left: 0;*/
-    /*right: 0;*/
-    /*top: 0;*/
     height: 35px;
     background: #565656;
     transition: top 500ms;
@@ -435,108 +433,60 @@ img.rounded-circle.img-thumbnail {
     width: 100%;
 }
 #filesystem .path-array button{flex:unset}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@media (max-width:768px){
-    .upload {
-        width: auto;
-        right: 1%;
-        left: 1%;
-    }
-    .conf-switch.mr-3 {
-        margin-bottom: .5rem;
-    }
-    .left-side-menu {
-        -webkit-box-shadow: 0 0 35px 0 rgb(154 161 171 / 15%);
-        box-shadow: 0 0 35px 0 rgb(154 161 171 / 15%);
-        display: block!important;
-        top: 60px;
-        transform: translate3d(-75vw,0,0);
-        -ms-transform: translate3d(-75vw,0,0);
-        -webkit-transform: translate3d(-75vw,0,0);
-        transition: transform .4s;
-        -ms-transform: transform .4s;
-        -webkit-transform: transform .4s;
-    }
-    .sidebar-enable .left-side-menu {
-        display: block;
-        top: 60px;
-        transform: translateZ(0);
-        -ms-transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        transition: transform .4s;
-        -ms-transform: transform .4s;
-        -webkit-transform: transform .4s;
-    }
-    .button-menu-mobile {
-        height: 60px!important;
-        line-height: 60px!important;
-    }
-    .navbar-custom, .nav-user{
-        min-height: 60px!important;
-        right: 15px!important;
-    }
-    .navbar-custom .topbar-right-menu li{
-        max-height: 60px!important;
-    }
-    .notification-list .noti-icon{
-        line-height: 60px!important;
-    }
-    .notification-list .noti-icon-badge{
-        top: 18px!important;
-    }
-    .nav-user .account-user-avatar{
-        top: calc(28px / 2)!important;
-    }
-    .container-fluid{
-        transform: translateZ(0);
-        -ms-transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        transition: transform .4s;
-        -ms-transform: transform .4s;
-        -webkit-transform: transform .4s;
-    }
-    .modal-open .container-fluid{
-        transform: unset;
-        -ms-transform: unset;
-        -webkit-transform: unset;
-        transition: unset;
-        -ms-transform: unset;
-        -webkit-transform: unset;
-    }
-    .sidebar-enable .container-fluid{
-        position: fixed;
-        transform: translate3d(60vw,0,0);
-        -ms-transform: translate3d(60vw,0,0);
-        -webkit-transform: translate3d(60vw,0,0);
-        transition: transform .4s;
-        -ms-transform: transform .4s;
-        -webkit-transform: transform .4s;
-    }
-    #update-info .modal-body .alert{
-        margin: .75em 0 0 0!important;
-    }
-    #filesystem .path-array{
-        width: 60%;
-    }
-    #filesystem .other {
-        display: flex;
-        margin-top: 15px;
-        margin-left: -10px;
-    }
+.align-center{align-items: center!important;}
+.border-unset{border:unset!important}
+.btn-outline{
+    border: unset;
+    border-bottom: 1px solid rgb(255 255 255 / 70%);
+    border-radius: 0;
+    background-color: unset;
 }
+input[type=text].btn-outline:focus{
+    cursor: pointer;
+    border-bottom: 2px solid rgb(255 255 255 / 87%);
+    transition: all .4s ease;
+    -moz-transition: all .4s ease;
+    -webkit-transition: all .4s ease;
+    -o-transition: all .4s ease;
+    background-color: unset;
+}
+.btn-outline-white{
+    color: #ffffff;
+    border-color: #ffffff;
+}
+.btn-outline-white:hover {
+    color: #ffffff;
+    background-color: #e3eaef;
+    border-color: #e3eaef;
+}
+#options #fill-token-modal .btn-outline-white svg{fill:white}
+#options #fill-token-modal .btn-outline-white:hover > svg{fill:#313a46}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -54,15 +54,13 @@ class Placard extends Base
         // $msg    = '参数不存在！';
         // $result = [];
         
-        // $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
-        
         // // 存在的方法
         // $method = ['saves','remove'];
         
         // $mode   = !empty($param['mode']) ? $param['mode']  : 'saves';
         
         // // 动态方法且方法存在
-        // if (in_array($mode, $method)) $result = $this->$mode($param,$user);
+        // if (in_array($mode, $method)) $result = $this->$mode($param);
         // // 动态返回结果
         // if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
@@ -250,7 +248,7 @@ class Placard extends Base
     }
     
     // 新增或者修改数据
-    public function saves($param, $user)
+    public function saves($param)
     {
         // $data   = [];
         // $code   = 400;
@@ -272,8 +270,8 @@ class Placard extends Base
         // }
         
         // // 权限判断
-        // if (!in_array($user['data']->level, ['admin'])) $msg = '无权限';
-        // else if ($user['data']->status != 1) $msg = '账号被禁用';
+        // if (!in_array($this->user['data']->level, ['admin'])) $msg = '无权限';
+        // else if ($this->user['data']->status != 1) $msg = '账号被禁用';
         // else {
         //     $code = 200;
         //     $links->save();

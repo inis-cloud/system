@@ -20,7 +20,13 @@
                 insert_collapse: [],           // 插入收缩框
                 insert_tabs: [],               // 插入tabs
                 
-                opt: {password:''},            // opt字段
+                opt: {                         // opt字段
+                    password :  '',
+                    comments : {
+                        show : true,
+                        allow: true
+                    }
+                },
                 pwd_input_show: false,         // 显示设置访问密码框
             }
         },
@@ -56,6 +62,7 @@
                 this.initVditor()
             })
             
+            // 初始化插入数据
             this.initInsertData()
         },
         methods:{
@@ -300,13 +307,17 @@
                 axios.post('/index/WriteArticle', params).then((res) => {
                     if(res.data.code == 200){
                         
-                        this.article = res.data.data
+                        const result = res.data.data
+                        
+                        this.article = result
                         
                         let auth = [{id:"anyone",text:"公开"},{id:"private",text:"自己可见"},{id:"login",text:"登录可见"},{id:"password",text:"密码可见"}]
+                        let show_comments  = [{id:0,text:"显示"},{id:1,text:"不显示"}]
+                        let allow_comments = [{id:0,text:"允许"},{id:1,text:"不允许"}]
                         
                         if (!inisHelper.is.empty(id)) {
                             
-                            this.edit = res.data.data.article
+                            this.edit = result.article
                             // 设置编辑器初始值
                             this.contentEditor.setValue(this.edit.content)
                             
@@ -325,6 +336,8 @@
                             }
                             
                             $("#article-auth").empty()
+                            $("#show-comments").empty()
+                            $("#allow-comments").empty()
                             
                             let opt = this.article.article.opt
                             
@@ -337,6 +350,14 @@
                                             this.pwd_input_show = (item.id === "password") ? true : false
                                         }
                                     })
+                                }
+                                if (!inisHelper.is.empty(opt.comments)) {
+                                    
+                                    if (opt.comments.show  == 'true') show_comments[0].selected = true
+                                    else show_comments[1].selected  = true
+                                    
+                                    if (opt.comments.allow == 'true') allow_comments[0].selected = true
+                                    else allow_comments[1].selected = true
                                 }
                                 this.opt = opt
                             }
@@ -370,6 +391,17 @@
                         $("#article-auth").select2({
                             minimumResultsForSearch: Infinity,
                             data: auth
+                        })
+                        
+                        // select2 显示评论 初始化
+                        $("#show-comments").select2({
+                            minimumResultsForSearch: Infinity,
+                            data: show_comments
+                        })
+                        // select2 允许评论 初始化
+                        $("#allow-comments").select2({
+                            minimumResultsForSearch: Infinity,
+                            data: allow_comments
                         })
                         
                         $('#article-auth').on('select2:select', (e) => {
@@ -415,30 +447,32 @@
                 let font_count = document.querySelector('span.vditor-counter.vditor-tooltipped.vditor-tooltipped__nw').textContent
                 
                 this.opt.auth = $("#article-auth").select2("data")[0]['id']
+                this.opt.comments = {
+                    show  : ($("#show-comments").select2("data")[0]['id']  == 0) ? true : false,
+                    allow : ($("#allow-comments").select2("data")[0]['id'] == 0) ? true : false
+                }
                 
-                let params = new FormData
-                params.append('id',id || '')
-                params.append('title',this.edit.title || '')
-                params.append('content',this.contentEditor.getValue() || '')
-                params.append('description',this.edit.description || '')
-                params.append('img_src',this.edit.img_src || '')
-                params.append('sort_id[]',sort_id || '')
-                params.append('tag_id[]',tag_id || '')
-                params.append('tag_name[]',tag_name || '')
-                params.append('font_count',font_count || '')
-                for (let item in this.opt) params.append(`opt[${item}]`, this.opt[item] || '')
+                let params = inisHelper.stringfy({
+                    id, tag_id, sort_id,
+                    tag_name, font_count,
+                    opt         :   this.opt,
+                    title       :   this.edit.title,
+                    img_src     :   this.edit.img_src,
+                    description :   this.edit.description,
+                    content     :   this.contentEditor.getValue(),
+                })
                 
                 // 提交数据
                 axios.post('/index/method/SaveArticle', params).then((res) => {
-                    if(res.data.code == 200){
+                    if (res.data.code == 200) {
                         
                         $.NotificationApp.send("提示！", "保存成功！", "top-right", "rgba(0,0,0,0.2)", "info");
                         
                         window.onbeforeunload = () => null;
                         
-                        if(jump) setTimeout(()=>{window.location.href = '/index/ManageArticle'}, 500);
+                        if (jump) setTimeout(()=>{window.location.href = '/index/ManageArticle'}, 500);
                         
-                    }else $.NotificationApp.send("提示！", "保存失败！", "top-right", "rgba(0,0,0,0.2)", "info");
+                    } else $.NotificationApp.send("提示！", "保存失败！", "top-right", "rgba(0,0,0,0.2)", "info");
                 })
             },
             

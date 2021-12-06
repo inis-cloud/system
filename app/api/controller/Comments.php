@@ -68,7 +68,7 @@ class Comments extends Base
         $mode = (!empty($param['mode'])) ? $param['mode'] : null;
         
         // 登录时的 Token
-        $login_token = (!empty($param['login-token'])) ? $param['login-token'] : null;
+        $login_token  = !empty($header['login-token']) ? $header['login-token'] : (!empty($param['login-token']) ? $param['login-token'] : []);
         
         $param['agent'] = $header['user-agent'];
         $param['ip']    = $this->helper->GetClientIP();
@@ -82,13 +82,10 @@ class Comments extends Base
             // 存在的方法
             $method = ['move','edit','remove'];
             
-            // 解析用户 token
-            $user   = (!empty($param['login-token'])) ? $this->parseJWT($param['login-token']) : ['code'=>400,'data'=>[],'msg'=>'error'];
-            
             // 动态方法且方法存在
             if (in_array($mode, $method)) {
                 
-                $result = $this->$mode($param, $user);
+                $result = $this->$mode($param);
                 // 动态返回结果
                 if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
                 
@@ -97,17 +94,17 @@ class Comments extends Base
                 $comment = new CommentsModel;
                 
                 // 登录有效
-                if ($user['code'] == 200) {
+                if ($this->user['code'] == 200) {
                     
                     // 判断字段是否允许存储，防提权
                     foreach ($param as $key => $val) if (in_array($key, $obtain)) {
                         $comment->$key = $val;
                     }
                     
-                    $comment->users_id = $user['data']['id'];
-                    $comment->email    = $user['data']['email'];
-                    $comment->nickname = $user['data']['nickname'];
-                    $comment->url      = $user['data']['address_url'];
+                    $comment->users_id = $this->user['data']['id'];
+                    $comment->email    = $this->user['data']['email'];
+                    $comment->nickname = $this->user['data']['nickname'];
+                    $comment->url      = $this->user['data']['address_url'];
                     
                     // 不转换中文编码
                     $comment->opt = json_encode($comment->opt, JSON_UNESCAPED_UNICODE);
@@ -116,14 +113,14 @@ class Comments extends Base
                     $code    = 200;
                     $msg     = 'ok';
                     
-                    $param['email']    = $user['data']['email'];
-                    $param['nickname'] = $user['data']['nickname'];
-                    $param['url']      = $user['data']['address_url'];
+                    $param['email']    = $this->user['data']['email'];
+                    $param['nickname'] = $this->user['data']['nickname'];
+                    $param['url']      = $this->user['data']['address_url'];
                     
                     // 评论通知
                     self::notice($param);
                     
-                } else $msg = $user['msg'];    // 登录无效
+                } else $msg = $this->user['msg'];    // 登录无效
             }
             
         } else {    // 未登录提交的评论
@@ -216,9 +213,51 @@ class Comments extends Base
      */
     public function read(Request $request, $id)
     {
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
+        
         // 获取请求参数
         $param = $request->param();
         
+        // 存在的方法
+        $method = ['sql','type'];
+        
+        // 动态方法且方法存在
+        if (in_array($id, $method)) $result = $this->$id($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        return $this->create($data, $msg, $code);
+    }
+    
+    /**
+     * 保存更新的资源
+     *
+     * @param  \think\Request  $request
+     * @param  int  $id
+     * @return \think\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * 删除指定资源
+     *
+     * @param  int  $id
+     * @return \think\Response
+     */
+    public function delete($id)
+    {
+        //
+    }
+    
+    // SQL接口
+    public function sql($param)
+    {
         $where   = (empty($param['where']))   ? '' : $param['where'];
         $whereOr = (empty($param['whereOr'])) ? '' : $param['whereOr'];
         $page    = (!empty($param['page']))   ? $param['page']  : 1;
@@ -245,80 +284,54 @@ class Comments extends Base
         // 设置缓存名称
         $cache_name = 'comments/sql?page='.$page.'&limit='.$limit.'&order='.$order.'&where='.$where.'&whereOr='.$whereOr;
         
-        // SQL API
-        if ($id == 'sql') {
+        if (!empty($where)) {
             
-            if (!empty($where)) {
+            if (strstr($where, ';')) {      // 以 ; 号隔开参数
                 
-                if (strstr($where, ';')) {      // 以 ; 号隔开参数
+                $where = array_filter(explode(';', $where));
+                
+                foreach ($where as $val) {
                     
-                    $where = array_filter(explode(';', $where));
-                    
-                    foreach ($where as $val) {
-                        
-                        if (strstr($val, ',')) {
-                            $item = explode(',',$val);
-                            array_push($opt['where'],[$item[0],$item[1],$item[2]]);
-                        } else {
-                            $item = explode('=',$val);
-                            array_push($opt['where'],[$item[0],'=',$item[1]]);
-                        }
+                    if (strstr($val, ',')) {
+                        $item = explode(',',$val);
+                        array_push($opt['where'],[$item[0],$item[1],$item[2]]);
+                    } else {
+                        $item = explode('=',$val);
+                        array_push($opt['where'],[$item[0],'=',$item[1]]);
                     }
-                    
-                } else $opt['where'] = $where;  // 原生写法，以 and 隔开参数
-            }
-            
-            if (!empty($whereOr)) {
-                $whereOr = array_filter(explode(';', $whereOr));
-                foreach ($whereOr as $val) {
-                    $item = explode(',',$val);
-                    $opt['whereOr'][] = [$item[0],$item[1],$item[2]];
                 }
-            }
-            
-            // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
-            else {
-                $data = CommentsModel::ExpandAll(null, $opt);
-                Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
+                
+            } else $opt['where'] = $where;  // 原生写法，以 and 隔开参数
+        }
+        
+        if (!empty($whereOr)) {
+            $whereOr = array_filter(explode(';', $whereOr));
+            foreach ($whereOr as $val) {
+                $item = explode(',',$val);
+                $opt['whereOr'][] = [$item[0],$item[1],$item[2]];
             }
         }
         
-        return $this->create($data, $msg, $code);
-    }
-
-    /**
-     * 保存更新的资源
-     *
-     * @param  \think\Request  $request
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * 删除指定资源
-     *
-     * @param  int  $id
-     * @return \think\Response
-     */
-    public function delete($id)
-    {
-        //
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        else {
+            $data = CommentsModel::ExpandAll(null, $opt);
+            Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
+        }
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
     
     // 发起评论通知推送
     public function notice(array $param = [])
     {
         // 获取邮箱服务配置信息
-        $options  = Options::where(['keys'=>'email_serve'])->findOrEmpty();
+        $options  = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
         // 获取用户邮件模板
-        $template = Options::where(['keys'=>'email_template_2'])->findOrEmpty()['value'];
+        $templates= (!empty($options->value)) ? json_decode($options->value) : [];
+        $template = (!empty($templates)) ? $templates->template_2 : '';
         // 获取站点名称
-        $site     = Options::field(['value'])->where(['keys'=>'title'])->find()['value'];
+        $site     = Options::field(['opt'])->where(['keys'=>'site'])->find()['opt']->title;
         // 获取抄送邮箱
         $email    = array_unique(array_filter(explode(',',$options['opt']->email_cc)));
         // 获取站点地址
@@ -367,7 +380,7 @@ class Comments extends Base
         // 非站长评论
         else {
             // 获取站长邮件模板
-            $template = Options::where(['keys'=>'email_template_1'])->findOrEmpty()['value'];
+            $template = (!empty($templates)) ? $templates->template_1 : '';
             // 模板变量替换
             $template = str_replace($tags,$replace,$template);
             // 发送评论信息到邮箱
@@ -382,7 +395,7 @@ class Comments extends Base
                     // 发送评论信息到邮箱
                     if (!empty($email['email'] and !in_array($email['email'], $email_cc))) {
                         // 获取用户邮件模板
-                        $template = Options::where(['keys'=>'email_template_2'])->findOrEmpty()['value'];
+                        $template = (!empty($templates)) ? $templates->template_2 : '';
                         foreach ($tags as $key => $val) if ($val == '{author}') $replace[$key] = $param['nickname'];
                         // 模板变量替换
                         $template = str_replace($tags,$replace,$template);
@@ -402,9 +415,6 @@ class Comments extends Base
         if (empty($param['login-token'])) $result['msg'] = 'login-token 未提交';
         else {
             
-            // 解析用户 token
-            $user  = $this->parseJWT($param['login-token'])['data'];
-            
             // 允许用户提交并存储的字段
             $obtain = ['id','url','content','email','agent','ip','article_id','pid','nickname','create_time'];
             
@@ -413,7 +423,7 @@ class Comments extends Base
             // 判断字段是否允许存储，防提权
             foreach ($param as $key => $val) if (in_array($key, $obtain)) $comment->$key = $val;
             
-            if ($user->level == 'admin') {
+            if ($this->user['data']->level == 'admin') {
                 $comment->save();
                 $result['code'] = 200;
             } else $result['msg'] = '无权限';
@@ -423,7 +433,7 @@ class Comments extends Base
     }
     
     // 编辑评论
-    public function edit($param, $user)
+    public function edit($param)
     {
         $data = [];
         $code = 400;
@@ -445,7 +455,7 @@ class Comments extends Base
                 $msg  = '无数据';
             }
             
-            if (in_array($user['data']->level, ['admin'])) {
+            if (in_array($this->user['data']->level, ['admin'])) {
                 
                 $code = 200;
                 // 不转换中文编码
@@ -462,7 +472,7 @@ class Comments extends Base
     }
     
     // 删除数据
-    public function remove($param, $user)
+    public function remove($param)
     {
         $data = [];
         $code = 400;
@@ -476,7 +486,7 @@ class Comments extends Base
             $id = array_filter(explode(',', $id));
             
             // 存在该条数据
-            if (in_array($user['data']->level, ['admin'])) {
+            if (in_array($this->user['data']->level, ['admin'])) {
                 
                 $code = 200;
                 CommentsModel::destroy($id);

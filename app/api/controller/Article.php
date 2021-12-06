@@ -29,15 +29,13 @@ class Article extends Base
         $msg    = '参数不存在！';
         $result = [];
         
-        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
-        
         // 存在的方法
         $method = ['one','all'];
         
         $mode   = (empty($param['id'])) ? 'all' : 'one';
         
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param, $user);
+        if (in_array($mode, $method)) $result = $this->$mode($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
@@ -64,11 +62,9 @@ class Article extends Base
         $method = ['saves','remove','move'];
         
         $mode   = (empty($param['mode'])) ? 'saves' : $param['mode'];
-        // 解析用户 token
-        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
         
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param,$user);
+        if (in_array($mode, $method)) $result = $this->$mode($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
@@ -87,14 +83,17 @@ class Article extends Base
     public function read(Request $request, $id)
     {
         // 获取请求参数
-        $param = $request->param();
+        $param   = $request->param();
+        $header  = $request->header();
         
         $where   = (empty($param['where']))   ? '' : $param['where'];
         $whereOr = (empty($param['whereOr'])) ? '' : $param['whereOr'];
         $page    = (!empty($param['page']))   ? $param['page']  : 1;
         $limit   = (!empty($param['limit']))  ? $param['limit'] : 5;
         $order   = (!empty($param['order']))  ? $param['order'] : 'create_time desc';
-        $user    = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
+        $token   = !empty($header['login-token']) ? $header['login-token'] : (!empty($param['login-token']) ? $param['login-token'] : []);
+        // 解析用户 token
+        $user    = !empty($token) ? $this->parseJWT($token) : [];
         
         // 是否开启了缓存
         $api_cache = $this->config['api_cache'];
@@ -196,7 +195,7 @@ class Article extends Base
     }
     
     // typecho 迁移至 inis
-    public function move($param, $user)
+    public function move($param)
     {
         $result = ['data'=>[],'code'=>403,'msg'=>'ok'];
         
@@ -219,10 +218,10 @@ class Article extends Base
                 } else $article->$key = $val;
             }
             
-            $article->users_id         = $user['data']->id;
+            $article->users_id         = $this->user['data']->id;
             $article->last_update_time = time();
             
-            if ($user['data']->level == 'admin') {
+            if ($this->user['data']->level == 'admin') {
                 $article->save();
                 $result['code'] = 200;
             } else $result['msg'] = '无权限';
@@ -264,7 +263,7 @@ class Article extends Base
     }
     
     // 获取一篇文章
-    public function one($param, $user)
+    public function one($param)
     {
         $data = [];
         $code = 400;
@@ -309,31 +308,17 @@ class Article extends Base
             
             // 权限判断，防止不合理获取数据
             if (!empty($data['opt'])) {
+                
+                if ($data['opt']['auth'] == 'password') {
                     
-                    if ($data['opt']['auth'] == 'password') {
-                        
-                        if (empty($param['password'])) {
-                            $code = 403;
-                            $data = [];
-                            $msg  = '未经授权';
-                        } else if ($param['password'] != $data['opt']['password']) {
-                            $code = 403;
-                            $data = [];
-                            $msg  = '密码错误';
-                        } else {
-                            
-                            $msg  = '数据请求成功！';
-                            $code = 200;
-                            // 浏览量自增
-                            $this->visit($param);
-                        }
-                        
-                    } else if ((empty($user) or $user['code'] != 200) and ($data['opt']['auth'] == 'login' or $data['opt']['auth'] == 'private')) {
-                        
+                    if (empty($param['password'])) {
                         $code = 403;
                         $data = [];
                         $msg  = '未经授权';
-                        
+                    } else if ($param['password'] != $data['opt']['password']) {
+                        $code = 403;
+                        $data = [];
+                        $msg  = '密码错误';
                     } else {
                         
                         $msg  = '数据请求成功！';
@@ -342,6 +327,20 @@ class Article extends Base
                         $this->visit($param);
                     }
                     
+                } else if ((empty($this->user) or $this->user['code'] != 200) and ($data['opt']['auth'] == 'login' or $data['opt']['auth'] == 'private')) {
+                    
+                    $code = 403;
+                    $data = [];
+                    $msg  = '未经授权';
+                    
+                } else {
+                    
+                    $msg  = '数据请求成功！';
+                    $code = 200;
+                    // 浏览量自增
+                    $this->visit($param);
+                }
+                
             } else {
                 
                 $msg  = '数据请求成功！';
@@ -355,7 +354,7 @@ class Article extends Base
     }
     
     // 获取全部文章
-    public function all($param, $user)
+    public function all($param)
     {
         $data = [];
         $code = 400;
@@ -377,7 +376,7 @@ class Article extends Base
         $map2   = ['content' , 'like', '%'.$search.'%'];
         
         // 防止登录后有权限的文章不隐藏
-        if (!empty($user)) if (!empty($user['code']) == 200) $uid = $user['data']['id'];
+        if (!empty($this->user)) if (!empty($this->user['code']) == 200) $uid = $this->user['data']['id'];
         
         // 设置缓存名称
         $cache_name = 'article?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'].'&search='.$search.'&uid='.$uid;
@@ -398,7 +397,7 @@ class Article extends Base
                     ['delete_time','=',null],
                 ],
                 'is_all'=>  false,
-                'token' =>  $user,
+                'token' =>  $this->user,
                 'api'   =>  true
             ];
             
@@ -423,7 +422,7 @@ class Article extends Base
     }
     
     // 保存文章
-    public function saves($param, $user)
+    public function saves($param)
     {
         $data = [];
         $code = 400;
@@ -446,21 +445,21 @@ class Article extends Base
             } else $article->$key = $val;
         }
         
-        $article->users_id         = $user['data']->id;
+        $article->users_id         = $this->user['data']->id;
         $article->last_update_time = time();
         
         if (empty($param['tag_id']))   $param['tag_id']   = [];
         if (empty($param['tag_name'])) $param['tag_name'] = [];
         
         // 权限处理 - 防止修改非自己的数据
-        if (!empty($param['id']) and !in_array($user['data']->level, ['admin'])) {
+        if (!empty($param['id']) and !in_array($this->user['data']->level, ['admin'])) {
             
             $array_id     = [];
-            $user_article = ArticleModel::where(['users_id'=>$user['data']->id])->field(['id'])->select();
+            $user_article = ArticleModel::where(['users_id'=>$this->user['data']->id])->field(['id'])->select();
             foreach ($user_article as $val) array_push($array_id, $val->id);
             
             // 是自己的数据才允许修改
-            if (in_array((int)$param['id'], $array_id) and (int)$user['data']->status == 1) {
+            if (in_array((int)$param['id'], $array_id) and (int)$this->user['data']->status == 1) {
                 
                 $code = 200;
                 $article->save();
@@ -473,7 +472,7 @@ class Article extends Base
                 $msg  = "无权限！";
             }
             
-        } else if ((int)$user['data']->status == 1) {
+        } else if ((int)$this->user['data']->status == 1) {
             
             $code = 200;
             $article->save();
@@ -487,7 +486,7 @@ class Article extends Base
     }
     
     // 删除数据
-    public function remove($param, $user)
+    public function remove($param)
     {
         $data = [];
         $code = 403;
@@ -505,10 +504,10 @@ class Article extends Base
             // 提交需要被删除的文章ID
             $article_id = array_filter(explode(',', $param['id']));
             // 属于用户的文章ID
-            $user_article_id = ArticleModel::where(['users_id'=>$user['data']->id])->field(['id'])->column(['id']);
+            $user_article_id = ArticleModel::where(['users_id'=>$this->user['data']->id])->field(['id'])->column(['id']);
             
             // 管理员权限
-            if (in_array($user['data']->level, ['admin'])) ArticleModel::destroy($article_id, $destroy);
+            if (in_array($this->user['data']->level, ['admin'])) ArticleModel::destroy($article_id, $destroy);
             else {
                 $del_id = [];
                 // 非管理员只能删除属于自己的文章

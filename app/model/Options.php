@@ -7,9 +7,9 @@ use think\Model;
 class Options extends Model
 {
 
-    public function GetOpt()
+    public function one()
     {
-        return self::column('value','keys');
+        return self::column('*','keys');
     }
     
     // OPT字段获取器 - 获取前修改

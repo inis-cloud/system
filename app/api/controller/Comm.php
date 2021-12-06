@@ -227,18 +227,18 @@ class Comm extends BaseController
     // 获取 Token 接口
     public function token()
     {
-        $options = Options::where(['keys'=>'site_conf'])->find();
+        $options = Options::where(['keys'=>'config:security'])->find();
         
-        if($options->opt->token['status'] == 0){
+        if($options->opt->token->status == 0){
             $data = [];
             $msg  = '未开启 Token 验证';
             $code = 204;
-        }elseif ($options->opt->token['open'] == 0){
+        }elseif ($options->opt->token->open == 0){
             $data = ['想什么呢，Token这么重要的东西，能给你吗？'];
             $msg  = '未经授权！';
             $code = 403;
         }else{
-            $data = $options->opt->token['value'];
+            $data = $options->opt->token->value;
             $msg  = '请求成功！';
             $code = 200;
         }

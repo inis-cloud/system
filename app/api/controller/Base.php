@@ -2,6 +2,7 @@
 
 namespace app\api\controller;
 
+use think\Request;
 use think\Response;
 use app\model\Users;
 use inis\utils\File;
@@ -27,12 +28,22 @@ abstract class Base
     protected $middleware = [api::class, handle::class];
     
     // 构造器
-    public function __construct()
+    public function __construct(Request $request)
     {
         $this->tool   = new Tool;
         $this->File   = new File;
         $this->helper = new helper;
         $this->config = Config::get('inis');
+        
+        // 获取请求参数
+        $param  = $request->param();
+        $header = $request->header();
+        
+        $this->header = $header;
+        
+        // 解析login-token
+        $token  = !empty($header['login-token']) ? $header['login-token'] : (!empty($param['login-token']) ? $param['login-token'] : []);
+        $this->user   = !empty($token) ? $this->parseJWT($token) : [];
     }
 
     protected function create($data, string $msg = '', int $code = 200, string $type = 'json') : Response

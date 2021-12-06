@@ -41,14 +41,14 @@ class handle
         // 需要校验登录请求方式
         $method = ['POST','PUT','DELETE'];
         // 允许免登陆的请求接口
-        $obtain = ['search','comments','verify-code','test'];
+        $obtain = ['search','comments','verify-code','test','proxy'];
         $allow  = ['users?mode=login','users?mode=register'];
         // 请求接口地址
         $path   = $request->pathinfo();
         
         $mode   = !empty($param['mode']) ? $param['mode'] : null;
         
-        $request->param = 'ThinkPHP';
+        // $request->param = 'ThinkPHP';
         
         // ↑↑↑ 前置中间件执行区域 ↑↑↑
         $reponse = $next($request);
@@ -57,8 +57,12 @@ class handle
         if (in_array($request->method(true), $method))
         {
             $map1 = (in_array($path, $obtain) || in_array($path.'?mode='.$mode, $allow));
+            $map2 = $request->method(true) === "PUT";
+            $map3 = $request->method(true) === "POST";
+            $map4 = $request->method(true) === "DELETE";
+            
             // 允许未登录操作
-            if ($request->method(true) === "POST" and $map1) {
+            if (($map2 or $map3 or $map4) and $map1) {
                 
                 // code ...
                 

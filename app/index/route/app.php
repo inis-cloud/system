@@ -7,7 +7,10 @@ Route::group('comm', function (){
 });
 
 Route::group('test', function (){
-    Route::rule(':name', 'Test/:name');
+    Route::rule(':name', 'Test/:name')->allowCrossDomain([
+        'Access-Control-Allow-Origin'        => '*',
+        'Access-Control-Allow-Credentials'   => 'true'
+    ]);;
 });
 
 Route::group('method', function (){

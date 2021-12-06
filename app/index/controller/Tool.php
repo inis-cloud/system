@@ -115,7 +115,7 @@ class Tool
     // 邮箱发送
     public function sendMail($to,$title,$content)
     {
-        $options = Options::where(['keys'=>'email_serve'])->findOrEmpty();
+        $options = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
         
     	$mail = new PHPMailer;
     	

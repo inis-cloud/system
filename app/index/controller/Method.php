@@ -278,7 +278,9 @@ class Method extends Base
             $code = 200;
             $msg  = 'ok';
             
-            if (empty($param['title'])) $param['title'] = '未命名文章';
+            if (empty($param['tag_id']))  $param['tag_id'] = [];
+            if (empty($param['sort_id'])) $param['sort_id'] = [];
+            if (empty($param['title']))   $param['title'] = '未命名文章';
             
             // 允许用户提交并存储的字段
             $obtain = ['title','content','description','img_src','font_count','sort_id','tag_name','tag_id','last_update_time','opt'];
@@ -307,12 +309,14 @@ class Method extends Base
             $article->save();
             
             // 插入标签数据
-            (new Tag)->TagSave($article->id, $param['tag_id'], array_filter($param['tag_name']));
+            (new Tag)->TagSave($article->id, $param['tag_id'], array_filter(
+                (empty($param['tag_name'])) ? [] : $param['tag_name'] 
+            ));
             
             // 清除缓存
             Cache::tag('article')->clear();
             
-            return $this->create($article,$code,$msg);
+            return $this->create($data,$code,$msg);
         }
     }
     
@@ -683,13 +687,16 @@ class Method extends Base
             $msg  = '错误！';
             
             // 允许用户提交并存储的字段
-            $obtain = ['title','description','url','img'];
+            $obtain = ['title','description','url','img','opt'];
             
             if (!empty($param['id'])) $banner = Banner::find($param['id']);
             else $banner = new Banner;
             
             // 存储数据 - 判断字段是否允许存储，防提权
-            foreach ($param as $key => $val) if (in_array($key, $obtain)) $banner->$key = $val;
+            foreach ($param as $key => $val) if (in_array($key, $obtain)) {
+                if ($key == 'opt') $banner->$key = json_encode($val, JSON_UNESCAPED_UNICODE);
+                else $banner->$key = $val;
+            }
             $code = 200;
             $msg  = '保存成功！';
             
@@ -910,58 +917,6 @@ class Method extends Base
     }
     
     /** 
-     * @name 修改配置服务
-     */
-    public function SaveConfigure(Request $request)
-    {
-        if ($request->isPost()){
-            
-            $param = $request->param();
-            
-            $data = [];
-            $code = 200;
-            $msg  = 'OK';
-            
-            if(empty($param['template_1'])) $param['template_1'] = '';
-            if(empty($param['template_2'])) $param['template_2'] = '';
-            if(empty($param['template_3'])) $param['template_3'] = '';
-            
-            $template_1 = $param['template_1'];
-            $template_2 = $param['template_2'];
-            $template_3 = $param['template_3'];
-            
-            unset($param['name']);
-            unset($param['template_1']);
-            unset($param['template_2']);
-            unset($param['template_3']);
-            
-            $options = Options::where(['keys'=>'email_serve'])->findOrEmpty();
-            
-            // 邮箱模板数据
-            $email_template_1 = Options::where(['keys'=>'email_template_1'])->findOrEmpty();
-            $email_template_2 = Options::where(['keys'=>'email_template_2'])->findOrEmpty();
-            $email_template_3 = Options::where(['keys'=>'email_template_3'])->findOrEmpty();
-            if ($email_template_1->isEmpty()) $email_template_1->keys = 'email_template_1';
-            if ($email_template_2->isEmpty()) $email_template_2->keys = 'email_template_2';
-            if ($email_template_3->isEmpty()) $email_template_3->keys = 'email_template_3';
-            $email_template_1->value = $template_1;
-            $email_template_2->value = $template_2;
-            $email_template_3->value = $template_3;
-            
-            if ($options->isEmpty()) $options->keys = 'email_serve';
-            foreach ($param as $key => $val) $options->opt->$key = $val;
-            
-            $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
-            $options->save();
-            $email_template_1->save();
-            $email_template_2->save();
-            $email_template_3->save();
-            
-            return $this->create($data,$code,$msg);
-        }
-    }
-    
-    /** 
      * @name 新增和修改权限规则
      */
     public function SaveAuthRule(Request $request)
@@ -1108,7 +1063,7 @@ class Method extends Base
             $msg  = 'ok';
             
             // 允许用户提交并存储的字段
-            $obtain = ['title','type','content'];
+            $obtain = ['title','type','content','opt'];
             
             if (empty($param['id'])) $placard = new Placard;
             else $placard = Placard::find($param['id']);
@@ -1116,7 +1071,10 @@ class Method extends Base
             // 存储数据
             foreach ($param as $key => $val) {
                 // 判断字段是否允许存储，防提权
-                if (in_array($key, $obtain)) $placard->$key = $val;
+                if (in_array($key, $obtain)) {
+                    if ($key == 'opt') $placard->$key = json_encode($val, JSON_UNESCAPED_UNICODE);
+                    else $placard->$key = $val;
+                }
             }
             
             $placard->save();
@@ -1155,6 +1113,55 @@ class Method extends Base
         }
     }
     
-
+    /** 
+     * @name 保存配置
+     */
+    public function SaveOptions(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $data = [];
+            $code = 400;
+            $msg  = 'ok';
+            
+            $param = $request->param();
+            
+            if (empty($param['key'])) $msg = 'key不得为空！';
+            else {
+                
+                // 存在的keys
+                $keys = ['site','config:security','config:applets','config:system','config:email-serve'];
+                
+                // 允许用户提交并存储的字段
+                $obtain = ['opt','value'];
+                
+                // 动态方法 且 keys 存在
+                if (in_array($param['key'], $keys)) {
+                    
+                    $options = Options::where(['keys'=>$param['key']])->find();
+                    
+                    // 存储数据
+                    foreach ($param as $key => $val) {
+                        // 判断字段是否允许存储，防提权
+                        if (in_array($key, $obtain)) {
+                            if ($key == 'opt') $options->$key = json_encode($val, JSON_UNESCAPED_UNICODE);
+                            else $options->$key = $val;
+                        }
+                    }
+                    
+                    $options->save();
+                    
+                    $code = 200;
+                    $data = $options;
+                }
+            }
+            
+            // 清除缓存
+            Cache::tag('options')->clear();
+            
+            return $this->create($data,$code,$msg);
+        }
+    }
+    
     // END
 }

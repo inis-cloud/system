@@ -3,13 +3,14 @@
     const app = Vue.createApp({
         data() {
             return {
-                options: {},                // 站点信息
+                site: {},                   // 站点信息
                 token: {},                  // token信息
                 token_switch: false,        // token验证开关
                 token_open_switch: false,   // token API开关
                 domain: {},                 // 白名单信息
                 domain_switch: false,       // 白名单开关
                 master: [],                 // 站长信息
+                self_domain: '',            // 当前域名
             }
         },
         components: {
@@ -19,7 +20,10 @@
             'i-right-side': inisTemp.sidebar('right'),
         },
         mounted() {
+            
             this.initData()
+            
+            this.self_domain = window.location.protocol + '//' + window.location.host + '/api/comm/token'
         },
         methods: {
             
@@ -33,9 +37,11 @@
                 
                 axios.post('/index/options').then((res) => {
                     if(res.data.code == 200){
-                        this.options = res.data.data
-                        this.token   = res.data.data.token
-                        this.domain  = res.data.data.domain
+                        
+                        let result   = res.data.data
+                        this.site    = result.site
+                        this.token   = result.token
+                        this.domain  = result.domain
                         // Token 开关
                         if(res.data.data.token.status == 1) this.token_switch = true
                         else this.token_switch = false
@@ -102,17 +108,13 @@
             
             // 保存配置信息
             btnSave(){
-                // 删除多余字段
-                delete this.options.token
-                delete this.options.domain
                 
-                let params = new FormData()
-                    
-                for(let item in this.options){
-                    params.append(item,this.options[item] || '')
-                }
+                const params = inisHelper.stringfy({
+                    'key' :'site',
+                    'opt' :this.site
+                })
                 
-                axios.post('/index/method/EditOptions', params).then((res) => {
+                axios.post('/index/method/SaveOptions', params).then((res) => {
                     if(res.data.code == 200){
                         $.NotificationApp.send("", "保存成功！", "top-right", "rgba(0,0,0,0.2)", "success");
                     }else{
@@ -144,11 +146,11 @@
                             "Content-Type": "multipart/form-data"
                         }
                     }).then((res) => {
-                        if(res.data.code == 200){
+                        if (res.data.code == 200) {
                             this.getOptions()
                             e.target.value = ''
                             $.NotificationApp.send("上传成功！", "头像已更新！", "top-right", "rgba(0,0,0,0.2)", "success");
-                        }else $.NotificationApp.send("上传失败！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
+                        } else $.NotificationApp.send("上传失败！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
                     })
                 }
             },
@@ -162,7 +164,7 @@
                 if(status == 1) status = 0;
                 else if(status == 0) status = 1;
                 
-                let params = new FormData()
+                let params = new FormData
                 params.append('status',status || '')
                 
                 axios.post('/index/handle/SetToken', params).then((res) => {
@@ -179,6 +181,22 @@
                         this.token.value  = res.data.data.token
                     }
                 })
+            },
+            
+            // 保存Token
+            saveToken(){
+                
+                const params = inisHelper.stringfy({
+                    token: this.token.value
+                })
+                
+                axios.post('/index/handle/SaveToken', params).then(res=>{
+                    if (res.data.code == 200) {
+                        // 关闭 model 窗口
+                        $('#fill-token-modal').modal('toggle')
+                    } else $.NotificationApp.send("错误！", "请检查网络是否正常！", "top-right", "rgba(0,0,0,0.2)", "warning");
+                })
+                
             },
             
             // 允许通过API方式获取Token
@@ -210,7 +228,7 @@
             // 刷新Token
             resetToken(){
                 
-                let params = new FormData()
+                let params = new FormData
                 params.append('code',1 || '')
                 
                 axios.post('/index/handle/ResetToken', params).then((res) => {
@@ -255,17 +273,19 @@
                 
                 domain = domain.split(/[(\r\n)\r\n]+/).join(',');
                 
-                let params = new FormData()
-                params.append('domain',domain || '')
+                const params = inisHelper.stringfy({
+                    key:'config:security',
+                    value:domain
+                })
                 
-                axios.post('/index/method/EditOptions', params).then((res) => {
+                axios.post('/index/method/SaveOptions', params).then((res) => {
                     if(res.data.code == 200){
-                        $.NotificationApp.send("操作信息！", "保存成功！", "top-right", "rgba(0,0,0,0.2)", "success");
+                        $.NotificationApp.send("提示！", "保存成功！", "top-right", "rgba(0,0,0,0.2)", "info");
                     }else{
-                        $.NotificationApp.send("保存失败！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
+                        $.NotificationApp.send("错误！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
                     }
                 })
-            }
+            },
         }
     }).mount('#options')
 

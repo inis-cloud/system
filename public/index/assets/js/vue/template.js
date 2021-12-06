@@ -41,14 +41,41 @@ class inisTemplate
         const login = {
             data() {
                 return {
-                    year: null  // 当前年份
+                    copy: '',    // 备案号
+                    year: null,  // 当前年份
+                    text: {      // 内置一言
+                        is_show: false,
+                        data: '',
+                    },
                 }
             },
             mounted() {
+                this.getText()
+                this.initData()
                 this.year  = (new Date).getFullYear()
             },
+            methods: {
+                // 初始化数据
+                initData(){
+                    axios.put('/index/comm/login').then(res=>{
+                        if (res.data.code == 200) this.copy = res.data.data.copy
+                    })
+                },
+                // 获取内置一言
+                getText(){
+                    axios.get('/api/file/words').then(res=>{
+                        if (res.data.code == 200) {
+                            this.text = {
+                                is_show: true,
+                                data: res.data.data
+                            }
+                        } else if (res.data.code == 204) this.text.is_show = false
+                    })
+                }
+            },
             template: `<footer class="footer footer-alt">
-                2020 - {{ year }} © INIS - <a href="//inis.cc" class="text-muted" target="_blank">inis.cc</a>
+                <div v-show="text.is_show">「{{ text.data }}」</div>
+                2020 - {{ year }} © INIS - <a href="//inis.cc" class="text-muted" target="_blank">inis.cc</a> | <a href="https://beian.miit.gov.cn" class="text-muted" target="_blank">{{ copy }}</a>
             </footer>
             `
         }
@@ -493,6 +520,7 @@ class inisTemplate
                                 <span class="menu-arrow"></span>
                             </a>
                             <ul class="side-nav-second-level" aria-expanded="false">
+                                <li><a href="/index/applets">小程序</a></li>
                                 <li><a href="/index/configure">配置服务</a></li>
                                 <li v-if="false"><a href="/index/AuthRule">权限规则</a></li>
                                 <li v-if="false"><a href="/index/authority">权限配置</a></li>

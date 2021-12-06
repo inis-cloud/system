@@ -123,12 +123,19 @@
                                             <!--公开、私密、登录可见、密码保护-->
                                             <div class="form-group mb-3">
                                                 <p class="mb-1 mt-3 font-weight-bold text-muted">文章权限</p>
-                                                <select id="article-auth" class="form-control select2" data-toggle="select2">
-                                                </select>
+                                                <select id="article-auth" class="form-control select2" data-toggle="select2"></select>
                                             </div>
                                             <div v-show="pwd_input_show" class="form-group mb-3">
                                                 <p class="mb-1 mt-3 font-weight-bold text-muted">设置访问密码</p>
                                                 <input v-model="opt.password" type="text" class="form-control" placeholder="设置一个访问密码">
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <p class="mb-1 mt-3 font-weight-bold text-muted">显示评论</p>
+                                                <select id="show-comments" class="form-control select2" data-toggle="select2"></select>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <p class="mb-1 mt-3 font-weight-bold text-muted">允许评论</p>
+                                                <select id="allow-comments" class="form-control select2" data-toggle="select2"></select>
                                             </div>
                                         </div>
                                     </div>

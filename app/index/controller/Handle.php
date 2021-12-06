@@ -48,7 +48,7 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $options = Options::where(['keys'=>'site_conf'])->find();
+            $options = Options::where(['keys'=>'config:security'])->find();
             
             if($param['status'] == 1){
                 
@@ -88,7 +88,7 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $options = Options::where(['keys'=>'site_conf'])->find();
+            $options = Options::where(['keys'=>'config:security'])->find();
             
             if($param['status'] == 1){
                 
@@ -122,7 +122,7 @@ class Handle extends Base
             
             $token = md5($this->token_prefix.time());
             
-            $options = Options::where(['keys'=>'site_conf'])->find();
+            $options = Options::where(['keys'=>'config:security'])->find();
             
             if($param['code'] == 1){
                 $options->opt->token->value = $token;
@@ -141,7 +141,32 @@ class Handle extends Base
             return $this->create($data,$code,$msg);
         }
     }
-
+    
+    /**
+     * @name 保存Token
+     */
+    public function SaveToken(Request $request)
+    {
+        if ($request->isPost()) {
+            
+            $data = [];
+            $code = 200;
+            $msg  = 'ok';
+            
+            $param = $request->param();
+            
+            $token = (!empty($param['token'])) ? $param['token'] : '';
+            
+            $options = Options::where(['keys'=>'config:security'])->find();
+            
+            $options->opt->token->value = $token;
+            $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
+            $options->save();
+            
+            return $this->create($data,$code,$msg);
+        }
+    }
+    
     /** 
      * @name 设置站点白名单开关
      */
@@ -154,7 +179,7 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $options = Options::where(['keys'=>'site_conf'])->find();
+            $options = Options::where(['keys'=>'config:security'])->find();
             
             if($param['status'] == 1){
                 
@@ -465,9 +490,9 @@ class Handle extends Base
             $code = 200;
             $msg  = '保存成功！';
             
-            $options = Options::where(['keys'=>'email_serve'])->findOrEmpty();
+            $options = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
             
-            if ($options->isEmpty()) $options->keys = 'email_serve';
+            if ($options->isEmpty()) $options->keys = 'config:email-serve';
             $options->opt->email_cc = $param['email_cc'];
             
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
@@ -732,7 +757,7 @@ class Handle extends Base
             else {
                 
                 $mail = new PHPMailer;
-            
+                
                 // $mail->SMTPDebug = 1;
                 
                 $mail->isSMTP();

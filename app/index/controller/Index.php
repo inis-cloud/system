@@ -177,21 +177,42 @@ class Index extends Base
     {
         if($request->isPost()){
             
-            $site_conf = Options::where(['keys'=>'site_conf'])->findOrEmpty();
+            $security = Options::where(['keys'=>'config:security'])->findOrEmpty();
             
-            // if (!$site_conf->isEmpty()) $site_conf->opt = json_decode($site_conf->opt);
+            // 安全配置初始化
+            if ($security->isEmpty()) {
+                
+                $security->keys  = 'config:security';
+                $security->value = '*';
+                $security->opt   = json_encode([
+                    'token' => ['open'  => 0,'value' => '','status'=> 0],
+                    'domain'=> ['status'=> 0]
+                ], JSON_UNESCAPED_UNICODE);
+                
+                $security->save();
+            }
             
-            if(empty($site_conf->opt->domain))        $site_conf->opt->domain->status = 0;
-            if(empty($site_conf->opt->token->open))   $site_conf->opt->token->open    = 0;
-            if(empty($site_conf->opt->token->status)) $site_conf->opt->token->status  = 0;
+            $site = Options::where(['keys'=>'site'])->findOrEmpty();
+            // 如果不存在，则新增该字段
+            if ($site->isEmpty()) {
+                
+                $site->keys = 'site';
+                $site->opt  = json_encode([
+                    'title'      => 'INIS API',
+                    'keywords'   => 'INIS API,inis博客系统,inis程序,inis系统',
+                    'description'=> 'inis · 新一代博客系统！这是市面上为数不多的新一代博客系统，整站封装，全站分离，真正意义上的前后端分离。每一行代码都用心设计，用最少的代码量和最优雅架构设计，实现最完美的系统，让你拥有更极致的体验。复杂的研究留给我们，简单的体验留给用户！',
+                    'image'      => '//q.qlogo.cn/g?b=qq&nk=97783391&s=640',
+                    'favicon'    => '//q.qlogo.cn/g?b=qq&nk=97783391&s=640',
+                    'url'        => '',
+                    'copy'       => '备案号'
+                ], JSON_UNESCAPED_UNICODE);
+                
+                $site->save();
+            }
             
-            $opt = (new Options)->GetOpt();
-            $obtain = ['title','keywords','description','site_img','site_url','site_ico','copy'];
-            
-            foreach ($obtain as $key => $val) $data[$val] = $opt[$val];
-            
-            $data['token']  = $site_conf->opt->token;
-            $data['domain'] = ['value'=>str_replace(",","\n", $opt['domain']),'status'=>$site_conf->opt->domain];
+            $data['site']   = $site['opt'];
+            $data['token']  = $security->opt->token;
+            $data['domain'] = ['value'=>str_replace(",","\n", $security->value),'status'=>$security->opt->domain];
             
             $code = 200;
             $msg  = 'ok';
@@ -201,7 +222,7 @@ class Index extends Base
         
         return View::engine('php')->fetch('/page/options');
     }
-
+    
     /** 
      * @name 撰写文章
      */
@@ -571,9 +592,10 @@ class Index extends Base
             ];
             
             // 获取数据
-            $banner = Banner::ExpandAll(null, $opt);
+            $banner  = Banner::ExpandAll(null, $opt);
+            $article = Article::where(['is_show'=>1])->order('last_update_time','desc')->field(['id','title','last_update_time'])->select(); 
             
-            $data = ['banner'=>$banner];
+            $data = ['banner'=>$banner,'article'=>$article];
             
             // 查询操作
             if (!empty($param['id'])) {
@@ -647,26 +669,63 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            $options = Options::where(['keys'=>'email_serve'])->findOrEmpty();
+            // 邮件服务
+            $email_serve   = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
             
-            if ($options->isEmpty()) {
-                // 如果不存在，则新增该字段
-                $options->keys = 'email_serve';
-                $options->save();
+            // 初始化数据
+            if ($email_serve->isEmpty()) {
+                
+                $email_serve->keys  = 'config:email-serve';
+                $email_serve->opt   = json_encode([
+                    "port"    => "587",
+                    "smtp"    => "smtp.qq.com",
+                    "email"   => "",
+                    "encry"   => "tls",
+                    "encoded" => "UTF-8",
+                    "email_cc"=> "",
+                    "nickname"=> "兔子",
+                    "password"=> "",
+                    "to_email"=> "",
+                    "title"   => "测试邮件服务",
+                    "content" => "当您看到这条邮件信息时，表示您的邮件服务配置成功"
+                ], JSON_UNESCAPED_UNICODE);
+                $email_serve->value = json_encode([
+                    'template_1'=>'<div style="width:550px;height:auto;border-radius:5px;margin:0 auto;box-shadow:0px 0px 20px #888888;position:relative"><div style="background-image:url(//test.inis.cn/api/file/random);width:550px;height:250px;background-size:cover;background-repeat:no-repeat;border-radius:5px 5px 0px 0px"></div><div style="background-color:white;line-height:180%;padding:0 15px 12px;width:520px;margin:10px auto;color:#555555;font-size:12px;margin-bottom:0px"><h2 style="font-size:14px;font-weight:normal;padding:13px 0 10px 8px">您的<a style="text-decoration:none;color:#ff7272">《{article}》</a>有了新的评论：</h2><div style="padding:0 12px 0 12px;margin-top:18px"><p><strong>{nickname}</strong>&nbsp;给您的评论：</p><p style="background-color:#f5f5f5;border:0px solid #DDD;border-radius:5px;padding:10px 15px;margin:18px 0">{text}</p><p>详细信息：</p><p style="background-color:#f5f5f5;border:0px solid #DDD;border-radius:5px;padding:10px 15px;margin:18px 0">IP：{ip}<br/>邮箱：<a href=mailto:{email}style="text-decoration:none;color:#ff7272">{email}</a></p></div></div><a href={admin_url}target=_blank style="text-decoration:none;color:rgb(255,255,255);width:40%;text-align:center;background-color:rgb(255,114,114);height:40px;line-height:40px;box-shadow:3px 3px 3px rgba(0,0,0,0.3);display:block;margin:auto">查看回复的完整內容</a><div style="color:#8c8c8c;font-size:10px;width:100%;text-align:center;padding-bottom:1px"><p>©2019-2021 Copyright{site}</p></div></div>',
+                    'template_2'=>'<div style="width:550px;height:auto;border-radius:5px;margin:0 auto;box-shadow:0px 0px 20px #888888;position:relative;padding-bottom:5px"><div style="background-image:url(//test.inis.cn/api/file/random);width:550px;height:300px;background-size:cover;background-repeat:no-repeat;border-radius:5px 5px 0px 0px"></div><div style="width:200px;height:40px;background-color:rgb(255,114,114);margin-top:-20px;margin-left:20px;box-shadow:3px 3px 3px rgba(0,0,0,0.3);color:rgb(255,255,255);text-align:center;line-height:40px">亲爱的{nickname}</div><div style="background-color:white;line-height:180%;padding:0 15px 12px;width:520px;margin:30px auto;color:#555555;font-size:12px;margin-bottom:0px"><h2 style="font-size:14px;font-weight:normal;padding:13px 0 10px 8px">您在<a href={site_url}target=_blank style="text-decoration:none;color:#ff7272">《{article}》</a>的评论有了新的回复：</h2><div style="padding:0 12px 0 12px;margin-top:18px"><p>您的评论：</p><p style="background-color:#f5f5f5;border:0px solid #DDD;border-radius:5px;padding:10px 15px;margin:18px 0">{text}</p><p><strong>{author}</strong>&nbsp;给您的回复：</p><p style="background-color:#f5f5f5;border:0px solid #DDD;border-radius:5px;padding:10px 15px;margin:18px 0">{content}</p></div></div><div style="word-wrap:break-word;margin-top:-30px;color:#8c8c8c;font-size:10px;width:100%;text-align:center;"><p style=padding:20px>萤火虫消失之后，那光的轨迹仍久久地印在我的脑际。那微弱浅淡的光点，仿佛迷失方向的魂灵，在漆黑厚重的夜幕中彷徨。——《挪威的森林》村上春树</p></div><a href={site_url}target=_blank style="text-decoration:none; color:#FFF;width: 40%;text-align: center;background-color:#ff7272;height: 40px;line-height: 35px;box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.30);margin: -10px auto;display: block;">查看回复的完整內容</a><div style="color:#8c8c8c;font-size:10px;width:100%;text-align:center;"><p style=margin-top:30px>本邮件为系统自动发送，请勿直接回复~</p></div><div style="color:#8c8c8c;font-size:10px;width:100%;text-align:center;"><p>©2019-2021 Copyright{site}</p></div></div>',
+                    'template_3'=>'<div style="margin: 0 auto;width: 800px;"><table border="0"cellspacing="0"cellpadding="0"width="800"bgcolor="#0092ff"height="66"><tbody><tr><td width="50"></td><td width="750"><img style="WIDTH: 135px"src="{domain}/index/assets/images/logo-1.png"></td></tr></tbody></table><table style="FONT-FAMILY: 黑体; FONT-SIZE: 10pt"border="0"cellspacing="0"cellpadding="50"width="800"><tbody><tr><td width="800"><div><div style="FONT-SIZE: 11pt">{email}，您好！</div><br><div style="FONT-SIZE: 11pt">以下是您用于验证身份的验证码，请在<span style="color:red">{valid_time}内</span>输入并完成验证。如非本人操作，请忽略此邮件。</div><br><br><div><span style="COLOR: #0094ff; FONT-SIZE: 40pt">{code}</span></div><br><br><hr style="BORDER-BOTTOM: #808080 0px dashed; BORDER-LEFT: #808080 0px dashed; HEIGHT: 1px; BORDER-TOP: #808080 1px dashed; BORDER-RIGHT: #808080 0px dashed"><br><div style="COLOR: #808080">此邮件由系统自动发出，系统不接受回信，因此请勿直接回复。<br>安全使用您的帐号注意事项：<br>1、请不要在其他网站上使用相同的邮箱和密码进行注册。<br>2、请不要告知任何人您的帐号密码信息。<br><br>如果您错误的收到本电子邮件，请您忽略上述内容。</div><br><hr style="BORDER-BOTTOM: #808080 0px dashed; BORDER-LEFT: #808080 0px dashed; HEIGHT: 1px; BORDER-TOP: #808080 1px dashed; BORDER-RIGHT: #808080 0px dashed"><div><br></div><div style="TEXT-ALIGN: right; FONT-SIZE: 11pt">{site}</div><div style="TEXT-ALIGN: right; FONT-SIZE: 11pt">{time}</div></div></td></tr></tbody></table></div>'
+                ], JSON_UNESCAPED_UNICODE);
+                
+                $email_serve->save();
             }
             
-            $email_serve = $options['opt'];
-            if(!empty($email_serve->email_cc)) $email_serve->email_cc = str_replace(",","\n", $email_serve->email_cc);
+            unset($email_serve->keys);
+            $email_serve->opt->email_cc = (!empty($email_serve->opt->email_cc)) ? str_replace(",","\n", $email_serve->opt->email_cc) : [];
+            $email_serve->value = (!empty($email_serve->value)) ? json_decode($email_serve->value) : [];
             
-            // 邮箱模板数据
-            $email_template_1 = Options::where(['keys'=>'email_template_1'])->findOrEmpty();
-            $email_template_2 = Options::where(['keys'=>'email_template_2'])->findOrEmpty();
-            $email_template_3 = Options::where(['keys'=>'email_template_3'])->findOrEmpty();
-            $email_serve->template_1 = $email_template_1->value;
-            $email_serve->template_2 = $email_template_2->value;
-            $email_serve->template_3 = $email_template_3->value;
+            // 系统配置
+            $system_config = Options::where(['keys'=>'config:system'])->findOrEmpty();
             
-            $data = ['email_serve'=>$email_serve];
+            // 初始化数据
+            if ($system_config->isEmpty()) {
+                
+                $system_config = new Options;
+                $system_config->keys = 'config:system';
+                $system_config->opt  = json_encode([
+                    'article'  => [             // 文章配置
+                        'comments'  => [        // 文章下评论配置
+                            'show'  => true,    // 显示评论
+                            'allow' => true,    // 允许评论
+                        ]
+                    ],
+                    'optimize' => [
+                        'cdn'  => $this->config['official']['cdn']
+                    ]
+                ], JSON_UNESCAPED_UNICODE);
+                
+                $system_config->save();
+            }
+            
+            $data = ['email_serve'=>$email_serve,'system_config'=>$system_config];
             
             return $this->create($data,$code,$msg);
         }
@@ -821,8 +880,9 @@ class Index extends Base
             
             // 获取数据
             $placard = Placard::ExpandAll(null, $opt);
+            $article = Article::where(['is_show'=>1])->order('last_update_time','desc')->field(['id','title','last_update_time'])->select(); 
             
-            $data = ['placard'=>$placard,'sort'=>$this->config['placard']];
+            $data = ['placard'=>$placard,'sort'=>$this->config['placard'],'article'=>$article];
             
             // 查询操作
             if (!empty($param['id'])) {
@@ -834,8 +894,53 @@ class Index extends Base
             
             return $this->create($data,$code,$msg);
         }
+        
         return View::engine('php')->fetch('/page/placard');
     }
+    
+    /*
+     * #name 小程序
+     */
+    public function applets(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $data  = [];
+            $code  = 200;
+            $msg   = 'ok';
+            
+            // 获取请求参数
+            $param = $request->param();
+            
+            $options  = Options::where(['keys'=>'config:applets'])->findOrEmpty();
+            
+            $config   = [
+                'show'  =>  ['comments'=>true]
+            ];
+            
+            $default_config   = [
+                'qq'    => $config,
+                'wechat'=> $config,
+                'other' => $config
+            ];
+            
+            if ($options->isEmpty()) {
+                
+                $options = new Options;
+                $options->keys = 'config:applets';
+                $options->opt = json_encode($default_config, JSON_UNESCAPED_UNICODE);
+                
+                $options->save();
+            }
+            
+            $data = $options;
+            
+            return $this->create($data,$code,$msg);
+        }
+        
+        return View::engine('php')->fetch('/page/applets');
+    }
+    
 
     // END
 }

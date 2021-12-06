@@ -156,11 +156,11 @@ class VerifyCode extends Base
     public function sendEmail($email,$code,$valid_time)
     {
         // 获取邮箱服务配置信息
-        $options  = Options::where(['keys'=>'email_serve'])->findOrEmpty();
-        // 获取邮箱模板
-        $template = Options::where(['keys'=>'email_template_3'])->findOrEmpty()['value'];
+        $options  = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
+        $templates= (!empty($options->value)) ? json_decode($options->value) : [];
+        $template = (!empty($templates)) ? $templates->template_3 : '';
         // 获取站点名称
-        $site     = Options::field(['value'])->where(['keys'=>'title'])->find()['value'];
+        $site     = Options::field(['opt'])->where(['keys'=>'site'])->find()['opt']->title;
         // 获取站点地址
         $domain   = $this->tool->domain();
         // 当前时间

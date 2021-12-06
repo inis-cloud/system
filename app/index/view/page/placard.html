@@ -66,9 +66,9 @@
                                                         <div class="input-group-append">
                                                             <button v-on:click="initData('','',true)" class="btn btn-primary" type="button">搜索</button>
                                                         </div>
-                                                        <button v-on:click="edit = {}" data-toggle="modal" data-target="#fill-edit-modal" type="button" class="btn btn-primary d-none d-lg-block ml-2">添加公告</button>
+                                                        <button v-on:click="initState()" data-toggle="modal" data-target="#fill-edit-modal" type="button" class="btn btn-primary d-none d-lg-block ml-2">添加公告</button>
                                                         <button v-on:click="deletePlacard()" type="button" class="btn btn-primary d-none d-lg-block ml-2">批量删除</button>
-                                                        <a v-on:click="edit = {}" data-toggle="modal" data-target="#fill-edit-modal" href="#" class="btn btn-primary d-lg-none d-block ml-1">
+                                                        <a v-on:click="initState()" data-toggle="modal" data-target="#fill-edit-modal" href="#" class="btn btn-primary d-lg-none d-block ml-1">
                                                             <i class="mdi mdi-plus-circle"></i>
                                                         </a>
                                                         <a v-on:click="deletePlacard" href="#" class="btn btn-primary d-lg-none d-block ml-1">
@@ -195,6 +195,28 @@
                                                 <label class="col-3 col-form-label">分类</label>
                                                 <div class="col-9">
                                                     <select id="type-select2" class="form-control select2" data-toggle="select2"></select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row mb-2">
+                                                <label class="col-3 col-form-label">跳转方式</label>
+                                                <div class="col-9 flex align-center">
+                                                    <div class="custom-control custom-radio mr-2">
+                                                        <input v-model="jump" value="inside" type="radio" id="customRadio1" name="customRadio" class="custom-control-input">
+                                                        <label class="custom-control-label pointer" for="customRadio1">站内跳转</label>
+                                                    </div>
+                                                    <div class="custom-control custom-radio">
+                                                        <input v-model="jump" value="outside" type="radio" id="customRadio2" name="customRadio" class="custom-control-input">
+                                                        <label class="custom-control-label pointer" for="customRadio2">站外跳转</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-3"></div>
+                                                <div class="col-9">
+                                                    <input v-show="jump == 'outside'" type="text" class="form-control" placeholder="请以http://或https://开头" v-model="edit.opt.url" onkeyup>
+                                                    <div v-show="jump == 'inside'">
+                                                        <select id="inside-select2" class="form-control select2" data-toggle="select2"></select>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="form-group row mb-3">

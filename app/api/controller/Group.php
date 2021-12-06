@@ -137,13 +137,14 @@ class Group extends Base
             
             // 处理自定义获取的接口
             $field = (is_string($field)) ? array_filter(explode(',', $field)): $field;
-            if (empty($field)) $field = ['links', 'article', 'users', 'page', 'comments', 'music', 'tag', 'linksSort', 'articleSort'];
+            if (empty($field)) $field = ['links', 'article', 'users', 'page', 'comments', 'music', 'tag', 'linksSort', 'articleSort', 'other'];
             
             // 转小写
             foreach ($field as $key => $val) $field[$key] = strtolower($val);
             
             // 动态查询，减少数据库负担
             if (in_array('tag', $field))         $tag          = Tag::ExpandAll(null, $opt);
+            if (in_array('other', $field))       $other        = ['views'=>Article::sum('views'),'word'=>Article::sum('font_count')];
             if (in_array('page', $field))        $page         = Page::ExpandAll(null, $opt);
             if (in_array('links', $field))       $links        = Links::ExpandAll(null, $opt);
             if (in_array('users', $field))       $users        = Users::ExpandAll(null, $opt);

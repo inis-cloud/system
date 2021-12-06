@@ -199,7 +199,7 @@ class Banner extends Base
             'page'   =>  (int)$param['page'], 
             'limit'  =>  (int)$param['limit'],
             'order'  =>  (string)$param['order'],
-            'withoutField'=>['expand','opt'],
+            'withoutField'=>['expand'],
         ];
         
         // 设置缓存名称

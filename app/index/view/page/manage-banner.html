@@ -71,7 +71,7 @@
                                             <tr>
                                                 <th>标题</th>
                                                 <th>描述</th>
-                                                <th>调转地址</th>
+                                                <!--<th>调转地址</th>-->
                                                 <th>图片地址</th>
                                                 <th>操作</th>
                                             </tr>
@@ -82,10 +82,10 @@
                                                         <span v-on:click="initData(data.id)" class="cursor">{{data.title}}</span>
                                                     </td>
                                                     <td>{{data.description}}</td>
-                                                    <td class="limit"><a :href="data.url" target="_blank">{{data.url}}</a></td>
+                                                    <!--<td class="limit"><a :href="data.url" target="_blank">{{data.url}}</a></td>-->
                                                     <td class="limit"><a :href="data.img" target="_blank">{{data.img}}</a></td>
                                                     <td>
-                                                        <a v-on:click="initData(data.id)" class="btn btn-outline-info btn-sm mr-1">
+                                                        <a v-on:click="initData(data.id)" class="btn btn-outline-info btn-sm mr-1 pointer">
                                                             <svg t="1603942550558" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3087" width="14" height="14">
                                                                 <path d="M906.116912 36.819799l6.357068 5.84509 66.685222 65.789259a134.778384 134.778384 0 0 1 6.826382 185.592267l-6.101079 6.399733L299.038207 998.187742a85.329778 85.329778 0 0 1-53.459106 25.385609L237.984751 1023.957335H43.304862a42.664889 42.664889 0 0 1-42.366234-37.545102l-0.298655-4.991792-0.554643-178.168576a85.329778 85.329778 0 0 1 19.711178-54.781718l5.034457-5.546435L719.202033 42.664889a138.063581 138.063581 0 0 1 186.914879-5.84509zM981.292446 938.627557a42.664889 42.664889 0 0 1 0 85.329778h-511.978667a42.664889 42.664889 0 1 1 0-85.329778h511.978667zM86.3964 786.783217l-4.735803 4.735803L84.433815 938.627557h153.508271l0.08533-0.213324-151.631016-151.631016zM676.32382 204.791467L147.151202 726.796383l150.521728 150.521729L818.440565 343.665681 676.32382 204.791467zM981.249781 767.968001a42.664889 42.664889 0 0 1 0 85.329778h-255.989334a42.664889 42.664889 0 1 1 0-85.329778h255.989334zM783.626016 99.494521l-4.607808 4.0105-41.939586 41.342277 140.922128 137.764926 41.512937-42.494229c6.783717-6.613058 11.43419-15.018041 13.567435-24.148327l0.938627-5.546436 0.341319-5.631765c0-11.391525-3.92517-22.399067-11.092871-31.230699l-3.882505-4.266489-66.727886-65.789258-4.181159-3.669181a52.733803 52.733803 0 0 0-64.850631-0.341319z" fill="#008df0" p-id="3088">
                                                                 </path>
@@ -155,18 +155,6 @@
                                                         </div>
                                                     </div>
                                                     <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">调转地址</label>
-                                                        <div class="col-md-9">
-                                                            <input type="text" class="form-control" placeholder="请以http://或https://开头" v-model="edit.url" onkeyup>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">站内跳转</label>
-                                                        <div class="col-md-9">
-                                                            <input type="text" class="form-control" placeholder="请以http://或https://开头" v-model="edit.station_url" onkeyup>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-3">
                                                         <label class="col-3 col-form-label">图片地址</label>
                                                         <div class="col-9">
                                                             <div class="input-group">
@@ -180,6 +168,27 @@
                                                                 <div class="progress progress-sm">
                                                                     <div class="progress-bar" role="progressbar" :style="'width: '+ speed * 100 +'%'" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
                                                                 </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group row mb-2">
+                                                        <label class="col-3 col-form-label">跳转方式</label>
+                                                        <div class="col-9 flex align-center">
+                                                            <div class="custom-control custom-radio mr-2">
+                                                                <input v-model="jump" value="inside" type="radio" id="customRadio1" name="customRadio" class="custom-control-input">
+                                                                <label class="custom-control-label pointer" for="customRadio1">站内跳转</label>
+                                                            </div>
+                                                            <div class="custom-control custom-radio">
+                                                                <input v-model="jump" value="outside" type="radio" id="customRadio2" name="customRadio" class="custom-control-input">
+                                                                <label class="custom-control-label pointer" for="customRadio2">站外跳转</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group row">
+                                                        <div class="col-md-12">
+                                                            <input v-show="jump == 'outside'" type="text" class="form-control" placeholder="请以http://或https://开头" v-model="edit.url" onkeyup>
+                                                            <div v-show="jump == 'inside'">
+                                                                <select id="inside-select2" class="form-control select2" data-toggle="select2"></select>
                                                             </div>
                                                         </div>
                                                     </div>

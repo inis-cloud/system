@@ -25,15 +25,13 @@ class Tag extends Base
         $msg    = '参数不存在！';
         $result = [];
         
-        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
-        
         // 存在的方法
         $method = ['one','all'];
         
         $mode   = (empty($param['id'])) ? 'all' : 'one';
         
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param, $user);
+        if (in_array($mode, $method)) $result = $this->$mode($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         

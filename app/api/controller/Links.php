@@ -47,14 +47,12 @@ class Links extends Base
     public function save(Request $request)
     {
         // 获取请求参数
-        $param = $request->param();
+        $param  = $request->param();
         
         $data   = [];
         $code   = 400;
         $msg    = '参数不存在！';
         $result = [];
-        
-        $user   = !empty($param['login-token']) ? $this->parseJWT($param['login-token']) : [];
         
         // 存在的方法
         $method = ['saves','remove'];
@@ -62,7 +60,7 @@ class Links extends Base
         $mode   = !empty($param['mode']) ? $param['mode']  : 'saves';
         
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param,$user);
+        if (in_array($mode, $method)) $result = $this->$mode($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
@@ -250,7 +248,7 @@ class Links extends Base
     }
     
     // 新增或者修改数据
-    public function saves($param, $user)
+    public function saves($param)
     {
         $data   = [];
         $code   = 400;
@@ -272,8 +270,8 @@ class Links extends Base
         }
         
         // 权限判断
-        if (!in_array($user['data']->level, ['admin'])) $msg = '无权限';
-        else if ($user['data']->status != 1) $msg = '账号被禁用';
+        if (!in_array($this->user['data']->level, ['admin'])) $msg = '无权限';
+        else if ($this->user['data']->status != 1) $msg = '账号被禁用';
         else {
             $code = 200;
             $links->save();
@@ -283,7 +281,7 @@ class Links extends Base
     }
     
     // 删除数据
-    public function remove($param, $user)
+    public function remove($param)
     {
         $data = [];
         $code = 400;
@@ -297,7 +295,7 @@ class Links extends Base
             $id = array_filter(explode(',', $id));
             
             // 存在该条数据
-            if (in_array($user['data']->level, ['admin'])) {
+            if (in_array($this->user['data']->level, ['admin'])) {
                 
                 $code = 200;
                 LinksModel::destroy($id);

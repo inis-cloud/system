@@ -12,6 +12,7 @@
                 is_page_show: true, // 是否显示分页
                 title: '新增轮播',  // 标题
                 speed: 0,           // 上传图片进度
+                jump: 'outside',    // 跳转方式
             }
         },
         components: {
@@ -47,12 +48,35 @@
                         this.banner             = res.data.data.banner
                         
                         // 更新数据
-                        if(inisHelper.is.empty(res.data.data.edit)) this.edit = {title:'',description:'',url:'',img:''}
-                        else this.edit   = res.data.data.edit
+                        if (inisHelper.is.empty(res.data.data.edit)) this.edit = {title:'',description:'',url:'',img:'',opt:{jump:'outside',article_id:''}}
+                        else {
+                            
+                            this.edit   = res.data.data.edit
+                            $("#inside-select2").empty()
+                            
+                        }
                         
                         // 是否显示分页
                         if(inisHelper.is.empty(this.banner.data) || this.banner.page == 1) this.is_page_show = false
                         else this.is_page_show = true
+                        
+                        let article = res.data.data.article
+                        article.forEach(item=>{
+                            item.text = item.title
+                            delete item.title
+                            if (!inisHelper.is.empty(res.data.data.edit)) {
+                                if (!inisHelper.is.empty(this.edit.opt)) {
+                                    if (!inisHelper.is.empty(this.edit.opt.jump)) {
+                                        if (item.id == this.edit.opt.article_id) item.selected = true
+                                    }
+                                } 
+                            }
+                        })
+                        
+                        // 站内跳转单选框
+                        $("#inside-select2").select2({
+                            data: article,
+                        })
                         
                         // 更新页码
                         this.page              = page
@@ -71,9 +95,9 @@
             // 保存数据
             btnSave(id = ''){
                 
-                if(inisHelper.is.empty(this.edit.img)){
+                if (inisHelper.is.empty(this.edit.img)) {
                     $.NotificationApp.send("提示！", "请上传轮播图片！", "top-right", "rgba(0,0,0,0.2)", "warning");
-                }else{
+                } else {
                     
                     $.NotificationApp.send("提示！", "正在验证 ... ...", "top-right", "rgba(0,0,0,0.2)", "info");
                     
@@ -86,6 +110,11 @@
                     for (let item in this.edit) {
                         params.append(item, this.edit[item] || '')
                     }
+                    
+                    // 获取 select2 站内跳转单选框数据
+                    const inside = $('#inside-select2').select2('data')[0].id;
+                    params.append("opt[jump]", this.jump || '')
+                    params.append("opt[article_id]", inside || '')
                     
                     axios.post('/index/method/SaveBanner', params).then((res) => {
                         if(res.data.code == 200){
@@ -107,9 +136,9 @@
                 params.append('id',id || '')
                 
                 axios.post('/index/method/DeleteBanner', params).then((res) => {
-                    if(res.data.code == 200){
+                    if (res.data.code == 200) {
                         $.NotificationApp.send("", "删除成功！", "top-right", "rgba(0,0,0,0.2)", "success");
-                    }else{
+                    } else {
                         $.NotificationApp.send("删除失败！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
                     }
                     // 刷新数据
@@ -171,7 +200,19 @@
                     event.target.value = ''
                 }
             },
+        },
+        watch: {
+            edit: {
+                handler(newValue,oldValue){
+                    
+                    let edit = this.edit
+                    if (!inisHelper.is.empty(edit.opt)) {
+                        if (!inisHelper.is.empty(edit.opt.jump)) this.jump = edit.opt.jump
+                    }
+                },
+            }
         }
+        
     }).mount('#manage-banner')
 
 }(window.jQuery);
