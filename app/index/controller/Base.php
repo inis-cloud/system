@@ -24,7 +24,7 @@ abstract class Base extends BaseController
         // 内置的CDN
         $in_cdn = $this->config['official']['cdn'];
         // 用户自己的CDN
-        $u_cdn  = $system_config['opt']->optimize->cdn;
+        $u_cdn  = (!empty($system_config['opt']->optimize)) ? $system_config['opt']->optimize->cdn : '';
         // 处理后的CDN
         $cdn = array_values(array_filter(explode('/',str_replace(['https','http',':'],'',$u_cdn))));
         
@@ -48,9 +48,9 @@ abstract class Base extends BaseController
         
         // 站点信息
         $site = Options::where(['keys'=>'site'])->findOrEmpty();
-        define('__SITE_ICO__'        , !empty($site) ? $site['opt']->favicon      : '');
-        define('__SITE_TITLE__'      , !empty($site) ? $site['opt']->title        : 'INIS');
-        define('__SITE_KEYWORDS__'   , !empty($site) ? $site['opt']->keywords     : 'api,inis api');
-        define('__SITE_DESCRIPTION__', !empty($site) ? $site['opt']->description  : 'api,inis api');
+        define('__SITE_ICO__'        , !$site->isEmpty() ? $site['opt']->favicon      : '');
+        define('__SITE_TITLE__'      , !$site->isEmpty() ? $site['opt']->title        : 'INIS');
+        define('__SITE_KEYWORDS__'   , !$site->isEmpty() ? $site['opt']->keywords     : 'api,inis api');
+        define('__SITE_DESCRIPTION__', !$site->isEmpty() ? $site['opt']->description  : 'api,inis api');
     }
 }

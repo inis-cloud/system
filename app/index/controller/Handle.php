@@ -709,26 +709,87 @@ class Handle extends Base
                 
                 // 关闭zip文件
                 $zip->close();
-                
-                try {
-                    
-                    if (!empty($DBUPDATE)) {
-                        // 执行额外SQL语句
-                        if (!empty($DBUPDATE['query'])) foreach ($DBUPDATE['query'] as $val) Db::execute($val);
-                        // 导入数据
-                        if (!empty($DBUPDATE['data']))  foreach ($DBUPDATE['data']  as $key => $val) Db::name($key)->limit(1)->insertAll($val);
-                    }
-                    
-                } catch (\Exception $e) {
-                    $msg = $e->getMessage();
-                }
             }
             
             $this->File->unlinkFile($file_path);
-            $this->File->unlinkFile('../config/dbupdate.php');
             
             return $this->create($data,$code,$msg);
         }
+    }
+    
+    public function runUpdate(Request $request)
+    {
+        if ($request->isPost()) {
+            
+            $data = [];
+            $code = 400;
+            $msg  = 'ok';
+            
+            $db_file= 'storage/runtime/db.sql';
+            
+            // 格式化数据结构
+            $sql_query   = $this->processSqlFile($db_file);
+            
+            try {
+                
+                $DBUPDATE = $this->DBUPDATE;
+                
+                if ($sql_query) {
+                    
+                    // 导入数据库
+                    foreach ($sql_query as $val) Db::execute($val.';');
+                    // 导入数据
+                    if (!empty($DBUPDATE)) if (!empty($DBUPDATE['data'])) foreach ($DBUPDATE['data'] as $key => $val) Db::name($key)->limit(1)->insertAll($val);
+                    
+                    $this->File->unlinkFile($db_file);
+                    $this->File->unlinkFile('../config/dbupdate.php');
+                }
+                
+                $code = 200;
+                
+            } catch (\Exception $e) {
+                $msg = $e->getMessage();
+            }
+            
+            return $this->create($data,$code,$msg);
+        }
+    }
+    
+    // 处理sql文件 - 格式化数据
+    public function processSqlFile($sql_file_path)
+    {
+        $num    = 0;
+        $result = ['sql文件地址不能为空'];
+        
+        if (!empty($sql_file_path)) {
+            
+            // 读取文件
+            $sql_data  = $this->File->readFile($sql_file_path);
+            
+            if ($sql_data) {
+                
+                $sql_data  = str_replace(["\r"], ["\n"], $sql_data);
+                $sql_array = explode(";\n", trim($sql_data));
+                
+                foreach($sql_array as $query) {
+                    
+                    $result[$num] = '';
+                    $queries = explode("\n", trim($query));
+                    $queries = array_filter($queries);
+                    
+                    foreach($queries as $item) {
+                        $str = substr($item, 0, 1);
+                        if ($str != '#' && $str != '-') $result[$num] .= $item;
+                    }
+                    
+                    $num++;
+                }
+                
+            } else $result = false;
+            
+        }
+        
+        return $result;
     }
     
     /** 

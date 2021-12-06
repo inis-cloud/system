@@ -227,11 +227,18 @@ class inisTemplate
                 // 解压更新
                 unzipUpdate(){
                     axios.post('/index/handle/unzipUpdate').then(res=>{
+                        if (res.data.code == 200) this.runUpdate()
+                        else $.NotificationApp.send("错误！", "更新失败！", "top-right", "rgba(0,0,0,0.2)", "warning");
+                    })
+                },
+                // 执行更新
+                runUpdate(){
+                    axios.post('/index/handle/runUpdate').then(res=>{
                         if (res.data.code == 200) {
                             $('#myModal').modal('update-info')
                             this.getVersion()
                             $.NotificationApp.send("提示！", "更新完成！", "top-right", "rgba(0,0,0,0.2)", "info");
-                        }
+                        } else $.NotificationApp.send("错误！", "更新失败！", "top-right", "rgba(0,0,0,0.2)", "warning");
                         this.loading.updating = false
                     })
                 },
