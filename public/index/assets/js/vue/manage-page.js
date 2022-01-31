@@ -3,7 +3,7 @@
     const app = Vue.createApp({
         data() {
             return {
-                pages: {},           // 用户数据
+                pages: {},          // 数据
                 page: 1,            // 当前页码
                 is_load: true,      // 数据加载动画
                 page_list: [],      // 标签页码列表
@@ -11,6 +11,7 @@
                 is_page_show: true, // 是否显示分页
                 search_value: '',   // 搜索的内容
                 is_show: [],        // 是否显示
+                file: {item:0},     // 文件
             }
         },
         components: {
@@ -125,6 +126,56 @@
                     }
                     this.initData()
                 })
+            },
+            
+            // 触发上传事件
+            clickUpload: () => {
+                document.querySelector("#input-files").click()
+            },
+            
+            // 多文件
+            files(event){
+                
+                const files = event.target.files
+                for (let item of files) this.upload(item)
+                
+                this.file.length = files.length
+            },
+            
+            // 单个文件上传
+            upload(file){
+                
+                const self  = this
+                
+                $.NotificationApp.send("", "正在上传 ...", "top-right", "rgba(0,0,0,0.2)", "info");
+                
+                let params = new FormData
+                params.append("file", file || '')
+                
+                const config = {
+                    headers: { "Content-Type": "multipart/form-data" },
+                    onUploadProgress: (speed) => {
+                        if (speed.lengthComputable) {
+                            let ratio = speed.loaded / speed.total;
+                        }
+                    }
+                }
+                
+                axios.post("/index/handle/importPage", params, config).then((res) => {
+                    
+                    if (res.data.code == 200) {
+                        
+                        this.initData()
+                        $.NotificationApp.send("提示！", "<span style='color:var(--blue)'>上传成功！</span>", "top-right", "rgba(0,0,0,0.2)", "info");
+                        
+                    } else $.NotificationApp.send("错误！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "info");
+                    
+                    this.file.item++
+                    
+                    // 全部上传完成，清空input数据
+                    if (this.file.item == this.file.length) document.querySelector("#input-files").value = ''
+                })
+                
             },
             
             // 时间戳转人性化时间

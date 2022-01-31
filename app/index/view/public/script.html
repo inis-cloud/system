@@ -1,3 +1,14 @@
 <script src="<?= __ADMIN_JS__.'app.min.js'; ?>"></script>
 <script src="<?= __ADMIN_JS__.'vendor/Chart.bundle.min.js'; ?>"></script>
 <script src="<?= __ADMIN_JS__.'page/time.js'; ?>"></script>
+
+<script type="text/javascript" charset="utf-8">
+    $("#progressbarwizard").bootstrapWizard({
+    onTabShow: function(t, r, a) {
+        var o = (a + 1) / r.find("li").length * 100;
+        $("#progressbarwizard").find(".bar").css({
+            width: o + "%"
+        })
+    }
+})
+</script>

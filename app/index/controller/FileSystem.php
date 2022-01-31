@@ -3,7 +3,7 @@
 namespace app\index\controller;
 
 use app\Request;
-use inis\utils\File;
+use inis\utils\{File};
 
 class FileSystem extends Base
 {
@@ -84,7 +84,7 @@ class FileSystem extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -106,7 +106,7 @@ class FileSystem extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -142,7 +142,7 @@ class FileSystem extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -172,7 +172,7 @@ class FileSystem extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -203,7 +203,7 @@ class FileSystem extends Base
                 $code = 200;
             }
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -265,7 +265,7 @@ class FileSystem extends Base
                 $data['info'] = $this->File->listInfo($path_file);
             }
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -297,7 +297,7 @@ class FileSystem extends Base
                 $code = 200;
             }
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     

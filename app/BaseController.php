@@ -93,10 +93,20 @@ abstract class BaseController
         return $v->failException(true)->check($data);
     }
 
-    public function create($data, int $code = 200, string $msg = 'ok', string $url = '', string $type = 'json') : Response
+    public function create($data = [], string $msg = '', int $code = 200, array $config = [], string $type = 'json') : Response
     {
-        if(empty($url)) $result = ['code'=>$code,'msg'=>$msg,'data'=>$data];
-        else $result = ['code'=>$code,'msg'=>$msg,'url'=>$url,'data'=>$data];
+        // 标准API结构生成
+        $result = [
+            // 状态码
+            'code'  =>  $code,
+            // 消息
+            'msg'   =>  $msg,
+            // 数据
+            'data'  =>  $data
+        ];
+        
+        // 合并其他数据数据
+        $result = !empty($config) ? array_merge($result, $config) : $result;
         
         return Response::create($result, $type);
     }

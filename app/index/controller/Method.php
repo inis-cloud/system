@@ -8,26 +8,11 @@
 namespace app\index\controller;
 
 use app\Request;
-use app\model\Tag;
-use app\model\Page;
-use app\model\Links;
-use app\model\Users;
-use app\model\Music;
-use app\model\Banner;
-use app\model\Placard;
-use app\model\Options;
-use app\model\Article;
-use app\model\AuthRule;
-use think\facade\Cache;
-use app\model\Comments;
-use think\facade\Config;
-use app\model\LinksSort;
-use think\facade\Cookie;
-use think\facade\Session;
-use app\model\ArticleSort;
-use think\facade\Validate;
+use inis\utils\{File};
 use think\exception\ValidateException;
 use app\validate\Users as UsersValidate;
+use think\facade\{Config, Cache, Cookie, Session, Validate};
+use app\model\mysql\{Tag, Page, Links, Users, Music, Banner, Placard, Options, Article, AuthRule, Comments, LinksSort, ArticleSort};
 
 class Method extends Base
 {
@@ -57,7 +42,7 @@ class Method extends Base
             $code = 200;
             $msg  = '保存成功！';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -164,7 +149,7 @@ class Method extends Base
                 $msg  = $exception->getError();
             }
             
-            return $this->create($data,$code,$msg,$url);
+            return $this->create($data, $msg, $code, ['url'=>$url]);
         }
     }
     
@@ -212,7 +197,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('users')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -261,7 +246,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('users')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -278,9 +263,9 @@ class Method extends Base
             $code = 200;
             $msg  = 'ok';
             
-            if (empty($param['tag_id']))  $param['tag_id'] = [];
+            if (empty($param['tag_id']))  $param['tag_id']  = [];
             if (empty($param['sort_id'])) $param['sort_id'] = [];
-            if (empty($param['title']))   $param['title'] = '未命名文章';
+            if (empty($param['title']))   $param['title']   = '未命名文章';
             
             // 允许用户提交并存储的字段
             $obtain = ['title','content','description','img_src','font_count','sort_id','tag_name','tag_id','last_update_time','opt'];
@@ -316,7 +301,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('article')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -382,7 +367,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('page')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -409,7 +394,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('page')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -488,7 +473,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('article-sort')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -510,7 +495,7 @@ class Method extends Base
             $code = 200;
             $msg  = '删除成功！';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -576,7 +561,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('links-sort')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -599,7 +584,7 @@ class Method extends Base
             $msg  = '删除成功！';
         }
         
-        return $this->create($data,$code,$msg);
+        return $this->create($data, $msg, $code);
     }
 
     /** 
@@ -647,7 +632,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('links')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -670,7 +655,7 @@ class Method extends Base
             $msg  = '删除成功！';
         }
         
-        return $this->create($data,$code,$msg);
+        return $this->create($data, $msg, $code);
     }
     
     /** 
@@ -705,7 +690,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('banner')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -728,7 +713,7 @@ class Method extends Base
             $msg  = '删除成功！';
         }
         
-        return $this->create($data,$code,$msg);
+        return $this->create($data, $msg, $code);
     }
 
     /** 
@@ -775,7 +760,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('tag')->clear();
 
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -801,7 +786,7 @@ class Method extends Base
             $code = 200;
             $msg  = '删除成功！';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -826,7 +811,7 @@ class Method extends Base
             $code = 200;
             $msg  = '删除成功！';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -849,7 +834,7 @@ class Method extends Base
             $code = 200;
             $msg  = '恢复成功！';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -885,7 +870,7 @@ class Method extends Base
                 $msg  = '更新成功！';
             }
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -912,7 +897,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('comments')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -953,7 +938,7 @@ class Method extends Base
                 $auth_rule->save();
             }
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -987,7 +972,7 @@ class Method extends Base
             // 清理缓存
             Cache::tag('music')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -1016,7 +1001,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('music')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -1045,7 +1030,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('options')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -1082,7 +1067,7 @@ class Method extends Base
             // 清理缓存
             Cache::tag('placard')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -1109,7 +1094,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('placard')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -1159,7 +1144,186 @@ class Method extends Base
             // 清除缓存
             Cache::tag('options')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
+        }
+    }
+    
+    /** 
+     * @name 安装API
+     */
+    public function installApi(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $data  = [];
+            $code  = 200;
+            $msg   = 'ok';
+            
+            $param = $request->param();
+            unset($param['name']);
+            
+            try {
+                
+                $File = new File;
+                
+                // 下载API文件
+                $File->downloadFile($param['url'], '../app/api/controller/plugins/', 'api.zip');
+                
+                $data['id']   = $param['id'];
+                $param['path']= [];
+                
+                $item = Options::where(['keys'=>'config:plugin-api'])->findOrEmpty();
+                
+                // 配置为空
+                if ($item->isEmpty()) {
+                    
+                    $item = new Options;
+                    $item->keys = 'config:plugin-api';
+                    $item->opt  = json_encode([$param], JSON_UNESCAPED_UNICODE);
+                    
+                } else {
+                    
+                    $plugins = json_decode(json_encode($item->opt), true);
+                    
+                    if (!empty($plugins)) foreach ($plugins as $key => $val) {
+                        
+                        // 安装
+                        if ($param['id'] != $val['id']) $plugins[] = $param;
+                        // 升级
+                        else if ($param['id'] == $val['id']) {
+                            
+                            // 更新版本号
+                            $param['version'] = !empty($param['new_version']) ? $param['new_version'] : $val['version'];
+                            
+                            unset($param['new_version']);
+                            
+                            $plugins[$key]    = $param;
+                        }
+                        
+                        $item->opt = json_encode($plugins, JSON_UNESCAPED_UNICODE);
+                        
+                    } else $item->opt  = json_encode([$param], JSON_UNESCAPED_UNICODE);
+                }
+                
+                $item->save();
+                
+            } catch (\Exception $e) {
+                
+                $code = 400;
+                $msg  = $e->getMessage();
+            }
+            
+            return $this->create($data, $msg, $code);
+        }
+    }
+    
+    /** 
+     * @name 解压API
+     */
+    public function unzipApi(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $data  = [];
+            $code  = 200;
+            $msg   = 'ok';
+            
+            $param = $request->param();
+            
+            $File  = new File;
+            $zip   = new \ZipArchive;
+            
+            try {
+                
+                // 压缩包内的文件路径
+                $files = [];
+                // 压缩包根目录文件夹名
+                $dirs  = [];
+                $path  = '../app/api/controller/plugins/api.zip';
+                
+                if ($zip->open($path) === true) {
+                    
+                    // 获取压缩包内的文件路径
+                    for ($i = 0; $i < $zip->count(); $i++) $files[] = $zip->getNameIndex($i);
+                    if (!empty($files)) foreach ($files as $key => $val) {
+                        $item = explode('/', $val);
+                        if (count($item) >= 2) $dirs[] = $item[0];
+                    }
+                    // 文件夹去重
+                    if (!empty($dirs)) $dirs = array_unique($dirs);
+                    
+                    // 将压缩包文件解压到API插件目录下
+                    $zip->extractTo('../app/api/controller/plugins/');
+                    
+                    // 关闭zip文件
+                    $zip->close();
+                }
+                
+                // 删除文件
+                $File->unlinkFile($path);
+                
+                $item    = Options::where(['keys'=>'config:plugin-api'])->find();
+                $plugins = json_decode(json_encode($item->opt), true);
+                
+                foreach ($plugins as $key => $val) {
+                    if ($param['id'] == $val['id']) {
+                        $plugins[$key]['path']['dir']  = $dirs;
+                        $plugins[$key]['path']['file'] = $files;
+                        $item->opt = json_encode($plugins, JSON_UNESCAPED_UNICODE);
+                    } 
+                }
+                
+                $item->save();
+                
+            } catch (\Exception $e) {
+                
+                $code = 400;
+                $msg  = $e->getMessage();
+            }
+            
+            return $this->create($data, $msg, $code);
+        }
+    }
+    
+    /** 
+     * @name 卸载API
+     */
+    public function uninstallApi(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $data  = [];
+            $code  = 200;
+            $msg   = 'ok';
+            
+            $param = $request->param();
+            
+            $File  = new File;
+            $path  = '../app/api/controller/plugins/';
+            
+            $item    = Options::where(['keys'=>'config:plugin-api'])->find();
+            $plugins = json_decode(json_encode($item->opt), true);
+            
+            foreach ($plugins as $key => $val) {
+                
+                if ($param['id'] == $val['id']) {
+                    
+                    // 删除非空目录
+                    if (!empty($val['path']['dir']))  foreach ($val['path']['dir']  as $key => $val) $File->removeDir($path  . $val, true);
+                    // 卸载前删除全部文件
+                    if (!empty($val['path']['file'])) foreach ($val['path']['file'] as $key => $val) if (substr($val, 0 - strlen('/')) != '/') $File->unlinkFile($path . $val);
+                    
+                    if (count($plugins) >= 2) unset($plugins[$key]);
+                    else $plugins = [];
+                    
+                } 
+                
+                $item->opt = json_encode(array_merge($plugins), JSON_UNESCAPED_UNICODE);
+            }
+            
+            $item->save();
+            
+            return $this->create($data, $msg, $code);
         }
     }
     

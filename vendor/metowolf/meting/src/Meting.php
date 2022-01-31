@@ -1530,7 +1530,7 @@ class Meting
             'lyric_id' => $data['rid'],
             'source'   => 'kuwo',
         );
-
+        
         return $result;
     }
 

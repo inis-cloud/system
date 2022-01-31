@@ -3,8 +3,8 @@
 namespace app\index\controller;
 
 use app\Request;
-use inis\utils\File;
-use think\facade\Config;
+use inis\utils\{File};
+use think\facade\{Config};
 
 class Chart extends Base
 {
@@ -41,28 +41,7 @@ class Chart extends Base
                 $data[$val] = $this->File->getDirInfo($path.'/'.$val);
             }
             
-            return $this->create($data,$code,$msg);
-        }
-    }
-    
-    // 暴露版本号
-    public function version(Request $request)
-    {
-        if ($request->isPost())
-        {
-            $data  = [];
-            $code  = 200;
-            $msg   = 'ok';
-            
-            $official = [
-                'api'      =>  'https://inis.cc/api/',          // 用于检查更新
-                'cdn'      =>  'https://cdn.inis.cc/'           // 静态文件加速
-            ];
-            
-            $data['official']= !empty($this->config['official']) ? $this->config['official'] : $official;
-            $data['version'] = !empty($this->config['version'])  ? $this->config['version']  : '1.0';
-            
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 }

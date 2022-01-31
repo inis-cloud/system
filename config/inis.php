@@ -8,9 +8,13 @@ $helper = new helper;
 
 return [
     
-    'api_cache'          =>  false,                      // 开启API缓存
-    'jwt_key'            =>  'inis-!@#$%*&',            // JWT KEY - 用于校验 TOKEN 是否合法
+    'api_cache'          =>  true,                      // 开启API缓存
     'valid_time'         =>  5 * 60,                    // 验证码有效时间 - 单位秒
+    'jwt'   =>  [
+        'key'            =>  'inis-!@#$%*&',            // KEY - 用于校验 TOKEN 是否合法
+        'encrypt'        =>  'HS256',                   // 加密方式
+        'array'          =>  ['HS256','HS384','HS512'], // 可用加密方式
+    ],
     
     // 登录配置
     'login' => [
@@ -41,9 +45,9 @@ return [
     
     // 官方授权系统
     'official'     =>  [
-        'api'      =>  'https://inis.cc/api/',          // 用于检查更新
+        'api'      =>  'https://inis.cc/api/',                         // 用于检查更新
         'cdn'      =>  'https://cdn.inis.cc/system/default/'           // 静态文件加速
     ],
     
-    'version'      => '1.3.0',                          // inis 版本号 - 请不要自行更改，后果自负
+    'version'      => '1.4.0',                          // inis 版本号 - 请不要自行更改，后果自负
 ];

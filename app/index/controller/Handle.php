@@ -3,36 +3,26 @@
 namespace app\index\controller;
 
 use app\Request;
-use app\model\Tag;
-use app\model\Page;
-use app\model\Links;
-use app\model\Users;
-use app\model\Music;
-use inis\utils\File;
-use think\facade\Db;
-use app\model\Options;
-use app\model\Article;
-use think\facade\Cache;
-use think\facade\Config;
-use think\facade\Cookie;
-use app\model\LinksSort;
-use think\facade\Session;
-use app\model\ArticleSort;
+use inis\utils\{File, helper};
 use PHPMailer\PHPMailer\PHPMailer;
+use think\facade\{Db, Cache, Config, Cookie, Session};
+use app\model\mysql\{Tag, Page, Links, Users, Music, Options, Article, LinksSort, ArticleSort};
 
 class Handle extends Base
 {
     // 工具类
     protected $tool;
     protected $File;
+    protected $helper;
     protected $DBUPDATE;
 
     protected $token_prefix = 'inis.';
     
     public function __construct()
     {
-        $this->tool = new Tool;
-        $this->File = new File;
+        $this->tool   = new Tool;
+        $this->File   = new File;
+        $this->helper = new helper;
         $this->DBUPDATE = Config::get('dbupdate');
     }
 
@@ -72,7 +62,7 @@ class Handle extends Base
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
             $options->save();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -107,7 +97,7 @@ class Handle extends Base
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
             $options->save();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
 
@@ -138,7 +128,7 @@ class Handle extends Base
                 $msg  = '刷新Token 失败！';
             }
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -163,7 +153,7 @@ class Handle extends Base
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
             $options->save();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -196,7 +186,7 @@ class Handle extends Base
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
             $options->save();
             
-            return $this->create($options->opt->domain,$code,$msg);
+            return $this->create($options->opt->domain, $msg, $code);
         }
     }
     
@@ -231,7 +221,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('article')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -266,7 +256,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('article')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -301,7 +291,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('page')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -336,7 +326,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('article-sort')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -368,7 +358,7 @@ class Handle extends Base
             }
             $users->save();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -403,7 +393,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('links')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -438,7 +428,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('links-sort')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -473,7 +463,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('tag')->clear();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -498,7 +488,7 @@ class Handle extends Base
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
             $options->save();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -600,7 +590,7 @@ class Handle extends Base
                 $data = (new Tool)->MethodsALL($class_name);
             }
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -632,7 +622,7 @@ class Handle extends Base
             }
             $music->save();
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -667,129 +657,8 @@ class Handle extends Base
                 if ($value == 'session') Session::clear();
             }
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
-    }
-    
-    public function downloadUpdate(Request $request)
-    {
-        if ($request->isPost())
-        {
-            $data = [];
-            $code = 200;
-            $msg  = 'ok';
-            
-            $param = $request->param();
-            
-            $url = (!empty($param['file_path'])) ? $param['file_path'] : null;
-            
-            $this->File->downloadFile($url, '../', 'inis update.zip');
-            
-            return $this->create($data,$code,$msg);
-        }
-    }
-    
-    public function unzipUpdate(Request $request)
-    {
-        if ($request->isPost())
-        {
-            $data = [];
-            $code = 200;
-            $msg  = 'ok';
-            
-            $zip = new \ZipArchive;
-            
-            $file_path = '../inis update.zip';
-            $DBUPDATE  = $this->DBUPDATE;
-            
-            if ($zip->open($file_path) === true) {
-                
-                // 将压缩包文件解压到根目录下
-                $zip->extractTo('../');
-                
-                // 关闭zip文件
-                $zip->close();
-            }
-            
-            $this->File->unlinkFile($file_path);
-            
-            return $this->create($data,$code,$msg);
-        }
-    }
-    
-    public function runUpdate(Request $request)
-    {
-        if ($request->isPost()) {
-            
-            $data = [];
-            $code = 400;
-            $msg  = 'ok';
-            
-            $db_file= 'storage/runtime/db.sql';
-            
-            // 格式化数据结构
-            $sql_query   = $this->processSqlFile($db_file);
-            
-            try {
-                
-                $DBUPDATE = $this->DBUPDATE;
-                
-                if ($sql_query) {
-                    
-                    // 导入数据库
-                    foreach ($sql_query as $val) Db::execute($val.';');
-                    // 导入数据
-                    if (!empty($DBUPDATE)) if (!empty($DBUPDATE['data'])) foreach ($DBUPDATE['data'] as $key => $val) Db::name($key)->limit(1)->insertAll($val);
-                    
-                    $this->File->unlinkFile($db_file);
-                    $this->File->unlinkFile('../config/dbupdate.php');
-                }
-                
-                $code = 200;
-                
-            } catch (\Exception $e) {
-                $msg = $e->getMessage();
-            }
-            
-            return $this->create($data,$code,$msg);
-        }
-    }
-    
-    // 处理sql文件 - 格式化数据
-    public function processSqlFile($sql_file_path)
-    {
-        $num    = 0;
-        $result = ['sql文件地址不能为空'];
-        
-        if (!empty($sql_file_path)) {
-            
-            // 读取文件
-            $sql_data  = $this->File->readFile($sql_file_path);
-            
-            if ($sql_data) {
-                
-                $sql_data  = str_replace(["\r"], ["\n"], $sql_data);
-                $sql_array = explode(";\n", trim($sql_data));
-                
-                foreach($sql_array as $query) {
-                    
-                    $result[$num] = '';
-                    $queries = explode("\n", trim($query));
-                    $queries = array_filter($queries);
-                    
-                    foreach($queries as $item) {
-                        $str = substr($item, 0, 1);
-                        if ($str != '#' && $str != '-') $result[$num] .= $item;
-                    }
-                    
-                    $num++;
-                }
-                
-            } else $result = false;
-            
-        }
-        
-        return $result;
     }
     
     /** 
@@ -850,7 +719,147 @@ class Handle extends Base
                 } else $data = false;
             }
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
+        }
+    }
+    
+    /** 
+     * @name 导入文章
+     */
+    public function importArticle(Request $request)
+    {
+        if ($request->isPost()) {
+            
+            $data  = [];
+            $code  = 400;
+            $msg   = '上传失败';
+            
+            $param = $request->param();
+            
+            // 取原文件名
+            $name  = explode('.', $_FILES['file']['name']);
+            // 去除后缀
+            array_pop($name);
+            // 过滤非法字符 - 数组转字符串
+            $name  = str_replace([
+                '.', '\\', '/', ':', '*', '`', '?', '<', '>', '%', '&', '$', '#', ' '
+            ], '', implode('.', $name));
+            
+            // 保存文件
+            $upload = $this->tool->upload('file', ['storage','cache', [$name]], 'one', 'file|fileExt:md');
+            
+            if ($upload['code'] == 200) {
+                
+                // 上传文件的本地路径
+                $url  = str_replace($this->tool->domain() . '/', '', $upload['data']);
+                // 文件内容
+                $content = $this->File->readFile($url);
+                // 删除文件
+                $this->File->unlinkFile($url);
+                
+                $article = new Article;
+                $article->title    = $name;
+                $article->content  = $content;
+                $article->users_id = Session::get('login_account')['id'];
+                $article->save();
+                
+                $code = 200;
+                $msg  = '导入完成！';
+            }
+            
+            return $this->create($data, $msg, $code);
+        }
+    }
+    
+    /** 
+     * @name 导入页面
+     */
+    public function importPage(Request $request)
+    {
+        if ($request->isPost()) {
+            
+            $data  = [];
+            $code  = 400;
+            $msg   = '上传失败';
+            
+            $param = $request->param();
+            
+            // 取原文件名
+            $name  = explode('.', $_FILES['file']['name']);
+            // 去除后缀
+            array_pop($name);
+            // 过滤非法字符 - 数组转字符串
+            $name  = str_replace([
+                '.', '\\', '/', ':', '*', '`', '?', '<', '>', '%', '&', '$', '#', ' '
+            ], '', implode('.', $name));
+            
+            // 保存文件
+            $upload = $this->tool->upload('file', ['storage','cache', [$name]], 'one', 'file|fileExt:md');
+            
+            if ($upload['code'] == 200) {
+                
+                // 上传文件的本地路径
+                $url  = str_replace($this->tool->domain() . '/', '', $upload['data']);
+                // 文件内容
+                $content = $this->File->readFile($url);
+                // 删除文件
+                $this->File->unlinkFile($url);
+                
+                $page = new Page;
+                $page->title    = $name;
+                $page->content  = $content;
+                $page->alias    = $this->helper->VerifyCode(10, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+                $page->save();
+                
+                $code = 200;
+                $msg  = '导入完成！';
+            }
+            
+            return $this->create($data, $msg, $code);
+        }
+    }
+    
+    /** 
+     * @name 读取文件
+     */
+    public function readFile(Request $request)
+    {
+        if ($request->isPost()) {
+            
+            $data  = [];
+            $code  = 400;
+            $msg   = '读取失败';
+            
+            $param = $request->param();
+            
+            // 取原文件名
+            $name  = explode('.', $_FILES['file']['name']);
+            // 去除后缀
+            array_pop($name);
+            // 过滤非法字符 - 数组转字符串
+            $name  = str_replace([
+                '.', '\\', '/', ':', '*', '`', '?', '<', '>', '%', '&', '$', '#', ' '
+            ], '', implode('.', $name));
+            
+            // 保存文件
+            $upload = $this->tool->upload('file', ['storage','cache', [$name]], 'one', 'file|fileExt:md');
+            
+            if ($upload['code'] == 200) {
+                
+                // 上传文件的本地路径
+                $url  = str_replace($this->tool->domain() . '/', '', $upload['data']);
+                // 文件名称
+                $data['name']    = $name;
+                // 文件内容
+                $data['content'] = $this->File->readFile($url);
+                // 删除文件
+                $this->File->unlinkFile($url);
+                
+                $code = 200;
+                $msg  = '读取完成';
+            }
+            
+            return $this->create($data, $msg, $code);
         }
     }
     

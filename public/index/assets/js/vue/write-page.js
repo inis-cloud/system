@@ -246,6 +246,16 @@
                                   }
                               },
                               {
+                                  name: "import_article",
+                                  tipPosition: "s",
+                                  tip: "导入Markdown文件",
+                                  className: "right",
+                                  icon: `导入Markdown文件`,
+                                  click: () => {
+                                      this.clickUpload()
+                                  }
+                              },
+                              {
                                   name: "insert_bg_color_text",
                                   tipPosition: "s",
                                   tip: "插入带背景颜色的文字",
@@ -571,7 +581,51 @@
                     
                 })
                 
-            }
+            },
+            
+            // 触发上传事件
+            clickUpload: () => {
+                document.querySelector("#input-file").click()
+            },
+            
+            // 单个文件上传
+            upload(event){
+                
+                const self = this
+                const file = event.target.files[0]
+                
+                $.NotificationApp.send("", "正在上传 ...", "top-right", "rgba(0,0,0,0.2)", "info");
+                
+                let params = new FormData
+                params.append("file", file || '')
+                
+                const config = {
+                    headers: { "Content-Type": "multipart/form-data" },
+                    onUploadProgress: (speed) => {
+                        if (speed.lengthComputable) {
+                            let ratio = speed.loaded / speed.total;
+                        }
+                    }
+                }
+                
+                axios.post("/index/handle/readFile", params, config).then((res) => {
+                    
+                    if (res.data.code == 200) {
+                        
+                        const result    = res.data.data
+                        // 文章标题
+                        this.page.title = result.name
+                        // 文章内容
+                        this.contentEditor.setValue(result.content)
+                        
+                        $.NotificationApp.send("提示！", "<span style='color:var(--blue)'>导入成功！</span>", "top-right", "rgba(0,0,0,0.2)", "info");
+                        
+                    } else $.NotificationApp.send("错误！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "info");
+                    
+                    event.target.value = ''
+                })
+                
+            },
             
         },
         

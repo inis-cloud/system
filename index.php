@@ -33,14 +33,14 @@
                                     <div class="text-center mt-3 pl-1 pr-1">
                                         <i class="dripicons-jewel bg-primary maintenance-icon text-white mb-2"></i>
                                         <h5>将 <span class="badge badge-primary-lighten badge-pill">public</span> 目录设置为 <span class="badge badge-primary-lighten badge-pill">运行目录</span></h5>
-                                        <p class="text-muted">在源码根目录中，有一个名为 public 的目录，将目录设置为运行目录即可。<a href="//docs.inis.cc/#/start/install-inis-api?id=_3、设置运行目录" target="_blank">举例教程</a></p>
+                                        <p class="text-muted">在源码根目录中，有一个名为 public 的目录，将目录设置为运行目录即可。<a href="https://docs.inis.cc/#/start/install-inis-system?id=_3%e3%80%81%e8%ae%be%e7%bd%ae%e8%bf%90%e8%a1%8c%e7%9b%ae%e5%bd%95" target="_blank">举例教程</a></p>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-center mt-3 pl-1 pr-1">
                                         <i class="dripicons-clock bg-primary maintenance-icon text-white mb-2"></i>
                                         <h5>为网站配置 <span class="badge badge-primary-lighten badge-pill">伪静态</span></h5>
-                                        <p class="text-muted">为网站设置伪静态，不同环境的配置各不相同，所以这里请根据系统环境的实际情况配置。<a href="https://docs.inis.cc/#/start/install-inis-api?id=_4、配置伪静态" target="_blank">举例教程</a></p>
+                                        <p class="text-muted">为网站设置伪静态，不同环境的配置各不相同，所以这里请根据系统环境的实际情况配置。<a href="https://docs.inis.cc/#/start/install-inis-system?id=_4%e3%80%81%e9%85%8d%e7%bd%ae%e4%bc%aa%e9%9d%99%e6%80%81" target="_blank">举例教程</a></p>
                                     </div>
                                 </div>
                                 <div class="col-md-4">

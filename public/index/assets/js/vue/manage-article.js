@@ -17,6 +17,7 @@
                 is_page_show: {},       // 是否显示分页
                 all_search_value:'',    // 搜索的内容
                 my_search_value: '',    // 搜索的内容
+                file: {item:0},         // 文件
             }
         },
         components: {
@@ -29,6 +30,7 @@
             this.initData()
         },
         methods: {
+            
             /* 获取文章数据 */
             initData(all_page = this.articles_page.all, my_page = this.articles_page.my, del_page = this.articles_page.del){
                 
@@ -170,10 +172,60 @@
                 axios.post('/index/handle/SetArticleShow', params)
             },
             
+            // 触发上传事件
+            clickUpload: () => {
+                document.querySelector("#input-files").click()
+            },
+            
+            // 多文件
+            files(event){
+                
+                const files = event.target.files
+                for (let item of files) this.upload(item)
+                
+                this.file.length = files.length
+            },
+            
+            // 单个文件上传
+            upload(file){
+                
+                const self  = this
+                
+                $.NotificationApp.send("", "正在上传 ...", "top-right", "rgba(0,0,0,0.2)", "info");
+                
+                let params = new FormData
+                params.append("file", file || '')
+                
+                const config = {
+                    headers: { "Content-Type": "multipart/form-data" },
+                    onUploadProgress: (speed) => {
+                        if (speed.lengthComputable) {
+                            let ratio = speed.loaded / speed.total;
+                        }
+                    }
+                }
+                
+                axios.post("/index/handle/importArticle", params, config).then((res) => {
+                    
+                    if (res.data.code == 200) {
+                        
+                        this.initData()
+                        $.NotificationApp.send("提示！", "<span style='color:var(--blue)'>上传成功！</span>", "top-right", "rgba(0,0,0,0.2)", "info");
+                        
+                    } else $.NotificationApp.send("错误！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "info");
+                    
+                    this.file.item++
+                    
+                    // 全部上传完成，清空input数据
+                    if (this.file.item == this.file.length) document.querySelector("#input-files").value = ''
+                })
+                
+            },
+            
             /* 人性化时间戳 */
             NatureTime(time){
                 return inisHelper.time.nature(time)
-            }
+            },
         },
         computed: {
             

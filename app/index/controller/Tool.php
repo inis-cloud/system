@@ -2,13 +2,10 @@
 
 namespace app\index\controller;
 
-use app\model\Options;
-use think\facade\Request;
-use think\facade\Validate;
-use think\facade\Filesystem;
+use app\model\mysql\{Options};
 use PHPMailer\PHPMailer\PHPMailer;
+use think\facade\{Request, Validate, Filesystem};
 
-// extends Base
 class Tool
 {
     // 文件上传

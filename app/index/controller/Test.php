@@ -3,36 +3,19 @@ namespace app\index\controller;
 
 use Parsedown;
 use app\Request;
-use app\index\controller\Tool;
-use app\index\controller\Index;
-use app\model\Log;
-use app\model\Tag;
-use think\facade\Db;
-use app\model\Users;
-use app\model\Links;
 use Metowolf\Meting;
 use inis\music\Music;
-use app\model\Placard;
-use Firebase\JWT\JWT;
-use inis\utils\File;
-use inis\utils\FileDB;
-use inis\utils\helper;
-use inis\utils\markdown;
-use app\model\Article;
-use app\model\Options;
-use app\model\Comments;
-use think\facade\Cache;
-use think\facade\Config;
-use app\model\LinksSort;
-use think\facade\Cookie;
-use app\model\VerifyCode;
-use think\facade\Session;
-use app\model\ArticleSort;
-use Firebase\JWT\ExpiredException;
-use Firebase\JWT\BeforeValidException;
-use Firebase\JWT\SignatureInvalidException;
+use app\index\controller\{Tool, Index};
+use think\facade\{Cache, Config, Cookie, Session, Db};
+use inis\utils\{File, FileDB, helper, markdown, Db as inisDb, Env, Image};
+use Firebase\JWT\{JWT, ExpiredException, BeforeValidException, SignatureInvalidException};
+use app\model\mysql\{Log, Tag, Users, Links, Placard, Article, Options, Comments, LinksSort, VerifyCode, ArticleSort, Music as MusicModel};
 
-use inis\utils\Db as inisDb;
+use app\model\sqlite\{Options as iOptions, Log as iLog};
+
+use QL\QueryList;
+use Jaeger\GuzzleHttp;
+use GuzzleHttp\Client;
 
 class Test
 {
@@ -56,69 +39,181 @@ class Test
     
     public function index(Request $request)
     {
-        $data   = 200;
+        $data = [];
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        // 实例化客户端
+        // $client = new Client();
+     
+        // $url  = 'https://api.gmit.vip/Api/WaSentence';
+     
+        // $data = $client->request('GET', $url)->getBody()->getContents();
+        // $data = json_decode($data);
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        // $env  = new Env('../.env');
+        // $data = $env->get('database.hostname');
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        // 获取数据中所有表的名称
+        // $data = Db::query("show tables");
+        
+        // 获取数据库某个表的所有字段名称
+        // $data = Db::query("show COLUMNS FROM inis_article");
+        
+        // $sqlite = Db::connect('sqlite');
+        
+        // $data = $sqlite->execute('CREATE TABLE log(
+        //   "id" integer PRIMARY KEY AUTOINCREMENT,
+        //   "type" text,
+        //   "ip" text,
+        //   "content" text,
+        //   "message" text,
+        //   "opt" text,
+        //   "expand" text,
+        //   "longtext" text,
+        //   "create_time" text,
+        //   "update_time" text
+        // );');
+        
+        // $data = $sqlite->table('options')->select();
+        
+        // $data = (new iLog)->save([
+        //     'type'=> 'test1',
+        //     'opt' => json_encode([
+        //         'numb'=>[1,2,3,4,5],
+        //         'json'=>[
+        //             'a'=>'a',
+        //             'b'=>'b',
+        //             'c'=>[
+        //                 'c1'=>1,
+        //                 'c2'=>2
+        //             ]
+        //         ]
+        //     ], JSON_UNESCAPED_UNICODE)
+        // ]);
+        
+        // $data = iLog::select();
+        
+        // 获取数据中所有表的名称
+        // $data = $sqlite->getTables();
+        
+        // --查看所有表结构信息 
+        // $data = $sqlite->query('select * from sqlite_master where type="table"');
+        
+        // $data = $sqlite->table('sqlite_sequence')->select();
+        
+        // return json($data);
+        
+        
+        
+        // $icmp_socket = socket_create(AF_INET, SOCK_RAW, 1);
+        // socket_set_block($icmp_socket);
+        // socket_set_option($icmp_socket, SOL_SOCKET, SO_RCVTIMEO, array("sec" => 1, "usec" => 0));
+    
+        // /* connect to socket */
+        // socket_connect($icmp_socket, $host, null);
+    
+        // /* 创建一个发送包*/
+        // $request = "\x08\x00\x19\x2f\x00\x00\x00\x00\x70\x69\x6e\x67";
+    
+        // socket_send($icmp_socket, $request, strlen($request), 0);
+    
+        // if (@socket_read($icmp_socket, 255)) {
+        //     return true;
+        // } else {
+        //     return false;
+        // }
+        // socket_close($icmp_socket);
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         // $FileDB = new FileDB('t1');
         
         // 查询
         // $data = $FileDB->select();
-        $data = FileDB::table('t1') ->select();
-        // 单条插入
-        $data = FileDB::table('t1')->insert(['a' => 1232, 'dt' => date('Y-m-d H:i:s'), 'rand' => rand(1, 100),'array'=>[1,2,3,4,5]]);
-        // 批量插入
-        $data = FileDB::table('t1')->insertAll([
-            ['a' => 123, 'dt' => date('Y-m-d H:i:s'), 'rand' => rand(1, 100)],
-            ['a' => 124, 'dt' => date('Y-m-d H:i:s'), 'rand' => rand(1, 100)],
-        ]);
-        // 更新
-        $data = FileDB::table('t1')->where('id', '=', '1')->update(['c' => 200]);
-        // 删除
-        $data = FileDB::table('t1')->where('id', '=', '3')->delete();
-        // 单条查询
-        $data = FileDB::table('t1')->find(2);
-        // 排序
-        $data = FileDB::table('t1')->order('rand DESC')->select();
+        // $data = FileDB::table('t1') ->select();
+        // // 单条插入
+        // $data = FileDB::table('t1')->insert(['a' => 1232, 'dt' => date('Y-m-d H:i:s'), 'rand' => rand(1, 100),'array'=>[1,2,3,4,5]]);
+        // // 批量插入
+        // $data = FileDB::table('t1')->insertAll([
+        //     ['a' => 123, 'dt' => date('Y-m-d H:i:s'), 'rand' => rand(1, 100)],
+        //     ['a' => 124, 'dt' => date('Y-m-d H:i:s'), 'rand' => rand(1, 100)],
+        // ]);
+        // // 更新
+        // $data = FileDB::table('t1')->where('id', '=', '1')->update(['c' => 200]);
+        // // 删除
+        // $data = FileDB::table('t1')->where('id', '=', '3')->delete();
+        // // 单条查询
+        // $data = FileDB::table('t1')->find(2);
+        // // 排序
+        // $data = FileDB::table('t1')->order('rand DESC')->select();
         
-        return json($data);
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        // return json($data);
         
         
         
@@ -204,95 +299,6 @@ class Test
         
         // $data = $File->empty_dir('test');
         
-        // return json($data);
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        // function markdown($text, $code, $tag, $open) {
-            
-        // 	if (strpos($text, $code)) {
-        	    
-        // 		$insertTag = ($open) ? '<'.$tag.'>' : '<{}'.$tag.'>';
-        		
-        // 		$reg       = '['.preg_quote($code).']';
-        		
-        // 		$text      = preg_replace($reg, $insertTag, $text, 1);
-        		
-        // // 		$text = markdown($text, $code, $tag, !$open);
-        		
-        // 		return $text;
-        		
-        // 	} else return;
-        	
-        //     // if(strpos($text, $code)){
-        //     //     $insertTag=($open) ? '<'.$tag.'>' : '<{}'.$tag.'>';
-        //     // }
-        // }
-        
-        // function getCharpos2($str, $char) {
-        // 	$j   = 0;
-        // 	$arr = [];
-        // 	$count = substr_count($str, $char);
-        // 	for ($i = 0; $i < $count; $i++) {
-        // 		$j = strpos($str, $char, $j);
-        // 		$arr[] = $j;
-        // 		$j = $j+1;
-        // 	}
-        // 	return $arr;
-        // }
-        
-        
-        // $input = " *Bold text*  *Bold text* ";
-        
-        // $input = getCharpos2($input,'*');
-        
-        // // $input = markdown($input, '*', 'strong', true);
-        // // $input = markdown($input, '*', '/strong', true);
-        
-        // // $input = str_replace('{}', '/', $input);
-        
-        // $arr = " *Bold text* -好的- *Bold text* ";
-        // $str1 = str_replace("*","<strong>",$arr,$i);
-        // echo $str1;
-        
-        // return json($str1);
-        
-        
-        
-        /**
-         * 代码自己写的，但注释是给别人看的
-         * 好的代码和注释是程序员的职业素养
-         * */
-        // QQ音乐歌单地址
-        // $url = 'https://c.y.qq.com/base/fcgi-bin/u?__=ZhpZFd43';
-        // $url = 'https://music.163.com/playlist?id=2821988381&userid=1868061933';
-        // // 助手函数
-        // $helper = new helper();
-        // // 重定向URL
-        // $url = $helper->GetRedirectUrl($url);
-        // // 解析歌单ID
-        // $id  = $helper->UrlPartsToArr($url)['id'];
-        // // 获取歌单 netease - tencent
-        // $music = (new Music)->GetInfo($id,'netease','collect');
-        // // 返回歌单
-        // return json($music);
+        return json($data);
     }
 }

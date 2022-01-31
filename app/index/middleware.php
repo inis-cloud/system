@@ -11,7 +11,7 @@ return [
     // \think\middleware\SessionInit::class,
 
     // 登录验证中间件
-    // \app\index\middleware\LoginCheck::class
+    // \app\index\middleware\LoginCheck::class,
     
     // 安装验证中间件
     \app\middleware\Install::class

@@ -4,13 +4,9 @@ declare (strict_types = 1);
 namespace app\api\middleware;
 
 use Closure;
-use think\Request;
-use think\Response;
-use Firebase\JWT\JWT;
-use think\facade\Config;
-use Firebase\JWT\ExpiredException;
-use Firebase\JWT\BeforeValidException;
-use Firebase\JWT\SignatureInvalidException;
+use think\facade\{Config};
+use think\{Request, Response};
+use Firebase\JWT\{JWT, ExpiredException, BeforeValidException, SignatureInvalidException};
 
 class handle
 {
@@ -41,7 +37,7 @@ class handle
         // 需要校验登录请求方式
         $method = ['POST','PUT','DELETE'];
         // 允许免登陆的请求接口
-        $obtain = ['search','comments','verify-code','test','proxy'];
+        $obtain = ['search','comments','verify-code','test','proxy','cache'];
         $allow  = ['users?mode=login','users?mode=register'];
         // 请求接口地址
         $path   = $request->pathinfo();

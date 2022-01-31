@@ -4,11 +4,9 @@ declare (strict_types = 1);
 namespace app\middleware;
 
 use Closure;
-use think\Request;
-use think\Response;
-use inis\utils\File;
-use think\facade\Cookie;
-use think\facade\Session;
+use inis\utils\{File};
+use think\{Request, Response};
+use think\facade\{Cookie, Session};
 
 class Install
 {
@@ -25,20 +23,10 @@ class Install
     {
         // halt($request);
         
-        $install = false;
+        $File    = new File;
         
-        $File = new File;
-        $list = $File->listDirInfo('./',true,'env');
-        
-        // 存在 install.env 文件，则开始执行安装
-        foreach ($list as $val) {
-            $item    = explode('/', $val);
-            $install = array_pop($item);
-            if ($install == 'install.env') $install = true;
-        }
-        
-        // 安装验证
-        if ($install) {
+        // public目录是否存在 install.env - 存在则安装
+        if (in_array('install.env', $File->dirInfo('./'))) {
             
             $route_file_path = "../app/install/route/app.php";
             

@@ -8,21 +8,8 @@
 namespace app\index\controller;
 
 use app\Request;
-use app\model\Tag;
-use app\model\Page;
-use app\model\Links;
-use app\model\Users;
-use app\model\Music;
-use app\model\Banner;
-use app\model\Placard;
-use app\model\Options;
-use app\model\Article;
-use think\facade\View;
-use app\model\AuthRule;
-use app\model\Comments;
-use app\model\LinksSort;
-use think\facade\Session;
-use app\model\ArticleSort;
+use think\facade\{View, Session, Config};
+use app\model\mysql\{Tag, Page, Links, Users, Music, Banner, Placard, Options, Article, AuthRule, Comments, LinksSort, ArticleSort};
 
 class Index extends Base
 {
@@ -31,7 +18,7 @@ class Index extends Base
      */
     public function index(Request $request)
     {
-        if($request->isPost()){
+        if ($request->isPost()) {
             // 总评论数量
             $comments = sizeof(Comments::field(['id'])->select());
             // 自己参与的评论数量
@@ -75,7 +62,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/index');
@@ -95,9 +82,9 @@ class Index extends Base
             $msg  = 'ok';
             
             /* 全部用户数据 */
-            if(empty($param['page']))  $param['page']  = 1;
-            if(empty($param['limit'])) $param['limit'] = 10;
-            if(empty($param['order'])) $param['order'] = 'last_login_time desc,create_time acs';
+            if (empty($param['page']))  $param['page']  = 1;
+            if (empty($param['limit'])) $param['limit'] = 10;
+            if (empty($param['order'])) $param['order'] = 'last_login_time desc,create_time acs';
             $search = (empty($param['search'])) ? '' : $param['search'];
             
             $map1 = ['nickname', 'like', '%'.$search.'%'];
@@ -148,7 +135,7 @@ class Index extends Base
             
             $data['users'] = $users;
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/manage-users');
@@ -217,7 +204,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/options');
@@ -244,7 +231,7 @@ class Index extends Base
             $code  = 200;
             $msg   = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
 
         return View::engine('php')->fetch('/page/write-article');
@@ -331,7 +318,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/manage-article');
@@ -353,7 +340,7 @@ class Index extends Base
             
             if (!empty($param['id'])) $data = Page::ExpandAll($param['id'], ['where'=>[]]);
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/write-page');
@@ -392,7 +379,7 @@ class Index extends Base
             
             $data['page'] = $page;
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/manage-page');
@@ -434,7 +421,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/manage-article-sort');
@@ -488,7 +475,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/manage-links');
@@ -527,7 +514,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         return View::engine('php')->fetch('/page/manage-tag');
     }
@@ -564,7 +551,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/manage-links-sort');
@@ -605,7 +592,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/manage-banner');
@@ -650,7 +637,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/manage-comments');
@@ -727,7 +714,7 @@ class Index extends Base
             
             $data = ['email_serve'=>$email_serve,'system_config'=>$system_config];
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/configure');
@@ -755,7 +742,7 @@ class Index extends Base
             $data['auth_rule'] = $auth_rule;
             $data['attri'] = $attri;
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         return View::engine('php')->fetch('/page/auth-rule');
     }
@@ -814,7 +801,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         return View::engine('php')->fetch('/page/music');
     }
@@ -849,7 +836,7 @@ class Index extends Base
             
             $data  = ['info'=>$options,'users'=>$users];
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
     }
     
@@ -892,7 +879,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/placard');
@@ -935,10 +922,87 @@ class Index extends Base
             
             $data = $options;
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/page/applets');
+    }
+    
+    /*
+     * #name API商城
+     */
+    public function apiStore(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $data  = [];
+            $code  = 200;
+            $msg   = 'ok';
+            
+            // 获取请求参数
+            $param = $request->param();
+            
+            $param['page']  = !empty($param['page'])  ? (int)$param['page']  : 1;
+            $param['limit'] = !empty($param['limit']) ? (int)$param['limit'] : 5;
+            
+            // 内置API信息
+            $internal       = Config::get('apis');
+            $count          = count($internal);
+            $data['page']   = ceil($count / $param['limit']);
+            $data['count']  = $count;
+            
+            // 防止分页请求超出页码
+            if ($param['page'] <= 0) $param['page'] = 1;
+            if ($param['page'] > $data['page']) $param['page'] = $data['page'];
+            
+            // 起始
+            $start = ($param['page'] * $param['limit']) - $param['limit'];
+            $data['data'] = array_slice($internal, $start, $param['limit']);
+            
+            return $this->create($data, $msg, $code);
+        }
+        
+        return View::engine('php')->fetch('/page/api-store');
+    }
+    
+    /*
+     * #name 已经安装的API
+     */
+    public function installedApi(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $data  = [];
+            $code  = 200;
+            $msg   = 'ok';
+            
+            // 获取请求参数
+            $param = $request->param();
+            
+            $item  = Options::where(['keys'=>'config:plugin-api'])->findOrEmpty();
+            $apis  = (!$item->isEmpty()) ? json_decode(json_encode($item->opt), true) : [];
+            
+            $param['page']  = !empty($param['page'])  ? (int)$param['page']  : 1;
+            $param['limit'] = !empty($param['limit']) ? (int)$param['limit'] : 5;
+            
+            $count          = count($apis);
+            $data['page']   = ceil($count / $param['limit']);
+            $data['count']  = $count;
+            
+            // 防止分页请求超出页码
+            if ($param['page'] <= 0) $param['page'] = 1;
+            if ($param['page'] > $data['page']) $param['page'] = $data['page'];
+            
+            // 起始
+            $start = ($param['page'] * $param['limit']) - $param['limit'];
+            $data['data'] = array_slice($apis, $start, $param['limit']);
+            $data['installed']['id'] = array_column($apis, 'id');
+            $data['installed']['version'] = array_map(function ($apis){
+                return ['id'=>$apis['id'],'version'=>$apis['version']];
+            }, $apis);
+            
+            return $this->create($data, $msg, $code);
+        }
     }
     
 

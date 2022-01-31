@@ -96,6 +96,10 @@
                                                                 <a href="/index/WriteArticle" class="btn btn-primary d-lg-none d-block ml-1">
                                                                     <i class="mdi mdi-plus-circle"></i>
                                                                 </a>
+                                                                <button v-on:click="clickUpload()" class="btn btn-primary d-none d-lg-block ml-2" data-toggle="tooltip" data-original-title="导入Markdown文章（.md后缀文件）">导入文章</button>
+                                                                <button v-on:click="clickUpload()" class="btn btn-primary d-lg-none d-block ml-1" data-toggle="tooltip" data-original-title="导入Markdown文章（.md后缀文件）">
+                                                                    <svg t="1642410704180" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3818" width="12" height="12"><path d="M960 192H537.6c-17.066667 0-34.133333-6.4-44.8-19.2l-68.266667-68.266667c-12.8-12.8-27.733333-19.2-44.8-19.2H64C27.733333 85.333333 0 113.066667 0 149.333333v725.333334c0 36.266667 27.733333 64 64 64h896c36.266667 0 64-27.733333 64-64V256c0-36.266667-27.733333-64-64-64zM718.933333 582.4l-179.2 192c-8.533333 8.533333-19.2 12.8-32 12.8-10.666667 0-23.466667-4.266667-32-12.8l-179.2-192c-25.6-27.733333-6.4-70.4 32-70.4H426.666667v-128c0-23.466667 19.2-42.666667 42.666666-42.666667h85.333334c23.466667 0 42.666667 19.2 42.666666 42.666667v128h89.6c38.4 0 57.6 44.8 32 70.4z" fill="#ffffff" p-id="3819"></path></svg>
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -233,6 +237,11 @@
                                                                 <a href="/index/WriteArticle" class="btn btn-primary d-lg-none d-block ml-1">
                                                                     <i class="mdi mdi-plus-circle"></i>
                                                                 </a>
+                                                                <input v-show="false" v-on:change="files($event)" id="input-files" type="file" multiple="multiple" accept=".md">
+                                                                <button v-on:click="clickUpload()" class="btn btn-primary d-none d-lg-block ml-2" data-toggle="tooltip" data-original-title="导入Markdown文章（.md后缀文件）">导入文章</button>
+                                                                <button v-on:click="clickUpload()" class="btn btn-primary d-lg-none d-block ml-1" data-toggle="tooltip" data-original-title="导入Markdown文章（.md后缀文件）">
+                                                                    <svg t="1642410704180" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3818" width="12" height="12"><path d="M960 192H537.6c-17.066667 0-34.133333-6.4-44.8-19.2l-68.266667-68.266667c-12.8-12.8-27.733333-19.2-44.8-19.2H64C27.733333 85.333333 0 113.066667 0 149.333333v725.333334c0 36.266667 27.733333 64 64 64h896c36.266667 0 64-27.733333 64-64V256c0-36.266667-27.733333-64-64-64zM718.933333 582.4l-179.2 192c-8.533333 8.533333-19.2 12.8-32 12.8-10.666667 0-23.466667-4.266667-32-12.8l-179.2-192c-25.6-27.733333-6.4-70.4 32-70.4H426.666667v-128c0-23.466667 19.2-42.666667 42.666666-42.666667h85.333334c23.466667 0 42.666667 19.2 42.666666 42.666667v128h89.6c38.4 0 57.6 44.8 32 70.4z" fill="#ffffff" p-id="3819"></path></svg>
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </div>

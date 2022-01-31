@@ -4,12 +4,10 @@ declare (strict_types = 1);
 namespace app\index\middleware;
 
 use Closure;
-use think\Request;
-use think\Response;
-use app\model\Users;
-use inis\utils\File;
-use think\facade\Cookie;
-use think\facade\Session;
+use inis\utils\{File};
+use app\model\mysql\{Users};
+use think\{Request, Response};
+use think\facade\{Cookie, Session};
 
 class LoginCheck
 {
@@ -38,15 +36,12 @@ class LoginCheck
         }
         
         // 登录验证
-        if (empty(Session::has('login_account')) && !preg_match('/login/', $request->pathinfo())) {
-            
-            return redirect((string) url('index/comm/login'));
-        }
+        if (!preg_match('/login/', $request->pathinfo())) if (empty(Session::has('login_account'))) return redirect((string) url('index/comm/login'));
         
         // 单点登录
         if (!empty(Session::get('login_account'))) {
             
-            $login_account   = Session::get('login_account');
+            $login_account= Session::get('login_account');
             $users = Users::find($login_account['id']);
             
             $login_auth_1 = $users->opt->login_auth;
@@ -66,7 +61,8 @@ class LoginCheck
                 
                 return redirect((string) url('index/comm/login'));
             }
-        }
+            
+        } else return redirect((string) url('index/comm/login'));
         
         // ↑↑↑ 前置中间件执行区域 ↑↑↑
         $reponse = $next($request);

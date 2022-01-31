@@ -3,15 +3,10 @@
 namespace app\index\controller;
 
 use think\Request;
-use app\model\Log;
-use app\model\Users;
-use inis\utils\helper;
-use think\facade\View;
-use app\model\Options;
 use app\BaseController;
-use think\facade\Config;
-use think\facade\Cookie;
-use think\facade\Session;
+use inis\utils\{helper};
+use think\facade\{View, Cookie, Session, Config};
+use app\model\mysql\{Log, Users, Options};
 
 class Comm extends BaseController
 {
@@ -55,10 +50,10 @@ class Comm extends BaseController
         
         // 站点信息
         $site = Options::where(['keys'=>'site'])->findOrEmpty();
-        define('__SITE_ICO__'        , !$site->isEmpty() ? $site['opt']->favicon      : '');
-        define('__SITE_TITLE__'      , !$site->isEmpty() ? $site['opt']->title        : 'INIS');
-        define('__SITE_KEYWORDS__'   , !$site->isEmpty() ? $site['opt']->keywords     : 'api,inis api');
-        define('__SITE_DESCRIPTION__', !$site->isEmpty() ? $site['opt']->description  : 'api,inis api');
+        define('__SITE_ICO__'        , !empty($site) ? $site['opt']->favicon      : '');
+        define('__SITE_TITLE__'      , !empty($site) ? $site['opt']->title        : 'INIS');
+        define('__SITE_KEYWORDS__'   , !empty($site) ? $site['opt']->keywords     : 'api,inis api');
+        define('__SITE_DESCRIPTION__', !empty($site) ? $site['opt']->description  : 'api,inis api');
     }
 
     // 登录
@@ -152,7 +147,7 @@ class Comm extends BaseController
                 }
             }
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
             
         } else if ($request->isPut()) {
             
@@ -164,7 +159,7 @@ class Comm extends BaseController
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
         return View::engine('php')->fetch('/login');

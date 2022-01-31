@@ -12,7 +12,7 @@
             'i-footer': inisTemp.footer('login')
         },
         mounted() {
-            this.test()
+            
         },
         methods: {
             btnLogin(){
@@ -54,7 +54,7 @@
                         this.is_login = false
                     })
                 }
-            }
+            },
         }
     }).mount('#login')
     

@@ -29,6 +29,10 @@ Route::group('file', function (){
     Route::rule(':name', 'FileSystem/:name');
 });
 
+Route::group('update', function (){
+   Route::rule(':name', 'Update/:name');
+});
+
 Route::group(function (){
     Route::any('/', 'Index/index');
     Route::rule(':name', 'Index/:name');

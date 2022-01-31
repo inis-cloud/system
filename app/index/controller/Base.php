@@ -2,10 +2,10 @@
 
 namespace app\index\controller;
 
-use inis\utils\helper;
-use app\model\Options;
 use app\BaseController;
-use think\facade\Config;
+use inis\utils\{helper};
+use think\facade\{Config};
+use app\model\mysql\{Options};
 use app\index\middleware\LoginCheck;
 
 abstract class Base extends BaseController
@@ -48,9 +48,9 @@ abstract class Base extends BaseController
         
         // 站点信息
         $site = Options::where(['keys'=>'site'])->findOrEmpty();
-        define('__SITE_ICO__'        , !$site->isEmpty() ? $site['opt']->favicon      : '');
-        define('__SITE_TITLE__'      , !$site->isEmpty() ? $site['opt']->title        : 'INIS');
-        define('__SITE_KEYWORDS__'   , !$site->isEmpty() ? $site['opt']->keywords     : 'api,inis api');
-        define('__SITE_DESCRIPTION__', !$site->isEmpty() ? $site['opt']->description  : 'api,inis api');
+        define('__SITE_ICO__'        , !empty($site) ? $site['opt']->favicon      : '');
+        define('__SITE_TITLE__'      , !empty($site) ? $site['opt']->title        : 'INIS');
+        define('__SITE_KEYWORDS__'   , !empty($site) ? $site['opt']->keywords     : 'api,inis api');
+        define('__SITE_DESCRIPTION__', !empty($site) ? $site['opt']->description  : 'api,inis api');
     }
 }

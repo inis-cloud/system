@@ -8,13 +8,9 @@
 namespace app\install\controller;
 
 use app\Request;
-use inis\utils\File;
-use think\facade\Db;
-use inis\utils\helper;
-use think\facade\View;
 use app\BaseController;
-use think\facade\Config;
-use think\facade\Session;
+use inis\utils\{File, helper};
+use think\facade\{Db, View, Config, Session};
 
 //  extends Base
 class Index extends BaseController
@@ -29,6 +25,12 @@ class Index extends BaseController
         $this->File   = new File;
         $this->helper = new helper;
         $this->config = Config::get('inis.version');
+        
+        define('__ASSETS__'    , '/index/assets/');
+        define('__ADMIN_JS__'  , '/index/assets/js/');
+        define('__ADMIN_CSS__' , '/index/assets/css/');
+        define('__ADMIN_IMG__' , '/index/assets/images/');
+        define('__ADMIN_LIBS__', '/index/assets/libs/');
     }
     
     // 安装引导首页
@@ -40,8 +42,12 @@ class Index extends BaseController
             $code = 200;
             $msg  = 'ok';
             
-            $php['version'] = PHP_VERSION;
-            $php['check']   = (version_compare(PHP_VERSION,'7.4','ge')) ? true : false;
+            $data['php']   = [
+                'need'     => '7.4',
+                'version'  => PHP_VERSION,
+                'check'    => (version_compare(PHP_VERSION,'7.4','ge')) ? true : false
+            ];
+            $data['exten'] = get_loaded_extensions();
             
             try {
                 
@@ -49,49 +55,34 @@ class Index extends BaseController
                 foreach ($version as $val) foreach ($val as $k => $v) $version = ($k == 'version()') ? $v : null;
                 $version = explode('-', $version)[0];
                 
-                $MySQL['version'] = $version;
                 $sql_ver_check    = $this->helper->VersionCompare($version, '5.5');
-                $MySQL['check']   = ($sql_ver_check >= 0) ? true : false;
+                
+                $data['mysql'] = [
+                    'need'     => '5.5',
+                    'version'  => $version,
+                    'check'    => ($sql_ver_check >= 0) ? true : false,
+                ];
                 
             } catch (ValidateException $e) {
-                $MySQL['version'] = null;
-                $MySQL['check']   = null;
-                // return json($e->getError());
+                
+               $data['mysql'] = [
+                    'need'     => '5.5',
+                    'version'  => null,
+                    'check'    => null,
+                ];
+                
             } catch (\Exception $e) {
-                $MySQL['version'] = null;
-                $MySQL['check']   = null;
-                // return json($e->getMessage());
+                
+                $data['mysql'] = [
+                    'need'     => '5.5',
+                    'version'  => null,
+                    'check'    => null,
+                ];
             }
             
-            $data = [
-                'php'       => $php,
-                'MySQL'     => $MySQL,
-                'inis'      => $this->config,
-            ];
-            
-            return $this->create($data,$code,$msg);
+            return $this->create($data, $msg, $code);
         }
         
-        return View::engine('php')->fetch('/check');
+        return View::engine('php')->fetch('/index');
     }
-    
-    // 安装引导下一步
-    public function next(Request $request)
-    {
-         if ($request->isPost())
-        {
-            $data = [];
-            $code = 200;
-            $msg  = 'ok';
-            
-            $data = [
-                'inis' => $this->config,
-            ];
-            
-            return $this->create($data,$code,$msg);
-        }
-        
-        return View::engine('php')->fetch('/next');
-    }
-    
 }

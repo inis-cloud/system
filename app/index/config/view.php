@@ -22,12 +22,4 @@ return [
     'taglib_begin'  => '{',
     // 标签库标签结束标记
     'taglib_end'    => '}',
-
-    // 模板替换输出
-    'tpl_replace_string' => [
-        '__ADMIN_JS__'   =>  '/index/assets/js',
-        '__ADMIN_CSS__'  =>  '/index/assets/css',
-        '__ADMIN_IMG__'  =>  '/index/assets/images',
-        '__ADMIN_LIBS__' =>  '/index/assets/libs',
-    ]
 ];
