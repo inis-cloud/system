@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover">
+        
+        <title>{block name="title"}{$CONFIG->SITE->title}{/block}</title>
+        <link rel="shortcut icon" href="{$CONFIG->SITE->favicon}">
+        
+        {block name="seo"}
+        <meta name="author" content="racns,兔子"/>
+        <meta name="keywords" content="{$CONFIG->SITE->keywords}">
+        <meta itemprop="image" content="{$CONFIG->SITE->favicon}">
+        <meta name="description" content="{$CONFIG->SITE->description}">
+        {/block}
+        
+        <script src="{$CONFIG->ROOT}libs/vue3.js?v={$CONFIG->VERSION}"></script>
+        <script src="{$CONFIG->ROOT}libs/axios.min.js?v={$CONFIG->VERSION}"></script>
+        <script src="{$CONFIG->ROOT}libs/lottie/lottie.min.js?v={$CONFIG->VERSION}"></script>
+        <script src="{$CONFIG->ROOT}utils/helper.js?v={$CONFIG->VERSION}"></script>
+        
+        <link href="{$CONFIG->ROOT}css/icons.min.css?v={$CONFIG->VERSION}" rel="stylesheet" type="text/css">
+        <link href="{$CONFIG->ROOT}css/app.min.css?v={$CONFIG->VERSION}" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="{$CONFIG->ROOT}css/style.css?v={$CONFIG->VERSION}">
+        <link rel="stylesheet" href="{$CONFIG->ROOT}css/media.css?v={$CONFIG->VERSION}">
+        
+        {block name="head"}{/block}
+    </head>
+
+    <body class="loading" data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false, "leftSidebarCondensed":false, "leftSidebarScrollable":false,"darkMode":false, "showRightSidebarOnStart": true}'>
+        
+        <div class="wrapper">
+            
+            <!-- 侧边栏 - 开始 -->
+            {include file="layouts/side" /}
+            <!-- 侧边栏- 结束 -->
+            
+            <div class="content-page">
+                <div class="content">
+                    
+                    <!-- 顶部导航 - 开始 -->
+                    {include file="layouts/nav" /}
+                    <!-- 顶部导航 - 结束 -->
+                    
+                    {block name="content"}
+                    <div class="container-fluid">
+                        <div class="row">
+                            主内容
+                        </div>
+                    </div>
+                    {/block}
+                    
+                </div>
+                
+                <!-- 页脚 - 开始 -->
+                {include file="layouts/footer" /}
+                <!-- 页脚 - 结束 -->
+                
+            </div>
+            
+        </div>
+        
+        <!-- 右边设置 - 开始 -->
+        {include file="layouts/setting" /}
+        <!-- 右边设置 - 结束 -->
+        
+        <div class="rightbar-overlay"></div>
+        
+        <script src="{$CONFIG->ROOT}js/vendor.min.js?v={$CONFIG->VERSION}"></script>
+        <script src="{$CONFIG->ROOT}js/app.min.js?v={$CONFIG->VERSION}"></script>
+        <script src="{$CONFIG->ROOT}js/layouts/nav.js?v={$CONFIG->VERSION}"></script>
+        <script src="{$CONFIG->ROOT}js/layouts/setting.js?v={$CONFIG->VERSION}"></script>
+        
+        {block name="script"}{/block}
+    </body>
+</html>

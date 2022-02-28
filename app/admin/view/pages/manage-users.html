@@ -1,0 +1,281 @@
+{extend name="/layouts/base" /}
+
+{block name="title"}管理用户 - {$CONFIG->SITE->title}{/block}
+
+{block name="content"}
+<div id="manage-users" class="container-xxl">
+    
+    <div class="row mt-md-4 mt-2">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    
+                    <div class="dropdown float-end">
+                        <a href="javascript:;" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a v-on:click="initData('','',true)" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-autorenew me-1"></i>刷新
+                            </a>
+                            <a v-on:click="edit = {}" data-bs-toggle="modal" data-bs-target="#fill-edit-modal" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-plus me-1"></i>添加用户
+                            </a>
+                            <a v-on:click="deleteUsers()" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi mdi-delete-outline me-1"></i>批量删除
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="row pb-2">
+                        <div class="com-md-6">
+                            <div class="card-body pt-0 pb-0">
+                                <div class="app-search d-block">
+                                    <div class="input-group">
+                                        <input v-model="search_value" v-on:keyup.enter.native="initData('','',true)" type="text" class="form-control mw-250" placeholder="用户名/帐号/邮箱" data-bs-toggle="tooltip" data-original-title="支持模糊查询（如查询QQ邮箱用户：@qq.com）">
+                                        <span class="mdi mdi-magnify"></span>
+                                        <div class="input-group-append">
+                                            <button v-on:click="initData('','',true)" class="btn btn-primary" type="button">搜索</button>
+                                        </div>
+                                        <button v-on:click="edit = {}" data-bs-toggle="modal" data-bs-target="#fill-edit-modal" type="button" class="btn btn-primary d-none d-lg-block ml-2">
+                                            <i class="mdi mdi-plus me-1"></i>添加
+                                        </button>
+                                        <button v-on:click="deleteUsers()" type="button" class="btn btn-primary d-none d-lg-block ml-2">
+                                            <i class="mdi mdi mdi-delete-outline me-1"></i>批量删除
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 加载动画 开始 -->
+                    <div v-if="is_load" class="table-responsive is_load mb-2 flex-center">
+                        <div class="spinner-border text-primary m-1" role="status"></div>
+                        <div>加载中...</div>
+                    </div>
+                    <!-- 加载动画 结束 -->
+                    
+                    <div v-else-if="!is_load" class="table-responsive-sm">
+                        <table class="table table-centered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <div class="custom-control custom-checkbox">
+                                            <input v-on:click="selectAll" type="checkbox" class="custom-control-input" id="select-all">
+                                            <label class="custom-control-label" for="select-all"></label>
+                                        </div>
+                                    </th>
+                                    <th width="160">用户</th>
+                                    <th>性别</th>
+                                    <th>帐号</th>
+                                    <th>邮箱</th>
+                                    <th>电话</th>
+                                    <th>权限</th>
+                                    <th>上次登录</th>
+                                    <th>启用</th>
+                                    <th width="140">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="data in users.data" :key="data.id">
+                                    <td>
+                                        <div class="custom-control custom-checkbox">
+                                            <input :name="data.id" type="checkbox" class="custom-control-input checkbox-item" :id="'select-' + data.id">
+                                            <label class="custom-control-label" :for="'select-' + data.id"></label>
+                                        </div>
+                                    </td>
+                                    <td v-on:click="initData(data.id)" data-bs-toggle="modal" data-bs-target="#fill-edit-modal" class="table-user pointer">
+                                        <img :src="data.head_img || ''" class="mr-1 rounded-circle">
+                                        {{data.nickname}}
+                                    </td>
+                                    <td>{{data.sex}}</td>
+                                    <td>{{data.account || '未设置'}}</td>
+                                    <td>{{data.email}}</td>
+                                    <td>{{data.phone || '未填写'}}</td>
+                                    <td>
+                                        <span v-if="!data.status" class="badge badge-danger-lighten">{{level(data.level)}}</span>
+                                        <span v-else-if="data.level == 'admin'" class="badge badge-primary-lighten">{{level(data.level)}}</span>
+                                        <span v-else class="badge badge-info-lighten">{{level(data.level)}}</span>
+                                    </td>
+                                    <td>{{natureTime(data.last_login_time)}}</td>
+                                    <td>
+                                        <div>
+                                            <input v-on:click="isEnable(data.id)" v-model="is_enable" :value="data.id" :id="'enable-' + data.id" type="checkbox" data-switch="success">
+                                            <label :for="'enable-' + data.id" data-on-label="Yes" data-off-label="No" class="mb-0 d-block"></label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button v-on:click="initData(data.id)" data-bs-toggle="modal" data-bs-target="#fill-edit-modal" type="button" class="btn btn-light btn-sm mr-1">
+                                            <i class="mdi mdi-square-edit-outline"></i>
+                                        </button>
+                                        <button v-on:click="deleteUsers(data.id)" type="button" class="btn btn-light btn-sm">
+                                            <i class="mdi mdi-delete-outline"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="flex space-between align-items-center mt-2">
+                        <div class="d-none d-md-block">
+                            共 {{users.page}} 页 {{users.count}} 条数据
+                        </div>
+                        <div v-if="!page_is_load && is_page_show" class="btn-group">
+                            <button v-on:click="initData('',1)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-left"></i></button>
+                            <button v-for="(item, index) in page_list" :key="index" v-on:click="initData('',item)" :class="(page == item) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-light'">
+                                {{item}}
+                            </button>
+                            <button v-on:click="initData('',users.page)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑用户 - 结束 -->
+    <div id="fill-edit-modal" class="modal fade" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <!-- modal-dialog-centered -->
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">{{title}}</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card-body pb-0">
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">昵称</label>
+                                    <div class="col-9">
+                                        <input v-model="edit.nickname" type="text" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">主页</label>
+                                    <div class="col-9">
+                                        <input v-model="edit.address_url" type="text" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">头像</label>
+                                    <div class="col-9">
+                                        <div class="input-group">
+                                            <input v-model="edit.head_img" type="text" class="form-control" placeholder="填写头像地址或点击按钮上传">
+                                            <div class="input-group-append">
+                                                <input v-show="false" v-on:change="upload($event)" type="file" id="input-file">
+                                                <button v-on:click="clickUpload" class="btn btn-dark" type="button">上传</button>
+                                            </div>
+                                        </div>
+                                        <div v-if="speed != 1 && speed != 0" class="progress-w-percent users-upload-head">
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar" role="progressbar" :style="'width: '+ speed * 100 +'%'" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">备注</label>
+                                    <div class="col-9">
+                                        <input v-model="edit.remarks" type="text" class="form-control" placeholder="备注只管理员可见">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card-body pb-0">
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">帐号</label>
+                                    <div class="col-9">
+                                        <input v-model="edit.account" type="text" class="form-control" placeholder="用于登录">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-3">
+                                    <label  class="col-3 col-form-label">邮箱</label>
+                                    <div class="col-9">
+                                        <input v-model="edit.email" type="text" class="form-control" placeholder="用于登录或找回密码">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">电话</label>
+                                    <div class="col-9">
+                                        <input v-model="edit.phone" type="text" class="form-control" placeholder="用于登录">
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">密码</label>
+                                    <div class="col-9">
+                                        <input v-model="edit.password" type="text" class="form-control" placeholder>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card-body">
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">性别</label>
+                                    <div class="col-9">
+                                        <select id="sex-select2" class="form-control select2" data-control="select2" data-dropdown-parent="#fill-edit-modal" data-placeholder="init..."></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card-body">
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">权限</label>
+                                    <div class="col-9">
+                                        <select id="auth-select2" class="form-control select2" data-control="select2" data-dropdown-parent="#fill-edit-modal" data-placeholder="init..."></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card-body">
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">启用</label>
+                                    <div class="col-9">
+                                        <select id="enable-select2" class="form-control select2" data-control="select2" data-dropdown-parent="#fill-edit-modal" data-placeholder="init..."></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="row">
+                        <div class="card-body pt-0">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label>用户介绍</label>
+                                    <textarea class="form-control domain-textarea" rows="5" v-model="edit.description" placeholder="这个人很懒，什么都没写！"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">关闭</button>
+                    <button v-on:click="save" type="button" class="btn btn-light">保存配置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 编辑用户 - 结束 -->
+</div>
+{/block}
+
+{block name="script"}
+<script src="{$CONFIG->ROOT}js/pages/manage-users.js?v={$CONFIG->VERSION}"></script>
+{/block}

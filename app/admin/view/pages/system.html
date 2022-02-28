@@ -1,0 +1,619 @@
+{extend name="/layouts/base" /}
+
+{block name="title"}系统配置 - {$CONFIG->SITE->title}{/block}
+
+{block name="content"}
+<div id="system" class="container-xxl">
+    
+    <div class="row mt-md-4 mt-2">
+        <div class="col-sm-12">
+            <div class="card bg-white">
+                <div class="card-body profile-user-box pb-2">
+                    <div class="row mb-2">
+                        <div class="col-sm-8">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="avatar-lg">
+                                        <input v-show="false" v-on:change="upload($event)" type="file" id="btn_file" />
+                                        <img v-on:click="clickUpload()" :src="site.image" class="rounded-circle img-thumbnail pointer" height="100">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div>
+                                        <h4 class="my-1 text-muted">{{site.title}}</h4>
+                                        <ul class="my-1 list-inline text-muted">
+                                            <li v-for="(item, index) in keywords" :key="index" class="list-inline-item me-2">
+                                                <strong class="font-13 text-muted opacity-75-hover pointer">{{item}}</strong>
+                                            </li>
+                                        </ul>
+                                        <p class="font-13 text-muted my-1">{{site.description}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-sm-4">
+                            <div class="text-center mt-sm-0 mt-3 text-sm-end">
+                                <button data-bs-toggle="modal" data-bs-target="#fill-master-modal" type="button" class="btn btn-sm btn-light m-1">
+                                    <i class="mdi mdi-account-edit me-1"></i>站长信息
+                                </button>
+                                <button data-bs-toggle="modal" data-bs-target="#fill-domain-modal" type="button" class="btn btn-sm btn-info m-1">
+                                    <i class="mdi mdi-lock-check-outline me-1"></i>白名单
+                                </button>
+                                <button data-bs-toggle="modal" data-bs-target="#fill-token-modal" type="button" class="btn btn-sm btn-info m-1">
+                                    <i class="mdi mdi-shield-check-outline me-1"></i>Token验证
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="progress" style="height:3px"></div>
+                <ul class="nav nav-tabs nav-bordered p-2 border-unset">
+                    <li class="nav-item">
+                        <a href="#system-site" data-bs-toggle="tab" aria-expanded="false" class="nav-link active">
+                            <span>站点信息</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#system-redundancy" data-bs-toggle="tab" aria-expanded="true" class="nav-link">
+                            <span>冗余资源</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#system-email-serve" data-bs-toggle="tab" aria-expanded="false" class="nav-link">
+                            <span>邮件服务</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#system-other-serve" data-bs-toggle="tab" aria-expanded="false" class="nav-link">
+                            <span>其他配置</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="tab-content">
+                        <div class="tab-pane show active" id="system-site">
+                            <div class="dropdown float-end">
+                                <a href="javascript:;" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="mdi mdi-dots-vertical"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a v-on:click="btnSave()" href="javascript:;" class="dropdown-item">
+                                        <i class="mdi mdi-content-save-edit-outline me-1"></i>保存
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+    					        <div class="col-lg-6">
+    					            <div class="form-group">
+    					                <label class="text-muted">标题</label>
+    					                <input v-model="site.title" type="text" class="form-control customize-input" placeholder="站点标题">
+					                </div>
+					                <div class="form-group">
+    					                <label class="text-muted">备案码</label>
+    					                <input v-model="site.copy" type="text" class="form-control customize-input" placeholder="工信部备案码">
+					                </div>
+					                <div class="form-group">
+    					                <label class="text-muted">关键词</label>
+    					                <input v-model="site.keywords" type="text" class="form-control customize-input" placeholder="站点关键词">
+					                </div>
+    					        </div>
+    					        <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="text-muted">头像</label>
+                                        <input v-model="site.image" type="text" class="form-control customize-input" placeholder="站点头像">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="text-muted">favicon</label>
+                                        <input v-model="site.favicon" type="text" class="form-control customize-input" placeholder="favicon地址">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="text-muted">前台地址</label>
+                                        <input v-model="site.url" type="text" class="form-control customize-input" placeholder="前端地址">
+                                    </div>
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class="form-group">
+    					                <label class="text-muted">描述</label>
+    					                <input v-model="site.description" type="text" class="form-control customize-input" placeholder="站点描述   ">
+					                </div>
+                                </div>
+                            </div>
+                            <div class="inis-save">
+                                <button v-on:click="btnSave()" type="button" class="btn btn-icon">
+                                    <svg t="1640673768171" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="21650" width="24" height="24"><path d="M860.2 41H163.8C96.1 41 41 96.1 41 163.8v696.3C41 927.9 96.1 983 163.8 983h696.3c67.8 0 122.9-55.1 122.9-122.9V163.8C983 96.1 927.9 41 860.2 41z m-532.5 81.9h368.6v163.8c0 22.6-18.4 41-41 41H368.6c-22.6 0-41-18.4-41-41V122.9z m573.4 737.3c0 22.6-18.4 41-41 41H163.8c-22.6 0-41-18.4-41-41V163.8c0-22.6 18.4-41 41-41h81.9v163.8c0 67.8 55.1 122.9 122.9 122.9h286.7c67.8 0 122.9-55.1 122.9-122.9V122.9h81.9c22.6 0 41 18.4 41 41v696.3z" p-id="21651" fill="#00afec"></path><path d="M593.9 276.5c28.2 0 51.2-23 51.2-51.2s-23-51.2-51.2-51.2c-28.2 0-51.2 23-51.2 51.2s23.1 51.2 51.2 51.2zM737.3 675.8H286.7c-22.5 0-41 18.4-41 41 0 22.5 18.4 41 41 41h450.6c22.5 0 41-18.4 41-41-0.1-22.5-18.5-41-41-41z" p-id="21652" fill="#00afec"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="system-redundancy">
+                            <div v-if="redundancy.length > 0" class="dropdown float-end">
+                                <a href="javascript:;" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="mdi mdi-dots-vertical"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a v-on:click="clearTrash()" href="javascript:;" class="dropdown-item">
+                                        <i class="mdi mdi mdi-delete-outline me-1"></i>清理冗余资源
+                                    </a>
+                                </div>
+                            </div>
+                            <div v-if="redundancy.length > 0">
+                                <div class="table-box customize-scroll max-h-400">
+                                    <table class="table table-row-bordered">
+                                        <thead>
+                                            <tr class="fw-bold fs-6 text-muted">
+                                                <th>序号</th>
+                                                <th>资源路径</th>
+                                                <th>时间</th>
+                                                <th>状态</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(item, index) in redundancy" :key="index">
+                                                <td>{{index + 1}}</td>
+                                                <td>{{self_domain + '/' + item}}</td>
+                                                <td>{{parseTime(item)}}</td>
+                                                <td><i class="mdi mdi-link-off"></i></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+        					    </div>
+        					    <div class="float-start">
+        					        可清理 {{redundancy.length || 0}} 个冗余资源
+        					    </div>
+    					    </div>
+    					    <div v-else class="flex-center">
+    					        非常棒，您的系统非常干净！
+    					    </div>
+    					    <div v-if="redundancy.length > 0" class="inis-save">
+                                <button v-on:click="clearTrash()" type="button" class="btn btn-icon">
+                                    <svg t="1644403482838" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2751" width="24" height="24"><path d="M732.3 939H255.2c-30.1 0-54.5-24.5-54.5-54.5V420.9h65.4v452.6h455.3V421h65.4v463.5c0 30-24.4 54.5-54.5 54.5z" fill="#fa5c7c" p-id="2752"></path><path d="M699.3 247.4h-65.4v-55c0-12.9-10.5-23.4-23.4-23.4H376.9c-12.9 0-23.4 10.5-23.4 23.4V247h-65.4V142.4c0-19.3 16.2-38.9 47.2-38.9h316.8c31 0 47.2 19.5 47.2 38.9v105z" fill="#fa5c7c" p-id="2753"></path><path d="M807.3 362.3H180.2c-18 0-32.7-14.7-32.7-32.7 0-18 14.7-32.7 32.7-32.7h627.1c18 0 32.7 14.7 32.7 32.7 0 18-14.7 32.7-32.7 32.7z" fill="#fa5c7c" p-id="2754"></path><path d="M406.5 757.2c-18 0-32.7-14.7-32.7-32.7V497.3c0-18 14.7-32.7 32.7-32.7 18 0 32.7 14.7 32.7 32.7v227.2c0 18-14.7 32.7-32.7 32.7zM581 757.2c-18 0-32.7-14.7-32.7-32.7V497.3c0-18 14.7-32.7 32.7-32.7 18 0 32.7 14.7 32.7 32.7v227.2c0 18-14.7 32.7-32.7 32.7z" fill="#fa5c7c" p-id="2755"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="system-email-serve">
+                            <div class="dropdown float-end">
+                                <a href="javascript:;" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="mdi mdi-dots-vertical"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a v-on:click="saveEmail()" href="javascript:;" class="dropdown-item">
+                                        <i class="mdi mdi-content-save-edit-outline me-1"></i>保存
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+    					        <div class="col-lg-6">
+    					            <div class="form-group">
+    					                <label class="text-muted">
+    					                    邮箱帐号<i class="text-danger">*</i>
+					                    </label>
+    					                <input v-model="serve.email.opt.email" type="text" class="form-control customize-input" placeholder="邮件服务的邮箱帐号">
+					                </div>
+    					        </div>
+    					        <div class="col-lg-6">
+    					            <div class="form-group">
+    					                <label class="text-muted">
+    					                    邮箱密码<i class="text-danger">*</i>
+					                    </label>
+    					                <input v-model="serve.email.opt.password" type="text" class="form-control customize-input" placeholder="邮件服务的密码（QQ配置注意：非QQ密码）">
+					                </div>
+    					        </div>
+    					        <div class="col-lg-6">
+    					            <div class="form-group">
+    					                <label class="text-muted">
+    					                    服务地址<i class="text-danger">*</i>
+					                    </label>
+    					                <input v-model="serve.email.opt.smtp" type="text" class="form-control customize-input" placeholder="邮件服务的地址，如QQ的：smtp.qq.com">
+					                </div>
+    					        </div>
+    					        <div class="col-lg-6">
+    					            <div class="form-group">
+    					                <label class="text-muted">
+    					                    发件人昵称<i class="text-danger">*</i>
+					                    </label>
+    					                <input v-model="serve.email.opt.nickname" type="text" class="form-control customize-input" placeholder="收件邮件昵称，如：系统提示！">
+					                </div>
+    					        </div>
+    					        <div class="col-lg-12">
+    					            <div class="form-group mb-3">
+    					                <label class="text-muted">
+    					                    抄送<i class="text-danger">*</i>
+    					                </label>
+    					                <input v-model="serve.email.opt.email_cc" type="text" class="form-control customize-input" placeholder="抄送的邮箱，用英文 , 号隔开多个邮箱">
+					                </div>
+    					        </div>
+    					        <div class="col-lg-4">
+    					            <div class="form-group">
+    					                <label class="text-muted">
+    					                    端口号<i class="text-danger">*</i>
+					                    </label>
+    					                <input v-model="serve.email.opt.port" type="text" class="form-control customize-input" placeholder="邮件服务端口">
+					                </div>
+    					        </div>
+    					        <div class="col-lg-4">
+    					            <div class="form-group customize-select2">
+    					                <label class="text-muted">
+    					                    加密方式<i class="text-danger">*</i>
+					                    </label>
+    					                <select id="encrypt-select" data-control="select2" data-placeholder="ssl" class="form-select form-select-solid">
+							            </select>
+					                </div>
+    					        </div>
+    					        <div class="col-lg-4">
+    					            <div class="form-group customize-select2">
+    					                <label class="text-muted">
+    					                    编码方式<i class="text-danger">*</i>
+					                    </label>
+    					                <select id="coding-select" data-control="select2" data-placeholder="UTF-8" class="form-select form-select-solid">
+							            </select>
+					                </div>
+    					        </div>
+    					    </div>
+                            <div class="flex flex-center mt-1">
+                                <button v-on:click="testEmail()" type="button" class="btn btn-info btn-sm flex flex-center">
+                                    <span v-if="load.test_email" class="spinner-border spinner-border-sm align-middle me-2"></span>
+                                    发送测试邮件
+                                    </button>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="card border-light border box-shadow-unset mb-0">
+                                    <div class="card-header flex space-between align-items-center">
+                                        <h4>邮件模板</h4>
+                                        <div class="float-end">
+                                            <ul class="nav nav-tabs nav-bordered border-unset">
+                                                <li class="nav-item">
+                                                    <a href="#template_1" data-bs-toggle="tab" aria-expanded="false" class="nav-link active">
+                                                        <span class="text-muted">站长模板</span>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a href="#template_2" data-bs-toggle="tab" aria-expanded="true" class="nav-link">
+                                                        <span class="text-muted">用户模板</span>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a href="#template_3" data-bs-toggle="tab" aria-expanded="false" class="nav-link">
+                                                        <span class="text-muted">验证码模板</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="tab-content">
+                                            <div class="tab-pane show active" id="template_1">
+                                                <ul class="nav nav-tabs nav-bordered mb-3 border-unset">
+                                                    <li class="nav-item">
+                                                        <a href="#tabMasterPreview" data-bs-toggle="tab" aria-expanded="false" class="nav-link active">
+                                                            <span class="text-muted">预览</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a href="#tabMasterDeploy" data-bs-toggle="tab" aria-expanded="true" class="nav-link">
+                                                            <span class="text-muted">配置</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <div class="tab-content">
+                                                    <div class="tab-pane show active" id="tabMasterPreview">
+                                                        <div v-html="serve.email.value.template_1" class="flex flex-center scroll mw-auto">
+													    </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="tabMasterDeploy">
+                                                        <textarea v-model="serve.email.value.template_1" class="form-control customize-textarea un-radius customize-scroll" rows="12" placeholder="邮件模板，可以是HTML或纯文本" style="border-radius: 3px;"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane" id="template_2">
+                                                <ul class="nav nav-tabs nav-bordered mb-3 border-unset">
+                                                    <li class="nav-item">
+                                                        <a href="#tabUserPreview" data-bs-toggle="tab" aria-expanded="false" class="nav-link active">
+                                                            <span class="text-muted">预览</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a href="#tabUserDeploy" data-bs-toggle="tab" aria-expanded="true" class="nav-link">
+                                                            <span class="text-muted">配置</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <div class="tab-content">
+                                                    <div class="tab-pane show active" id="tabUserPreview">
+                                                        <div v-html="serve.email.value.template_2" class="flex flex-center scroll mw-auto">
+													    </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="tabUserDeploy">
+                                                        <textarea v-model="serve.email.value.template_2" class="form-control customize-textarea un-radius customize-scroll" rows="12" placeholder="邮件模板，可以是HTML或纯文本" style="border-radius: 3px;"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane" id="template_3">
+                                                <ul class="nav nav-tabs nav-bordered mb-3 border-unset">
+                                                    <li class="nav-item">
+                                                        <a href="#tabVerifyPreview" data-bs-toggle="tab" aria-expanded="false" class="nav-link active">
+                                                            <span class="text-muted">预览</span>
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a href="#tabVerifyDeploy" data-bs-toggle="tab" aria-expanded="true" class="nav-link">
+                                                            <span class="text-muted">配置</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <div class="tab-content">
+                                                    <div class="tab-pane show active" id="tabVerifyPreview">
+                                                        <div v-html="serve.email.value.template_3" class="flex flex-center scroll mw-auto">
+													    </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="tabVerifyDeploy">
+                                                        <textarea v-model="serve.email.value.template_3" class="form-control customize-textarea un-radius customize-scroll" rows="12" placeholder="邮件模板，可以是HTML或纯文本" style="border-radius: 3px;"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+							</div>
+							<div class="inis-save">
+                                <button v-on:click="saveEmail()" type="button" class="btn btn-icon">
+                                    <svg t="1640673768171" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="21650" width="24" height="24"><path d="M860.2 41H163.8C96.1 41 41 96.1 41 163.8v696.3C41 927.9 96.1 983 163.8 983h696.3c67.8 0 122.9-55.1 122.9-122.9V163.8C983 96.1 927.9 41 860.2 41z m-532.5 81.9h368.6v163.8c0 22.6-18.4 41-41 41H368.6c-22.6 0-41-18.4-41-41V122.9z m573.4 737.3c0 22.6-18.4 41-41 41H163.8c-22.6 0-41-18.4-41-41V163.8c0-22.6 18.4-41 41-41h81.9v163.8c0 67.8 55.1 122.9 122.9 122.9h286.7c67.8 0 122.9-55.1 122.9-122.9V122.9h81.9c22.6 0 41 18.4 41 41v696.3z" p-id="21651" fill="#00afec"></path><path d="M593.9 276.5c28.2 0 51.2-23 51.2-51.2s-23-51.2-51.2-51.2c-28.2 0-51.2 23-51.2 51.2s23.1 51.2 51.2 51.2zM737.3 675.8H286.7c-22.5 0-41 18.4-41 41 0 22.5 18.4 41 41 41h450.6c22.5 0 41-18.4 41-41-0.1-22.5-18.5-41-41-41z" p-id="21652" fill="#00afec"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="system-other-serve">
+                            <div class="row">
+                                <div class="accordion" id="accordionExample">
+                                    <div class="card mb-2">
+                                        <div class="card-header border-unset" id="headingArticle">
+                                            <h5 class="m-0">
+                                                <a class="custom-accordion-title d-block pt-2 pb-2" data-bs-toggle="collapse" href="#collapseArticle" aria-expanded="true" aria-controls="collapseArticle">
+                                                    # 文章配置
+                                                </a>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseArticle" class="collapse show" aria-labelledby="headingArticle" data-bs-parent="#accordionExample">
+                                            <div class="progress" style="height: 3px;"></div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="conf-switch mr-3">
+                                                            <span class="mr-2">显示评论</span>
+                                                            <input v-model="serve.other.article.comments.show" v-on:change="saveOther()" type="checkbox" id="show_comments" data-switch="primary">
+                                                            <label for="show_comments" data-on-label="On" data-off-label="Off"></label>
+                                                        </div>
+                                                        <div class="conf-switch mr-3">
+                                                            <span class="mr-2">允许评论</span>
+                                                            <input v-model="serve.other.article.comments.allow" v-on:change="saveOther()" type="checkbox" id="allow_comments" data-switch="primary">
+                                                            <label for="allow_comments" data-on-label="On" data-off-label="Off"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card mb-2">
+                                        <div class="card-header border-unset" id="headingApplets">
+                                            <h5 class="m-0">
+                                                <a class="custom-accordion-title collapsed d-block pt-2 pb-2" data-bs-toggle="collapse" href="#collapseApplets" aria-expanded="false" aria-controls="collapseApplets">
+                                                    # 小程序配置
+                                                </a>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseApplets" class="collapse" aria-labelledby="headingApplets" data-bs-parent="#accordionExample">
+                                            <div class="progress" style="height: 3px;"></div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="conf-switch mr-3">
+                                                            <span class="mr-2">开启评论</span>
+                                                            <input v-model="serve.applets.qq.show.comments" v-on:change="saveOther()" type="checkbox" id="qq_comments" data-switch="primary">
+                                                            <label for="qq_comments" data-on-label="On" data-off-label="Off"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card mb-0">
+                                        <div class="card-header border-unset" id="headingOptimize">
+                                            <h5 class="m-0">
+                                                <a class="custom-accordion-title collapsed d-block pt-2 pb-2" data-bs-toggle="collapse" href="#collapseOptimize" aria-expanded="false" aria-controls="collapseOptimize">
+                                                    # 速度优化
+                                                </a>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseOptimize" class="collapse" aria-labelledby="headingOptimize" data-bs-parent="#accordionExample">
+                                            <div class="progress" style="height: 3px;"></div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-lg-6">
+                        					            <div class="form-group mb-0">
+                        					                <label class="text-muted">
+                        					                    CDN 地址
+                    					                    </label>
+                        					                <input v-model="serve.other.optimize.cdn" type="text" class="form-control customize-input" placeholder="不提交则使用本地资源">
+                        					                <p class="text-muted mb-0">需要获取或自行发布CDN请前往<a href="//docs.inis.cc/#/tool/cdn" class="ml-1" target="_blank">文档</a></p>
+                    					                </div>
+                        					        </div>
+                        					        <div class="col-lg-6">
+                        					            <label class="text-muted">
+                    					                    图片压缩
+                					                    </label>
+                        					            <div class="input-group">
+                        					                <input v-model="serve.other.optimize.image.ratio" type="text" class="form-control customize-input" placeholder="压缩等级：0-100">
+                        					                <div class="input-group-append conf-switch">
+                        					                    <span class="mt-1 mx-2">开启压缩</span>
+                        					                    <input v-model="serve.other.optimize.image.open" v-on:change="saveOther()" type="checkbox" id="serve-other-optimize-image-open" data-switch="primary">
+                                                                <label class="mt-1 mb-0" for="serve-other-optimize-image-open" data-on-label="On" data-off-label="Off"></label>
+                    					                    </div>
+                					                    </div>
+                					                    <p class="text-muted mb-0">压缩等级越高，图片体积越小</p>
+                        					        </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="inis-save">
+                                <button v-on:click="saveOther(true)" type="button" class="btn btn-icon">
+                                    <svg t="1640673768171" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="21650" width="24" height="24"><path d="M860.2 41H163.8C96.1 41 41 96.1 41 163.8v696.3C41 927.9 96.1 983 163.8 983h696.3c67.8 0 122.9-55.1 122.9-122.9V163.8C983 96.1 927.9 41 860.2 41z m-532.5 81.9h368.6v163.8c0 22.6-18.4 41-41 41H368.6c-22.6 0-41-18.4-41-41V122.9z m573.4 737.3c0 22.6-18.4 41-41 41H163.8c-22.6 0-41-18.4-41-41V163.8c0-22.6 18.4-41 41-41h81.9v163.8c0 67.8 55.1 122.9 122.9 122.9h286.7c67.8 0 122.9-55.1 122.9-122.9V122.9h81.9c22.6 0 41 18.4 41 41v696.3z" p-id="21651" fill="#00afec"></path><path d="M593.9 276.5c28.2 0 51.2-23 51.2-51.2s-23-51.2-51.2-51.2c-28.2 0-51.2 23-51.2 51.2s23.1 51.2 51.2 51.2zM737.3 675.8H286.7c-22.5 0-41 18.4-41 41 0 22.5 18.4 41 41 41h450.6c22.5 0 41-18.4 41-41-0.1-22.5-18.5-41-41-41z" p-id="21652" fill="#00afec"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Token 验证说明 - 开始 -->
+    <div id="fill-token-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-token-modalLabel">什么是 Token 验证 ？</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Token 是服务端生成的一串字符串，用作客户端发起请求前校验的一个令牌。</p>
+                    <p>开启 Token 验证后，客户端获取数据需要提交 Token，在一定的程度上可以防止API被恶意请求。</p>
+                    <div class="form-group row">
+                        <label class="col-2 col-form-label">Token：</label>
+                        <div class="col-8 flex-center pl-0 pr-0">
+                            <input v-model="token.value" type="text" class="form-control btn-outline text-white" placeholder="填写或点击右边刷新你的token">
+                        </div>
+                        <div class="col-2 flex-center">
+                            <button v-on:click="resetToken()" type="button" class="btn btn-icon btn-sm btn-outline-white">
+                                <svg t="1609214279542" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4993" width="20" height="20">
+                                    <path d="M661.679 715.532c-45.365 31.847-98.578 47.706-152.838 47.066-7.203-0.119-14.282-0.649-21.365-1.171-2.868-0.293-5.739-0.769-8.607-1.171-5.62-0.704-11.062-1.408-16.504-2.524-3.338-0.585-6.677-1.518-9.896-2.277-5.323-1.171-10.591-2.341-15.805-3.869-2.456-0.933-4.797-1.691-7.258-2.688-6.027-1.875-12-3.979-17.734-6.384-1.29-0.586-2.575-1.052-3.864-1.573-6.731-3.11-13.404-6.266-19.902-9.659-0.233-0.183-0.585-0.292-0.818-0.475-21.892-12.056-41.853-26.863-59.414-44.543-0.292-0.292-0.526-0.64-0.878-0.933-5.447-5.451-10.655-11.067-15.572-17.158-0.997-1.226-1.989-2.451-3.045-3.915-35.647-44.605-57.13-101.093-57.13-162.499h68.723L209.896 336.981 100.025 501.759h68.604c0 72.17 22.596 139.139 60.82 194.575 0.469 0.814 0.761 1.692 1.287 2.396 3.922 5.734 8.371 10.948 12.585 16.216 1.64 1.93 3.043 3.924 4.742 6.092 6.204 7.49 12.938 14.634 19.724 21.658 0.704 0.695 1.29 1.28 1.875 1.93 23.002 23.058 48.937 42.375 77.208 57.95 0.764 0.412 1.404 0.76 2.282 1.226 8.14 4.391 16.509 8.434 24.937 12.119 2.168 0.933 4.217 1.875 6.265 2.753 7.317 3.101 14.749 5.68 22.244 8.25a544.847 544.847 0 0 0 10.651 3.576 360.468 360.468 0 0 0 20.021 5.085c4.509 1.062 8.84 2.232 13.463 3.046 1.875 0.467 3.631 1.052 5.501 1.235 6.439 1.17 12.818 1.756 19.143 2.515 2.341 0.412 4.624 0.814 6.905 1.052 11.474 1.116 22.889 1.812 34.303 1.812 69.717 0 137.852-21.302 196.269-62.277 18.617-13.052 23.181-38.807 10.188-57.31-13.113-18.788-38.75-23.297-57.363-10.126m193.516-213.773c0-71.999-22.299-138.908-60.347-194.046-0.586-0.938-0.938-1.935-1.409-2.753-4.916-6.791-9.951-13.111-15.16-19.491a24.31 24.31 0 0 1-1.696-2.341c-35.003-42.146-78.73-74.869-128.193-96.234-1.464-0.585-2.693-1.228-4.157-1.813-7.962-3.279-16.038-6.089-24.292-8.899-2.808-0.936-5.794-1.989-8.721-2.868-7.144-2.165-14.282-3.921-21.54-5.62-4.042-0.878-8.14-1.93-12.178-2.751-1.989-0.35-3.805-0.935-5.913-1.347-5.442-0.878-10.77-1.404-16.212-2.049-3.805-0.409-7.436-0.995-11.24-1.404-9.133-0.878-18.206-1.23-27.279-1.404-1.637 0-3.274-0.236-4.916-0.236-0.292 0-0.585 0.06-0.878 0.117-69.658 0.06-137.674 21.073-195.976 61.991-18.617 12.995-23.181 38.691-10.07 57.422 12.938 18.558 38.752 23.122 57.425 10.011 45.013-31.49 97.581-47.533 151.489-47.002 7.729 0.055 15.457 0.407 22.948 1.171 2.341 0.173 4.563 0.526 6.905 0.878 6.206 0.759 12.352 1.578 18.438 2.867 2.635 0.466 5.328 1.171 7.848 1.756 6.027 1.344 11.881 2.748 17.675 4.504 1.935 0.53 3.69 1.17 5.447 1.875 6.731 2.167 13.284 4.45 19.609 7.143 0.699 0.174 1.345 0.7 1.989 0.933 38.455 16.509 72.113 41.913 98.454 73.755 0.06 0.119 0.179 0.352 0.412 0.531 36.996 45.072 59.24 102.611 59.295 165.304h-68.779L814.22 666.6l109.755-164.84h-68.78z" p-id="4994" data-spm-anchor-id="a313x.7781069.0.i0" class="selected"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="conf-switch mr-3 mt-1">
+                        <span class="mr-2">开启 Token 验证：</span>
+                        <input type="checkbox" id="token" v-model="token_switch" v-on:click="btnSaveToken()" data-switch="success"/>
+                        <label for="token" data-on-label="On" data-off-label="Off"></label>
+                    </div>
+                    <div class="conf-switch mr-3 mt-1">
+                        <span class="mr-2">允许通过API方式获取Token：（不推荐）</span>
+                        <input type="checkbox" id="token_is_open" v-model="token_open_switch" v-on:click="btnSaveTokenOpen()" data-switch="warning"/>
+                        <label for="token_is_open" data-on-label="Yes" data-off-label="No"></label>
+                    </div>
+                    <p class="mt-1">Token获取方式：<a :href="self_domain + '/api/comm/token'" target="_blank" class="text-white">{{self_domain + '/api/comm/token' || ''}}</a></p>
+                </div>
+                <div class="modal-footer">
+                    <button v-on:click="saveToken()" type="button" class="btn btn-outline-light">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Token 验证说明 - 结束 -->
+    
+    <!-- 域名白名单 - 结束 -->
+    <div id="fill-domain-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">什么是白名单 ？</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>白名单是后端针对前端发起的API请求做的域名或IP限制。</p>
+                    <p>开启后，只有名单内的域名或IP可以发起API请求，在一定的程度上可以防止API被恶意请求。</p>
+                    <div class="row">
+                        <textarea class="form-control domain-textarea border-radius-unset" rows="5" v-model="domain.value" placeholder="非必填，留空或填写*表示不限制&#13;&#10;域名或IP(每行1个)&#13;&#10;如：inis.cc"></textarea>
+                    </div>
+                    <div class="conf-switch mr-3 mt-2">
+                        <span class="mr-2">开启白名单：</span>
+                        <input type="checkbox" id="domain" v-model="domain_switch" v-on:click="btnSaveDomain()" data-switch="success"/>
+                        <label for="domain" data-on-label="On" data-off-label="Off"></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">我已了解</button>
+                    <button type="button" class="btn btn-light" v-on:click="btnSaveDomainValue()" data-bs-dismiss="modal">保存配置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 域名白名单 - 结束 -->
+    
+    <!-- 站长信息 - 结束 -->
+    <div id="fill-master-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">站长信息</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group row mb-3">
+                                <label class="col-3 col-form-label">站长帐号</label>
+                                <div class="col-9">
+                                    <select id="web-master" class="form-control select2" data-control="select2" data-dropdown-parent="#fill-master-modal" data-placeholder="帐号"></select>
+                                </div>
+                            </div>
+                            <div class="form-group row mb-3">
+                                <label class="col-3 col-form-label">QQ</label>
+                                <div class="col-9">
+                                    <input v-model="master.qq" type="text" class="form-control" placeholder="QQ">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-3">
+                                <label class="col-3 col-form-label">GitHub</label>
+                                <div class="col-9">
+                                    <input v-model="master.github" type="text" class="form-control" placeholder="GitHub">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group row mb-3">
+                                <label class="col-3 col-form-label">微博</label>
+                                <div class="col-9">
+                                    <input v-model="master.weibo" type="text" class="form-control" placeholder="weibo">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-3">
+                                <label class="col-3 col-form-label">微信</label>
+                                <div class="col-9">
+                                    <input v-model="master.wechat" type="text" class="form-control" placeholder="WeChat">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-3">
+                                <label class="col-3 col-form-label">Gitee</label>
+                                <div class="col-9">
+                                    <input v-model="master.gitee" type="text" class="form-control" placeholder="Gitee">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <label class="col-3 col-form-label pl-0">关于我的介绍</label>
+                            <textarea v-model="master.description" class="form-control domain-textarea border-radius-unset" rows="5" placeholder="介绍一下自己的兴趣爱好等~（支持HTML格式代码）"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">我已了解</button>
+                    <button v-on:click="saveMaster()" type="button" class="btn btn-light">保存配置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 站长信息 - 结束 -->
+</div>
+{/block}
+
+{block name="script"}
+<script src="{$CONFIG->ROOT}js/pages/system.js?v={$CONFIG->VERSION}"></script>
+{/block}

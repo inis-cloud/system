@@ -1,0 +1,173 @@
+<div class="leftside-menu">
+    
+    <!-- LOGO -->
+    <a href="/" class="logo text-center logo-light">
+        <span class="logo-lg">
+            <img src="{$CONFIG->ROOT}images/logo.png" height="30">
+        </span>
+        <span class="logo-sm">
+            <img src="{$CONFIG->ROOT}images/logo_sm.png" height="30">
+        </span>
+    </a>
+
+    <!-- LOGO -->
+    <a href="/" class="logo text-center logo-dark">
+        <span class="logo-lg">
+            <img src="{$CONFIG->ROOT}images/logo.png" height="30">
+        </span>
+        <span class="logo-sm">
+            <img src="{$CONFIG->ROOT}images/logo_sm.png" height="30">
+        </span>
+    </a>
+
+    <div class="h-100" id="leftside-menu-container" data-simplebar="">
+        
+        <ul class="side-nav">
+            
+            <li class="side-nav-title side-nav-item">导航</li>
+            
+            <li class="side-nav-item">
+                <a href="/" class="side-nav-link">
+                    <i class="uil-home-alt"></i>
+                    <span> 首页 </span>
+                </a>
+            </li>
+            
+            <li class="side-nav-item">
+                <a data-bs-toggle="collapse" href="#creation" aria-expanded="false" aria-controls="creation" class="side-nav-link">
+                    <i class="uil-package"></i>
+                    <span> 创作 </span>
+                    <span class="menu-arrow"></span>
+                </a>
+                <div class="collapse" id="creation">
+                    <ul class="side-nav-second-level">
+                        <li>
+                            <a href="/admin/write-article.html">撰写文章</a>
+                        </li>
+                        <li>
+                            <a href="/admin/write-page.html">新建页面</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <li class="side-nav-item">
+                <a data-bs-toggle="collapse" href="#manage" aria-expanded="false" aria-controls="manage" class="side-nav-link">
+                    <i class="uil-window"></i>
+                    <span> 管理 </span>
+                    <span class="menu-arrow"></span>
+                </a>
+                <div class="collapse" id="manage">
+                    <ul class="side-nav-second-level">
+                        <li>
+                            <a href="/admin/manage-article.html">文章</a>
+                        </li>
+                        <li>
+                            <a href="/admin/manage-page.html">页面</a>
+                        </li>
+                        <li>
+                            <a href="/admin/manage-links.html">友链</a>
+                        </li>
+                        <li>
+                            <a href="/admin/manage-tag.html">标签</a>
+                        </li>
+                        <li>
+                            <a href="/admin/manage-comments.html">评论</a>
+                        </li>
+                        <li>
+                            <a href="/admin/manage-users.html">用户</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <li class="side-nav-item">
+                <a data-bs-toggle="collapse" href="#sort" aria-expanded="false" aria-controls="sort" class="side-nav-link">
+                    <i class="dripicons-view-apps"></i>
+                    <span> 分类 </span>
+                    <span class="menu-arrow"></span>
+                </a>
+                <div class="collapse" id="sort">
+                    <ul class="side-nav-second-level">
+                        <li>
+                            <a href="/admin/manage-article-sort.html">文章分类</a>
+                        </li>
+                        <li>
+                            <a href="/admin/manage-links-sort.html">友链分组</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <li class="side-nav-title side-nav-item">应用</li>
+            
+            <li class="side-nav-item">
+                <a data-bs-toggle="collapse" href="#other" aria-expanded="false" aria-controls="other" class="side-nav-link">
+                    <i class="dripicons-list"></i>
+                    <span> 其他 </span>
+                    <span class="menu-arrow"></span>
+                </a>
+                <div class="collapse" id="other">
+                    <ul class="side-nav-second-level">
+                        <li>
+                            <a href="/admin/manage-banner.html">轮播</a>
+                        </li>
+                        <li>
+                            <a href="/admin/manage-music.html">音乐</a>
+                        </li>
+                        <li>
+                            <a href="/admin/manage-placard.html">公告</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <li class="side-nav-item">
+                <a href="/admin/api-store.html" class="side-nav-link">
+                    <i class="mdi mdi-yin-yang"></i>
+                    <span> API 商城 </span>
+                </a>
+            </li>
+            
+            <li class="side-nav-title side-nav-item">控制台</li>
+            
+            <li class="side-nav-item">
+                <a href="/admin/edit-profile.html" class="side-nav-link">
+                    <i class="dripicons-heart"></i>
+                    <span class="badge bg-secondary text-light float-end">me</span>
+                    <span> 个人资料 </span>
+                </a>
+            </li>
+            
+            <li class="side-nav-item">
+                <a href="/admin/system.html" class="side-nav-link">
+                    <i class="dripicons-gear noti-icon"></i>
+                    <span> 系统配置 </span>
+                </a>
+            </li>
+            
+            <li class="side-nav-item">
+                <a href="/admin/filesystem.html" class="side-nav-link">
+                    <i class="uil-box"></i>
+                    <span> 文件系统 </span>
+                </a>
+            </li>
+        </ul>
+        
+        <!-- 帮助 - 开始 -->
+        <div class="help-box text-white text-center">
+            <a href="javascript:;" class="float-end close-btn text-white">
+                <i class="mdi mdi-close"></i>
+            </a>
+            <img src="{$CONFIG->ROOT}svg/help-icon.svg" height="90" alt="Helper Icon Image">
+            <h5 class="mt-3">{$CONFIG->USER->nickname}，您好！</h5>
+            <p class="mb-3">请问有什么可以帮您！</p>
+            <a href="//docs.inis.cc" class="btn btn-outline-light btn-sm" target="_blank">文档</a>
+        </div>
+        <!-- 帮助 - 结束 -->
+        
+        <div class="clearfix"></div>
+        
+    </div>
+
+</div>

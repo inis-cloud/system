@@ -2,8 +2,9 @@
 
 namespace app\model\mysql;
 
+use Parsedown;
 use think\Model;
-use inis\utils\{helper};
+use inis\utils\{helper, markdown};
 
 class Comments extends Model
 {
@@ -30,7 +31,7 @@ class Comments extends Model
             $helper = new helper;
             
             // 默认随机头像
-            $value['head_img'] = $helper->RandomImg("local", "storage/users/anime/");
+            $value['head_img'] = $helper->RandomImg("local", "admin/images/anime/");
             
             $user = Users::where(['email'=>$data['email']])->field(['head_img'])->findOrEmpty();
             
@@ -81,6 +82,12 @@ class Comments extends Model
             }
             
             $value['description'] = $helper->StringToText(!empty($data['content']) ? $data['content'] : '');
+            if (!empty($data['content'])) {
+                // setBreaksEnabled(true) 自动换行 setMarkupEscaped(true) 转义HTML setUrlsLinked(false) 防止自动链接
+                $value['html']    = Parsedown::instance()->setUrlsLinked(false)->text($data['content']);
+                // 解析自定义标签
+                $value['html']    = markdown::parse($value['html']);
+            }
             
             return $value;
             

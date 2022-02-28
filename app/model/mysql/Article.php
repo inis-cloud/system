@@ -108,6 +108,9 @@ class Article extends Model
             $rand = array_rand($color_arr);
             $color = $color_arr[$rand];
             
+            $value['tag'] = [];
+            $value['sort']= [];
+            
             foreach ($tag  as $key => $val){
                 $value['tag'][$key] = [
                     'id'    =>  $val['id'],
@@ -131,7 +134,7 @@ class Article extends Model
             if ($conf['enable']) {
                 
                 // 判断是否存在唯一的随机数，防止返回随机结果一致
-                $path = (strpos($conf['path'], '?')) ? $conf['path'] . '&sole=' . $data['id'] : $conf['path'] . '?sole=' . $data['id'];
+                $path = (strpos($conf['path'], '?')) ? $conf['path'] . '&id=' . $data['id'] : $conf['path'] . '?id=' . $data['id'];
                 $value['img_src'] = (!empty($data['img_src'])) ? $data['img_src'] : $path;
                 
             } else $value['img_src'] = $data['img_src'];

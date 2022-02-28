@@ -121,9 +121,9 @@ class helper
         $preg = '/[\w].+\.(com|net|org|gov|edu)\.cn$/';
         
         // 双后缀取后3位
-        if(($n > 2) && preg_match($preg,$url)) $url = $data[$n-3].'.'.$data[$n-2].'.'.$data[$n-1];
+        if (($n > 2) && preg_match($preg, $url)) $url = $data[$n-3] . '.' . $data[$n-2] . '.' . $data[$n-1];
         // 非双后缀取后两位
-        else $url = $data[$n-2].'.'.$data[$n-1];
+        else $url = $data[$n-2] . '.' . $data[$n-1];
         
         return $url;
     }
@@ -135,6 +135,7 @@ class helper
     */
     function ExtractDomain($url = null)
     {
+        $url    = 'https://' . str_replace(['https://','http://','//'], '', $url);
         $result = $url;
         
         $url = parse_url($url);
@@ -452,7 +453,7 @@ class helper
     function domain()
     {
         $http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https://' : 'http://';
-        $domain = $_SERVER['HTTP_HOST'];
+        $domain = &$_SERVER['HTTP_HOST'];
         
         return $http_type.$domain;
     }
@@ -628,7 +629,7 @@ class helper
         $params  = !empty($params)  ? http_build_query($params) : json_encode($params);
         $headers = !empty($headers) ? array_merge($header, $headers) : $header;
         
-        foreach ($headers as $key => $val) $_headers[] = $key.':'.$val;
+        foreach ($headers as $key => $val) $_headers[] = $key . ':' . $val;
         
         $curl   = curl_init();
         
@@ -656,7 +657,7 @@ class helper
         $params  = json_encode($params);
         $headers = !empty($headers) ? array_merge($header, $headers) : $header;
         
-        foreach ($headers as $key => $val) $_headers[] = $key.':'.$val;
+        foreach ($headers as $key => $val) $_headers[] = $key . ':' . $val;
         
         $curl   = curl_init();
         
@@ -682,7 +683,7 @@ class helper
         $params  = json_encode($params);
         $headers = !empty($headers) ? array_merge($header, $headers) : $header;
         
-        foreach ($headers as $key => $val) $_headers[] = $key.':'.$val;
+        foreach ($headers as $key => $val) $_headers[] = $key . ':' . $val;
         
         $curl   = curl_init();
         
@@ -710,7 +711,7 @@ class helper
         $params  = json_encode($params);
         $headers = !empty($headers) ? array_merge($header, $headers) : $header;
         
-        foreach ($headers as $key => $val) $_headers[] = $key.':'.$val;
+        foreach ($headers as $key => $val) $_headers[] = $key . ':' . $val;
         
         $curl   = curl_init();
         
@@ -734,7 +735,7 @@ class helper
         $params  = json_encode($params);
         $headers = !empty($headers) ? array_merge($header, $headers) : $header;
         
-        foreach ($headers as $key => $val) $_headers[] = $key.':'.$val;
+        foreach ($headers as $key => $val) $_headers[] = $key . ':' . $val;
         
         $curl   = curl_init();
         
@@ -796,6 +797,23 @@ class helper
     {
         $array = array_change_key_case($array, $case);
         if ($flag) foreach ($array as $key => $value) if (is_array($value)) $this->ArrayKeysToUpper($array[$key], $case, true);
+    }
+    
+    // 数组深度合并
+    public function array_merge_deep(...$arrays) {
+    	$result = [];
+    	while ($arrays) {
+    		$array = array_shift($arrays);
+    		if (!$array) continue;
+    		foreach ($array as $key => $val) {
+    			if (is_string($key)) {
+    				if (is_array($val) && array_key_exists($key, $result) && is_array($result[$key])) {
+    					$result[$key] = $this->array_merge_deep(...[$result[$key], $val]);
+    				} else $result[$key] = $val;
+    			} else $result[] = $val;
+    		}
+    	}
+    	return $result;
     }
     
     // END

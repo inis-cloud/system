@@ -374,7 +374,7 @@ class markdown
         
         $text   = $matches[5];
         
-        $result = "<p class=\"$class\">$text</p>";
+        $result = "<span class=\"$class\">$text</span>";
         return $result;
     }
     

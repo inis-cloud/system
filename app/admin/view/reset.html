@@ -1,0 +1,41 @@
+{extend name="/layouts/auth" /}
+
+{block name="content"}
+<div class="row justify-content-center">
+    <div class="col-xxl-4 col-lg-5">
+        <div class="card">
+            <div class="card-header pt-4 pb-4 text-center bg-primary">
+                <a href="/">
+                    <span><img src="{$CONFIG->ROOT}images/logo.png" height="30"></span>
+                </a>
+            </div>
+            
+            <div class="card-body p-4">
+                <div class="text-center w-80 m-auto">
+                    <h4 class="text-dark-50 text-center mt-0 font-weight-bold">重置密码</h4>
+                    <p class="text-muted mb-4">请输入您注册时所用的邮箱</p>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label class="form-label">邮箱</label>
+                    <input class="form-control" type="email">
+                </div>
+                
+                <div class="form-group mb-0 text-center">
+                    <button class="btn btn-primary btn-block" type="button">确定</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12 text-center">
+                <p class="text-muted">前往<a href="login.html" class="text-muted ml-1"><b>登录</b></a></p>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{/block}
+
+{block name="script"}
+{/block}

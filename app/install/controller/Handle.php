@@ -167,7 +167,7 @@ class Handle extends BaseController
             $account['create_time'] = time();
             $account['update_time'] = time();
             $account['password']    = password_hash(md5($account['password']), PASSWORD_BCRYPT);
-            $account['head_img']    = $this->helper->RandomImg("local", "storage/users/anime/");
+            $account['head_img']    = $this->helper->RandomImg("local", "admin/images/anime/");
             $user    = Db::name('users')->where(['id'=>1])->findOrEmpty();
             
             // 帐号已存在

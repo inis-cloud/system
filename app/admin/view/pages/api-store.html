@@ -1,0 +1,297 @@
+{extend name="/layouts/base" /}
+
+{block name="title"}API 商城 - {$CONFIG->SITE->title}{/block}
+
+{block name="content"}
+<div id="api-store" class="container-xxl">
+    
+    <div class="row mt-md-4 mt-2">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="dropdown float-end">
+                        <a href="javascript:;" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a v-on:click="refresh()" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-autorenew me-1"></i>刷新
+                            </a>
+                        </div>
+                    </div>
+                    <ul class="nav nav-tabs nav-bordered mb-3">
+                        <li class="nav-item">
+                            <a href="#internal" data-bs-toggle="tab" aria-expanded="false" class="nav-link active">
+                                <i class="mdi mdi-cog-refresh-outline mr-1"></i>
+                                <span class="d-none d-sm-inline">内置</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#install" data-bs-toggle="tab" aria-expanded="true" class="nav-link">
+                                <i class="mdi mdi-checkbox-marked-circle-outline mr-1"></i>
+                                <span class="d-none d-sm-inline">已安装</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#all" data-bs-toggle="tab" aria-expanded="true" class="nav-link">
+                                <i class="mdi mdi-yin-yang mr-1"></i>
+                                <span class="d-none d-sm-inline">第三方</span>
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        
+                        <div class="tab-pane active show" id="internal">
+                            
+                            <div v-if="page.internal.is_load" class="flex-center is_load">
+                                <div class="spinner-border text-primary mr-1" role="status"></div>
+                                加载中 ...
+                            </div>
+                            
+                            <div v-show="!page.internal.is_load" class="table-responsive-sm mb-3">
+                                <table class="table customize-table table-centered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th width="165">API 名称</th>
+                                            <th width="92">作者</th>
+                                            <th>说明</th>
+                                            <th width="320">文档</th>
+                                            <th width="200">应用场景</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(item, index) in internal.data" :key="index">
+                                            <td>
+                                                <a :href="item.docsify" target="_blank">
+                                                    {{item.title || ''}}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <a :href="item.author.url" target="_blank">
+                                                    {{item.author.nickname || ''}}
+                                                </a>
+                                            </td>
+                                            <td class="limit">
+                                                {{item.content || ''}}
+                                            </td>
+                                            <td class="limit">
+                                                <a :href="item.docsify" target="_blank">
+                                                    {{item.docsify || ''}}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <span v-for="(item, index) in item.scenes" :key="index" class="badge badge-secondary-lighten mr-1">{{item}}</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex space-between align-items-center mt-2">
+                                <div class="d-none d-md-block">
+                                    共 {{internal.page}} 页 {{internal.count}} 条数据
+                                </div>
+                                <div v-if="page.internal.is_show" class="btn-group">
+                                    <button v-on:click="getInternal(1)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-left"></i></button>
+                                    <button v-for="(item, index) in page.internal.list" :key="index" v-on:click="getInternal(item)" :class="(page.internal.code == item) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-light'">
+                                        {{item}}
+                                    </button>
+                                    <button v-on:click="getInternal(internal.page)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="tab-pane" id="install">
+                            
+                            <div v-if="page.plugin.is_load" class="flex-center is_load">
+                                <div class="spinner-border text-primary mr-1" role="status"></div>
+                                加载中 ...
+                            </div>
+                            
+                            <div v-show="!page.plugin.is_load" class="table-responsive-sm mb-3">
+                                <div v-show="plugin.count == 0" class="alert alert-light bg-light text-dark border-0" role="alert">
+                                    <strong>提示 - </strong> 当前系统内未安装任何API，如有需求，请前往第三方API安装！
+                                </div>
+                                <table v-show="plugin.count > 0" class="table customize-table table-centered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th width="165">API 名称</th>
+                                            <th width="92">作者</th>
+                                            <th>说明</th>
+                                            <th width="120">版本号</th>
+                                            <th width="92">体积</th>
+                                            <th width="200" class="text-right">-</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(item, index) in plugin.data" :key="index">
+                                            <td>
+                                                <a :href="item.docsify" target="_blank">
+                                                    {{item.title || ''}}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <a :href="item.expand.user.address_url" target="_blank">
+                                                    {{item.expand.user.nickname || ''}}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {{item.content || ''}}
+                                            </td>
+                                            <td>{{item.version || '1.0.0'}}</td>
+                                            <td>{{item.size || '0 KB'}}</td>
+                                            <td class="float-right float-end">
+                                                <span v-if="isTrue(item.update)" v-on:click="installApi(item)" class="badge badge-success-lighten pointer p-1 px-2 m-1">升级</span>
+                                                <span v-on:click="uninstall(item.id)" class="badge badge-danger-lighten p-1 px-2 m-1 pointer">卸载</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex space-between align-items-center mt-2">
+                                <div class="d-none d-md-block">
+                                    共 {{plugin.page}} 页 {{plugin.count}} 条数据
+                                </div>
+                                <div v-if="page.plugin.is_show" class="btn-group">
+                                    <button v-on:click="getPlugin(1)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-left"></i></button>
+                                    <button v-for="(item, index) in page.plugin.list" :key="index" v-on:click="getPlugin(item)" :class="(page.plugin.code == item) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-light'">
+                                        {{item}}
+                                    </button>
+                                    <button v-on:click="getPlugin(plugin.page)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="tab-pane" id="all">
+                            
+                            <div v-if="page.apis.is_load" class="flex-center is_load">
+                                <div class="spinner-border text-primary mr-1" role="status"></div>
+                                加载中 ...
+                            </div>
+                            
+                            <div v-show="!page.apis.is_load" class="table-responsive-sm mb-3">
+                                <div v-show="apis.count == 0" class="alert alert-light bg-light text-dark border-0" role="alert">
+                                    <strong>提示 - </strong> 还未有人上传API，您愿意做第一个吃螃蟹的人吗？
+                                    <a href="//inis.cc/admin/comm/login?url=/admin/api" target="_blank" class="text-dark float-right float-end">我愿意</a>
+                                </div>
+                                <table v-show="apis.count > 0" class="table customize-table table-centered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th width="165">API 名称</th>
+                                            <th width="92">作者</th>
+                                            <th>说明</th>
+                                            <th width="120">版本号</th>
+                                            <th width="92">体积</th>
+                                            <th width="200" class="text-right">-</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(item, index) in apis.data" :key="index">
+                                            <td>
+                                                <a :href="item.docsify" target="_blank">
+                                                    {{item.title || ''}}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <a :href="item.expand.user.address_url" target="_blank">
+                                                    {{item.expand.user.nickname || ''}}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {{item.content || ''}}
+                                            </td>
+                                            <td>{{item.version || '1.0.0'}}</td>
+                                            <td>{{item.size || '0 KB'}}</td>
+                                            <td class="float-right float-end">
+                                                <span v-if="isTrue(item.update)" v-on:click="installApi(item)" class="badge badge-success-lighten pointer p-1 px-2 m-1">升级</span>
+                                                <span v-if="!item.installed" v-on:click="installApi(item)" class="badge badge-primary-lighten p-1 px-2 pointer m-1">安装</span>
+                                                <span v-else v-on:click="uninstall(item.id)" class="badge badge-danger-lighten p-1 px-2 pointer m-1">卸载</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex space-between align-items-center mt-2">
+                                <div class="d-none d-md-block">
+                                    共 {{apis.page}} 页 {{apis.count}} 条数据
+                                </div>
+                                <div v-if="page.apis.is_show" class="btn-group">
+                                    <button v-on:click="getApis(1)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-left"></i></button>
+                                    <button v-for="(item, index) in page.apis.list" :key="index" v-on:click="getApis(item)" :class="(page.apis.code == item) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-light'">
+                                        {{item}}
+                                    </button>
+                                    <button v-on:click="getApis(apis.page)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 模态框 - 开始 -->
+    <div id="install-notes" class="modal fade customize-progress" tabindex="-1" role="dialog" aria-labelledby="primary-header-modalLabel" style="display: none;" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-body p-2 p-md-4">
+                    
+                    <div class="alert alert-info m-2" role="alert">
+                        <i class="dripicons-information mr-2"></i>
+                        执行完成之前，请勿刷新或关闭当前窗口
+                    </div>
+                
+                    <div class="customize-scroll" style="max-height:450px">
+                        <div class="table-responsive-sm p-2">
+                            <table class="table customize-table table-centered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>名称</th>
+                                        <th>-</th>
+                                        <th>说明</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, index) in notes" :key="index">
+                                        <td>{{item.name || ''}}</td>
+                                        <td>
+                                            <svg v-if="item.state == 'success'" t="1642523210900" class="icon" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1760" width="12" height="12"><path d="M483.84768 867.808C466.37568 885.792 441.73568 896 415.87968 896 390.05568 896 365.41568 885.792 347.94368 867.808L27.46368 547.552C-9.17632 508.864-9.17632 450.336 27.46368 411.648 44.26368 394.944 67.30368 385.088 91.68768 384.256 118.72768 383.008 144.93568 393.024 163.46368 411.648L415.87968 664 860.61568 219.552C878.31168 201.952 902.88768 192 928.58368 192 954.24768 192 978.82368 201.952 996.51968 219.552 1033.15968 258.208 1033.15968 316.704 996.51968 355.36L483.84768 867.808Z" p-id="1761" fill="#707070"></path></svg>
+                                            <span v-else-if="empty(item.state)">-</span>
+                                            <svg v-else-if="item.state == 'cache'" t="1642599159698" class="icon" style="margin-left: -2px;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11220" width="16" height="16"><path d="M512.66280359 912.83100045c-227.88660496 0-413.26540601-185.37880105-413.26540601-413.265406s185.37880105-413.29486395 413.26540601-413.29486393c75.79527335 0 149.94090218 20.7089301 214.40959852 59.87325807 19.97248167 12.15139925 26.30593824 38.17748707 14.18399693 58.13523979-12.15139925 19.94302372-38.14802914 26.2764803-58.13523977 14.18399694-51.19789547-31.15176897-110.17268647-47.58929812-170.45835568-47.58929814-181.22523186 0-328.66220933 147.46643541-328.66220933 328.69166727s147.43697747 328.66220933 328.66220933 328.66220934 328.69166727-147.43697747 328.69166728-328.66220934c0-56.79490361-14.71423981-112.750256-42.52253285-161.84190894-11.53278256-20.32597692-4.37450373-46.16058815 15.92201524-57.67864175 20.3848928-11.53278256 46.13113022-4.37450373 57.67864174 15.92201525 35.04021673 61.80275299 53.5398015 132.20722375 53.5398015 203.58380647-0.01472898 227.90133391-185.42298797 413.28013498-413.30959291 413.28013497z" fill="#707070" p-id="11221"></path><path d="M679.54201986 596.51166697h-160.54575968c-51.75759629 0-93.83826009-42.0806638-93.83826011-93.8382601v-160.54575969c0-23.36014448 18.95618282-42.30159835 42.30159834-42.30159833s42.30159835 18.95618282 42.30159834 42.30159833v160.54575969c0 5.0962232 4.12411126 9.22033445 9.22033445 9.22033446h160.5457597c23.36014448 0 42.30159835 18.95618282 42.30159833 42.30159832 0.01472898 23.37487345-18.9267249 42.31632729-42.28686937 42.31632732z" fill="#707070" p-id="11222"></path></svg>
+                                        </td>
+                                        <td>{{item.des || ''}}</td>
+                                        <td>
+                                            <span v-if="item.state == 'success'"><i class="mdi mdi-circle text-success"></i> 完成</span>
+                                            <span v-if="item.state == 'cache'"><i class="mdi mdi-circle text-info"></i> 等待中</span>
+                                            <span v-else-if="empty(item.state)"><i class="mdi mdi-circle text-warning"></i> 获取中</span>
+                                            <span v-else-if="item.state == 'error'"><i class="mdi mdi-circle text-danger"></i> 失败</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div v-if="fulfill" class="flex-center mt-2">
+                        <button type="button" class="btn btn-info my-2" data-bs-dismiss="modal">关闭</button>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 模态框 - 结束 -->
+</div>
+{/block}
+
+{block name="script"}
+<script src="{$CONFIG->ROOT}js/pages/api-store.js?v={$CONFIG->VERSION}"></script>
+{/block}

@@ -1,0 +1,392 @@
+{extend name="/layouts/base" /}
+
+{block name="title"}管理文章 - {$CONFIG->SITE->title}{/block}
+
+{block name="content"}
+<div id="manage-article" class="container-xxl">
+    
+    <div class="row mt-md-4 mt-2">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    
+                    <div class="dropdown float-end">
+                        <a href="javascript:;" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a v-on:click="initData()" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-autorenew me-1"></i>刷新
+                            </a>
+                            <a v-on:click="clickUpload()" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-application-import me-1"></i>导入
+                            </a>
+                            <a href="/admin/write-article.html" class="dropdown-item">
+                                <i class="mdi mdi-plus me-1"></i>撰写文章
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <ul class="nav nav-tabs nav-bordered mb-3">
+                        <li class="nav-item">
+                            <a href="#all-article" data-bs-toggle="tab" aria-expanded="true" class="nav-link">
+                                <i class="mdi mdi-home-variant d-lg-none d-block mr-1"></i>
+                                <span class="d-none d-lg-block">全部</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#my-article" data-bs-toggle="tab" aria-expanded="false" class="nav-link active">
+                                <i class="mdi mdi-account-circle d-lg-none d-block mr-1"></i>
+                                <span class="d-none d-lg-block">我的</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#del-article" data-bs-toggle="tab" aria-expanded="false" class="nav-link">
+                                <i class="mdi mdi-delete-outline d-lg-none d-block mr-1"></i>
+                                <span class="d-none d-lg-block">回收站</span>
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        
+                        <div class="tab-pane" id="all-article">
+                            
+                            <div class="row pb-2">
+                                <div class="com-md-6">
+                                    <div class="card-body pt-0 pb-0">
+                                        <div class="app-search d-block pt-0">
+                                            <div class="input-group">
+                                                <input v-model="all_search_value" v-on:keyup.enter.native="initData('','',true)" type="text" class="form-control mw-250" placeholder="标题或内容" data-bs-toggle="tooltip" data-original-title="支持模糊查询">
+                                                <span class="mdi mdi-magnify"></span>
+                                                <div class="input-group-append">
+                                                    <button v-on:click="initData('','',true)" class="btn btn-primary" type="button">搜索</button>
+                                                </div>
+                                                <a href="/admin/write-article.html" class="btn btn-primary d-none d-lg-block ml-2">
+                                                    <i class="mdi mdi-plus me-1"></i>撰写
+                                                </a>
+                                                <button v-on:click="clickUpload()" class="btn btn-primary d-none d-lg-block ml-2" data-bs-toggle="tooltip" data-original-title="导入Markdown文章（.md后缀文件）">
+                                                    <i class="mdi mdi-application-import me-1"></i>导入
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 加载动画 开始 -->
+                            <div v-if="is_load" class="table-responsive is_load mb-2 flex-center">
+                                <div class="spinner-border text-primary m-1" role="status"></div>
+                                <div>加载中...</div>
+                            </div>
+                            <!-- 加载动画 结束 -->
+                            
+                            <div v-else-if="!is_load" class="table-responsive-sm">
+                                <div v-if="is_empty.all" class="badge badge-warning-lighten inis-center">
+                                    无数据
+                                </div>
+                                <table v-else-if="!is_empty.all" class="table table-centered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>作者</th>
+                                            <th>标题</th>
+                                            <th>时间</th>
+                                            <th>访客</th>
+                                            <th>评论</th>
+                                            <th>置顶</th>
+                                            <th>显示</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="article in articles.all.data">
+                                            <td class="table-user">
+                                                <a href="javascript:;" class="text-body font-weight-semibold" data-bs-toggle="tooltip" data-placement="top" :data-original-title="article.expand.author.description">
+                                                    <img :src="article.expand.author.head_img" alt="table-user" class="mr-1 rounded-circle">
+                                                    {{article.expand.author.nickname}}
+                                                </a>
+                                            </td>
+                                            <td><a :href="'/admin/write-article.html?id=' + article.id" class="text-body font-weight-bold" data-bs-toggle="tooltip" data-placement="top" :data-original-title="'创建时间：'+ article.create_time">{{article.title}}</a>
+                                            </td>
+                                            <td>{{article.create_time}}</td>
+                                            <td>
+                                                <span class="badge badge-info-lighten">
+                                                    <svg t="1605939837162" class="icon" viewBox="0 0 1075 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6257" width="12" height="12">
+                                                        <path d="M540.7744 693.4016c-105.8816 0-192-86.1696-192-192s86.1184-192 192-192 192 86.1696 192 192-86.1184 192-192 192z m0-307.2c-63.5392 0-115.2 51.712-115.2 115.2s51.6608 115.2 115.2 115.2 115.2-51.712 115.2-115.2-51.6608-115.2-115.2-115.2z" fill="#438CFF" p-id="6258"></path>
+                                                        <path d="M540.7744 862.1056a387.584 387.584 0 0 1-106.2912-15.4112 430.1312 430.1312 0 0 1-28.8256-9.3696c-64.768-23.3984-130.4064-63.4368-195.1232-119.0912C104.6528 627.3536 37.8368 526.5408 35.072 522.2912a38.2976 38.2976 0 0 1 0-42.1888c0.9728-1.4848 24.5248-37.1712 65.3824-84.992a38.4 38.4 0 0 1 58.4192 49.92c-19.3024 22.5792-34.4576 42.24-44.6464 56.1664 24.2688 32.9216 76.5952 98.9184 146.3808 158.8224 57.6 49.5616 115.2 84.8896 171.2128 105.1648 7.936 2.816 15.872 5.4272 23.8592 7.68a310.784 310.784 0 0 0 85.0944 12.3904c200.3968 0 375.4496-215.04 426.5472-284.16a1020.928 1020.928 0 0 0-54.8352-67.84c-50.7392-57.6-103.424-104.96-156.5696-140.8-151.9616-102.5024-288.6656-99.9936-440.7808 7.2704a38.3488 38.3488 0 1 1-44.288-62.7712c178.0736-125.44 349.696-128.4096 527.9744-8.1408 58.5728 39.4752 116.224 91.2384 171.264 153.7024a972.8 972.8 0 0 1 76.3392 97.5872 38.2976 38.2976 0 0 1 0 42.1888c-9.0624 13.824-226.6112 339.8144-505.6512 339.8144z" fill="#438CFF" p-id="6259"></path>
+                                                    </svg>
+                                                    {{article.views}}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-success-lighten">
+                                                    <svg t="1605939617645" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2786" width="12" height="12">
+                                                        <path d="M291.636 385.404c-30.49 0-55.207 25.633-55.207 57.266 0 31.637 24.717 57.272 55.207 57.272 30.486 0 55.203-25.635 55.203-57.272C346.839 411.038 322.122 385.404 291.636 385.404L291.636 385.404z" p-id="2787" fill="#0acf97"></path>
+                                                        <path d="M512.461 385.404c-30.49 0-55.208 25.633-55.208 57.266 0 31.637 24.722 57.272 55.208 57.272 30.486 0 55.204-25.635 55.204-57.272C567.665 411.038 542.947 385.404 512.461 385.404L512.461 385.404z" p-id="2788" fill="#0acf97"></path>
+                                                        <path d="M733.287 385.404c-30.492 0-55.208 25.633-55.208 57.266 0 31.637 24.716 57.272 55.208 57.272 30.486 0 55.202-25.635 55.202-57.272C788.489 411.038 763.773 385.404 733.287 385.404L733.287 385.404z" p-id="2789" fill="#0acf97"></path>
+                                                        <path d="M843.697 99.077 181.221 99.077c-60.972 0-110.41 51.287-110.41 114.539l0 429.487c0 63.256 50.543 121.56 112.92 121.56l168.257 0c29.33 31.245 150.716 156.912 150.716 156.912 5.389 5.606 14.124 5.606 19.514 0 0 0 88.87-100.764 146.775-156.912l172.193 0c62.376 0 112.92-58.308 112.92-121.56L954.106 213.615C954.107 150.363 904.673 99.077 843.697 99.077zM899.451 643.298c0 31.669-26.565 64.899-57.799 64.899L672.075 708.197c-20.543 0-39.009 21.123-39.009 21.123L514 852.815 394.955 729.32c0 0-22.676-21.123-42.112-21.123L183.267 708.197c-31.235 0-57.794-33.23-57.794-64.899L125.473 213.205c0-31.677 24.751-57.353 55.28-57.353l663.411 0c30.53 0 55.287 25.676 55.287 57.353L899.451 643.298z" p-id="2790" fill="#0acf97"></path>
+                                                        <path d="M898.905 643.103" p-id="2791" fill="#0acf97"></path>
+                                                    </svg>
+                                                    {{article.expand.comments}}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <input type="checkbox" :id="'switch-top-all-' + article.id" v-model="is_top_all" :value="article.id" v-on:click="isTop('all',article.id)" data-switch="danger"/>
+                                                    <label :for="'switch-top-all-' + article.id" data-on-label="Yes" data-off-label="No" class="mb-0 d-block"></label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <input type="checkbox" :id="'switch-show-all-' + article.id" v-model="is_show_all" :value="article.id" v-on:click="isShow('all',article.id)" data-switch="success"/>
+                                                    <label :for="'switch-show-all-' + article.id" data-on-label="Yes" data-off-label="No" class="mb-0 d-block"></label>
+                                                </div>    
+                                            </td>
+                                            <td>
+                                                <a type="button" :href="'/admin/write-article.html?id=' + article.id" class="btn btn-light btn-sm mr-1">
+                                                    <i class="mdi mdi-square-edit-outline"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-light btn-sm" v-on:click="btnRemove(article.id)">
+                                                    <i class="mdi mdi-delete-alert-outline"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex space-between align-items-center mt-2">
+                                <div class="d-none d-md-block">
+                                    共 {{articles.all.page}} 页 {{articles.all.count}} 条数据
+                                </div>
+                                <div v-if="!page_is_load && is_page_show.all" class="btn-group">
+                                    <button v-on:click="initData(1, articles_page.my, articles_page.del)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-left"></i></button>
+                                    <button v-for="(item, index) in page_list.all" :key="index" v-on:click="initData(item, articles_page.my, articles_page.del)" :class="(articles_page.all == item) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-light'">{{item}}</button>
+                                    <button v-on:click="initData(articles.all.page, articles_page.my, articles_page.del)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="tab-pane show active" id="my-article">
+                            
+                            <div class="row pb-2">
+                                <div class="com-md-6">
+                                    <div class="card-body pt-0 pb-0">
+                                        <div class="app-search d-block pt-0">
+                                            <div class="input-group">
+                                                <input v-model="my_search_value" v-on:keyup.enter.native="initData('','',true)" type="text" class="form-control mw-250" placeholder="标题或内容" data-bs-toggle="tooltip" data-original-title="支持模糊查询">
+                                                <span class="mdi mdi-magnify"></span>
+                                                <div class="input-group-append">
+                                                    <button v-on:click="initData('','',true)" class="btn btn-primary" type="button">搜索</button>
+                                                </div>
+                                                <a href="/admin/write-article.html" class="btn btn-primary d-none d-lg-block ml-2">
+                                                    <i class="mdi mdi-plus me-1"></i>撰写
+                                                </a>
+                                                <input v-show="false" v-on:change="files($event)" id="input-files" type="file" multiple="multiple" accept=".md">
+                                                <button v-on:click="clickUpload()" class="btn btn-primary d-none d-lg-block ml-2" data-bs-toggle="tooltip" data-original-title="导入Markdown文章（.md后缀文件）">
+                                                    <i class="mdi mdi-application-import me-1"></i>导入
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 加载动画 开始 -->
+                            <div v-if="is_load" class="table-responsive is_load mb-2 flex-center">
+                                <div class="spinner-border text-primary m-1" role="status"></div>
+                                <div>加载中...</div>
+                            </div>
+                            <!-- 加载动画 结束 -->
+                            
+                            <div v-else-if="!is_load" class="table-responsive-sm">
+                                <div v-if="is_empty.my" class="badge badge-warning-lighten inis-center">
+                                    无数据
+                                </div>
+                                <table v-else-if="!is_empty.my" class="table table-centered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>作者</th>
+                                            <th>标题</th>
+                                            <th>时间</th>
+                                            <th>访客</th>
+                                            <th>评论</th>
+                                            <th>置顶</th>
+                                            <th>显示</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="article in articles.my.data">
+                                            <td class="table-user">
+                                                <a href="javascript:;" class="text-body font-weight-semibold" data-bs-toggle="tooltip" data-placement="top" :data-original-title="article.expand.author.description">
+                                                    <img :src="article.expand.author.head_img" alt="table-user" class="mr-1 rounded-circle">
+                                                    {{article.expand.author.nickname}}
+                                                </a>
+                                            </td>
+                                            <td><a :href="'/admin/write-article.html?id=' + article.id" class="text-body font-weight-bold" data-bs-toggle="tooltip" data-placement="top" :data-original-title="'创建时间：'+ article.create_time">{{article.title}}</a>
+                                            </td>
+                                            <td>{{article.create_time}}</td>
+                                            <td>
+                                                <span class="badge badge-info-lighten">
+                                                    <svg t="1605939837162" class="icon" viewBox="0 0 1075 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6257" width="12" height="12">
+                                                        <path d="M540.7744 693.4016c-105.8816 0-192-86.1696-192-192s86.1184-192 192-192 192 86.1696 192 192-86.1184 192-192 192z m0-307.2c-63.5392 0-115.2 51.712-115.2 115.2s51.6608 115.2 115.2 115.2 115.2-51.712 115.2-115.2-51.6608-115.2-115.2-115.2z" fill="#438CFF" p-id="6258"></path>
+                                                        <path d="M540.7744 862.1056a387.584 387.584 0 0 1-106.2912-15.4112 430.1312 430.1312 0 0 1-28.8256-9.3696c-64.768-23.3984-130.4064-63.4368-195.1232-119.0912C104.6528 627.3536 37.8368 526.5408 35.072 522.2912a38.2976 38.2976 0 0 1 0-42.1888c0.9728-1.4848 24.5248-37.1712 65.3824-84.992a38.4 38.4 0 0 1 58.4192 49.92c-19.3024 22.5792-34.4576 42.24-44.6464 56.1664 24.2688 32.9216 76.5952 98.9184 146.3808 158.8224 57.6 49.5616 115.2 84.8896 171.2128 105.1648 7.936 2.816 15.872 5.4272 23.8592 7.68a310.784 310.784 0 0 0 85.0944 12.3904c200.3968 0 375.4496-215.04 426.5472-284.16a1020.928 1020.928 0 0 0-54.8352-67.84c-50.7392-57.6-103.424-104.96-156.5696-140.8-151.9616-102.5024-288.6656-99.9936-440.7808 7.2704a38.3488 38.3488 0 1 1-44.288-62.7712c178.0736-125.44 349.696-128.4096 527.9744-8.1408 58.5728 39.4752 116.224 91.2384 171.264 153.7024a972.8 972.8 0 0 1 76.3392 97.5872 38.2976 38.2976 0 0 1 0 42.1888c-9.0624 13.824-226.6112 339.8144-505.6512 339.8144z" fill="#438CFF" p-id="6259"></path>
+                                                    </svg>
+                                                    {{article.views}}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-success-lighten">
+                                                    <svg t="1605939617645" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2786" width="12" height="12">
+                                                        <path d="M291.636 385.404c-30.49 0-55.207 25.633-55.207 57.266 0 31.637 24.717 57.272 55.207 57.272 30.486 0 55.203-25.635 55.203-57.272C346.839 411.038 322.122 385.404 291.636 385.404L291.636 385.404z" p-id="2787" fill="#0acf97"></path>
+                                                        <path d="M512.461 385.404c-30.49 0-55.208 25.633-55.208 57.266 0 31.637 24.722 57.272 55.208 57.272 30.486 0 55.204-25.635 55.204-57.272C567.665 411.038 542.947 385.404 512.461 385.404L512.461 385.404z" p-id="2788" fill="#0acf97"></path>
+                                                        <path d="M733.287 385.404c-30.492 0-55.208 25.633-55.208 57.266 0 31.637 24.716 57.272 55.208 57.272 30.486 0 55.202-25.635 55.202-57.272C788.489 411.038 763.773 385.404 733.287 385.404L733.287 385.404z" p-id="2789" fill="#0acf97"></path>
+                                                        <path d="M843.697 99.077 181.221 99.077c-60.972 0-110.41 51.287-110.41 114.539l0 429.487c0 63.256 50.543 121.56 112.92 121.56l168.257 0c29.33 31.245 150.716 156.912 150.716 156.912 5.389 5.606 14.124 5.606 19.514 0 0 0 88.87-100.764 146.775-156.912l172.193 0c62.376 0 112.92-58.308 112.92-121.56L954.106 213.615C954.107 150.363 904.673 99.077 843.697 99.077zM899.451 643.298c0 31.669-26.565 64.899-57.799 64.899L672.075 708.197c-20.543 0-39.009 21.123-39.009 21.123L514 852.815 394.955 729.32c0 0-22.676-21.123-42.112-21.123L183.267 708.197c-31.235 0-57.794-33.23-57.794-64.899L125.473 213.205c0-31.677 24.751-57.353 55.28-57.353l663.411 0c30.53 0 55.287 25.676 55.287 57.353L899.451 643.298z" p-id="2790" fill="#0acf97"></path>
+                                                        <path d="M898.905 643.103" p-id="2791" fill="#0acf97"></path>
+                                                    </svg>
+                                                    {{article.expand.comments}}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <input type="checkbox" :id="'switch-top-my-' + article.id" v-model="is_top_my" :value="article.id" v-on:click="isTop('my',article.id)" data-switch="danger"/>
+                                                    <label :for="'switch-top-my-' + article.id" data-on-label="Yes" data-off-label="No" class="mb-0 d-block"></label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <input type="checkbox" :id="'switch-show-my-' + article.id" v-model="is_show_my" :value="article.id" v-on:click="isShow('my',article.id)" data-switch="success"/>
+                                                    <label :for="'switch-show-my-' + article.id" data-on-label="Yes" data-off-label="No" class="mb-0 d-block"></label>
+                                                </div>    
+                                            </td>
+                                            <td>
+                                                <a type="button" :href="'/admin/write-article.html?id=' + article.id" class="btn btn-light btn-sm mr-1">
+                                                    <i class="mdi mdi-square-edit-outline"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-light btn-sm" v-on:click="btnRemove(article.id)">
+                                                    <i class="mdi mdi-delete-alert-outline"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex space-between align-items-center mt-2">
+                                <div class="d-none d-md-block">
+                                    共 {{articles.my.page}} 页 {{articles.my.count}} 条数据
+                                </div>
+                                <div v-if="!page_is_load && is_page_show.my" class="btn-group">
+                                    <button v-on:click="initData(articles_page.my, 1, articles_page.del)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-left"></i></button>
+                                    <button v-for="(item, index) in page_list.my" :key="index" v-on:click="initData(articles_page.all, item, articles_page.del)" :class="(articles_page.my == item) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-light'">{{item}}</button>
+                                    <button v-on:click="initData(articles_page.all, articles.my.page, articles_page.del)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="tab-pane" id="del-article">
+                            
+                            <h4 class="header-title">回收站文章</h4>
+                            <p class="text-muted font-14 mb-4">
+                                当前版本未做软删除和删除确认功能，数据无价，删除前请谨慎操作
+                            </p>
+                            
+                            <!-- 加载动画 开始 -->
+                            <div v-if="is_load" class="table-responsive is_load mb-2 flex-center">
+                                <div class="spinner-border text-primary m-1" role="status"></div>
+                                <div>加载中...</div>
+                            </div>
+                            <!-- 加载动画 结束 -->
+                            
+                            <div v-else-if="!is_load" class="table-responsive-sm">
+                                <div v-if="is_empty.del" class="badge badge-warning-lighten inis-center">
+                                    无数据
+                                </div>
+                                <table v-else-if="!is_empty.del" class="table table-centered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>作者</th>
+                                            <th>标题</th>
+                                            <th>时间</th>
+                                            <th>访客</th>
+                                            <th>评论</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="article in articles.del.data">
+                                            <td class="table-user">
+                                                <a href="javascript:;" class="text-body font-weight-semibold" data-bs-toggle="tooltip" data-placement="top" :data-original-title="article.expand.author.description">
+                                                    <img :src="article.expand.author.head_img" alt="table-user" class="mr-1 rounded-circle">
+                                                    {{article.expand.author.nickname}}
+                                                </a>
+                                            </td>
+                                            <td><a :href="'/admin/write-article.html?id=' + article.id" class="text-body font-weight-bold" data-bs-toggle="tooltip" data-placement="top" :data-original-title="'创建时间：'+ article.create_time">{{article.title}}</a>
+                                            </td>
+                                            <td>{{NatureTime(article.delete_time)}}</td>
+                                            <td>
+                                                <span class="badge badge-info-lighten">
+                                                    <svg t="1605939837162" class="icon" viewBox="0 0 1075 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6257" width="12" height="12">
+                                                        <path d="M540.7744 693.4016c-105.8816 0-192-86.1696-192-192s86.1184-192 192-192 192 86.1696 192 192-86.1184 192-192 192z m0-307.2c-63.5392 0-115.2 51.712-115.2 115.2s51.6608 115.2 115.2 115.2 115.2-51.712 115.2-115.2-51.6608-115.2-115.2-115.2z" fill="#438CFF" p-id="6258"></path>
+                                                        <path d="M540.7744 862.1056a387.584 387.584 0 0 1-106.2912-15.4112 430.1312 430.1312 0 0 1-28.8256-9.3696c-64.768-23.3984-130.4064-63.4368-195.1232-119.0912C104.6528 627.3536 37.8368 526.5408 35.072 522.2912a38.2976 38.2976 0 0 1 0-42.1888c0.9728-1.4848 24.5248-37.1712 65.3824-84.992a38.4 38.4 0 0 1 58.4192 49.92c-19.3024 22.5792-34.4576 42.24-44.6464 56.1664 24.2688 32.9216 76.5952 98.9184 146.3808 158.8224 57.6 49.5616 115.2 84.8896 171.2128 105.1648 7.936 2.816 15.872 5.4272 23.8592 7.68a310.784 310.784 0 0 0 85.0944 12.3904c200.3968 0 375.4496-215.04 426.5472-284.16a1020.928 1020.928 0 0 0-54.8352-67.84c-50.7392-57.6-103.424-104.96-156.5696-140.8-151.9616-102.5024-288.6656-99.9936-440.7808 7.2704a38.3488 38.3488 0 1 1-44.288-62.7712c178.0736-125.44 349.696-128.4096 527.9744-8.1408 58.5728 39.4752 116.224 91.2384 171.264 153.7024a972.8 972.8 0 0 1 76.3392 97.5872 38.2976 38.2976 0 0 1 0 42.1888c-9.0624 13.824-226.6112 339.8144-505.6512 339.8144z" fill="#438CFF" p-id="6259"></path>
+                                                    </svg>
+                                                    {{article.views}}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-success-lighten">
+                                                    <svg t="1605939617645" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2786" width="12" height="12">
+                                                        <path d="M291.636 385.404c-30.49 0-55.207 25.633-55.207 57.266 0 31.637 24.717 57.272 55.207 57.272 30.486 0 55.203-25.635 55.203-57.272C346.839 411.038 322.122 385.404 291.636 385.404L291.636 385.404z" p-id="2787" fill="#0acf97"></path>
+                                                        <path d="M512.461 385.404c-30.49 0-55.208 25.633-55.208 57.266 0 31.637 24.722 57.272 55.208 57.272 30.486 0 55.204-25.635 55.204-57.272C567.665 411.038 542.947 385.404 512.461 385.404L512.461 385.404z" p-id="2788" fill="#0acf97"></path>
+                                                        <path d="M733.287 385.404c-30.492 0-55.208 25.633-55.208 57.266 0 31.637 24.716 57.272 55.208 57.272 30.486 0 55.202-25.635 55.202-57.272C788.489 411.038 763.773 385.404 733.287 385.404L733.287 385.404z" p-id="2789" fill="#0acf97"></path>
+                                                        <path d="M843.697 99.077 181.221 99.077c-60.972 0-110.41 51.287-110.41 114.539l0 429.487c0 63.256 50.543 121.56 112.92 121.56l168.257 0c29.33 31.245 150.716 156.912 150.716 156.912 5.389 5.606 14.124 5.606 19.514 0 0 0 88.87-100.764 146.775-156.912l172.193 0c62.376 0 112.92-58.308 112.92-121.56L954.106 213.615C954.107 150.363 904.673 99.077 843.697 99.077zM899.451 643.298c0 31.669-26.565 64.899-57.799 64.899L672.075 708.197c-20.543 0-39.009 21.123-39.009 21.123L514 852.815 394.955 729.32c0 0-22.676-21.123-42.112-21.123L183.267 708.197c-31.235 0-57.794-33.23-57.794-64.899L125.473 213.205c0-31.677 24.751-57.353 55.28-57.353l663.411 0c30.53 0 55.287 25.676 55.287 57.353L899.451 643.298z" p-id="2790" fill="#0acf97"></path>
+                                                        <path d="M898.905 643.103" p-id="2791" fill="#0acf97"></path>
+                                                    </svg>
+                                                    {{article.expand.comments}}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-light btn-sm mr-1" v-on:click="btnRecover(article.id)">
+                                                    <i class="mdi mdi-refresh"></i>
+                                                </button>
+                                                <a type="button" :href="'/admin/write-article.html?id=' + article.id" class="btn btn-light btn-sm mr-1">
+                                                    <i class="mdi mdi-square-edit-outline"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-light btn-sm" v-on:click="btnRemove(article.id,true)">
+                                                    <i class="mdi mdi-delete-outline"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex space-between align-items-center mt-2">
+                                <div class="d-none d-md-block">
+                                    共 {{articles.del.page}} 页 {{articles.del.count}} 条数据
+                                </div>
+                                <div v-if="!page_is_load && is_page_show.del" class="btn-group">
+                                    <button v-on:click="initData(articles_page.del, articles_page.my, 1)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-left"></i></button>
+                                    <button v-for="(item, index) in page_list.del" :key="index" v-on:click="initData(articles_page.all, articles_page.my, item)" :class="(articles_page.del == item) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-light'">{{item}}</button>
+                                    <button v-on:click="initData(articles.my.all, articles.my.page, articles_page.del)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block name="script"}
+<script src="{$CONFIG->ROOT}js/pages/manage-article.js?v={$CONFIG->VERSION}"></script>
+{/block}

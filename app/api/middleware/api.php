@@ -88,6 +88,8 @@ class api
                 
                 // 用于授权系统同意获取API后生效
                 $domain[] = 'inis.cc';
+                // 中文域名转码
+                $origin = idn_to_utf8($origin, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
                 
                 // 处理HTTP请求，中间件代码
                 if (in_array($origin, $domain)) $header['Access-Control-Allow-Origin'] = $http_prefix.$origin;
@@ -118,6 +120,8 @@ class api
         } else {
             // 防止代理
             $origin = !empty($headers['origin']) ? str_replace(['https','http',':','//'], '', $headers['origin']) : null;
+            // 中文域名转码
+            $origin = idn_to_utf8($origin, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
             if (!in_array($origin, $domain)) return json($result);
         }
         

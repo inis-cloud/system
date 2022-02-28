@@ -81,7 +81,7 @@ class File extends Base
         $result = [];
         
         // 存在的方法
-        $method = ['random','words','info','reads','find'];
+        $method = ['random','words','info','reads','find','inWords'];
         
         // 动态方法且方法存在
         if (in_array($IID, $method)) $result = $this->$IID($param);
@@ -278,7 +278,7 @@ class File extends Base
         $path = (empty($path)) ? './' : $path . '/';
         
         // 文件图片路径
-        $ico_path = $this->tool->domain() . '/index/assets/svg/filesystem/';
+        $ico_path = $this->tool->domain() . '/admin/svg/filesystem/';
         
         // 返回指定路径的文件夹信息，其中包含指定路径中的文件和目录
         $dir_info = $this->File->dirInfo($path);
@@ -473,6 +473,38 @@ class File extends Base
         } catch (\Exception $e) {
             
             $msg  = $e->getMessage();
+        }
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 违禁词API
+    public function inWords($param)
+    {
+        $data = [];
+        $code = 200;
+        $msg  = 'ok';
+        
+        // 词库路径
+        $path = 'storage/random/inWords/';
+        // 选择词库
+        $file = !empty($param['txt']) ? $param['txt'] : 'default';
+        
+        // 打开词库
+        $text = $this->File->readFile($path . $file . '.txt');
+        
+        if (!$text) {
+            $code = 500;
+            $msg  = '缺失文件，请在目录' . $path . '下新建 ' . $file . '.txt文件，并填充内容，每个一行';
+        }
+        else if (empty($param['value'])) $data = explode(PHP_EOL, $text);
+        else {
+            
+            foreach (explode(PHP_EOL, $text) as $key => $val) {
+                if (strpos($param['value'], $val) !== false) $data[] = $val;
+            }
+            // 去重去空处理
+            $data = array_filter(array_unique($data));
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];

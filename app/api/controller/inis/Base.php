@@ -6,7 +6,7 @@ use think\facade\{Config};
 use app\model\mysql\{Users};
 use think\{Request, Response};
 use inis\utils\{File, helper};
-use app\index\controller\{Tool};
+use app\admin\controller\{Tool};
 use app\api\middleware\{api, handle};
 
 use Firebase\JWT\{JWT, ExpiredException, BeforeValidException, SignatureInvalidException};
@@ -58,12 +58,6 @@ abstract class Base
         return Response::create($result, $type);
     }
 
-    public function __call($name, $arguments)
-    {
-        // 404 - 方法不存在的错误
-        return $this->create([], '资源不存在~', 404);
-    }
-    
     // 密码验证
     public function verify_password($npwd,$rpwd)
     {
@@ -109,4 +103,9 @@ abstract class Base
         return $result;
     }
     
+    public function __call($name, $arguments)
+    {
+        // 404 - 方法不存在的错误
+        return $this->create([], '资源不存在~', 404);
+    }
 }

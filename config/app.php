@@ -10,8 +10,10 @@ return [
     'app_namespace'    => '',
     // 是否启用路由
     'with_route'       => true,
+    // 应用快速访问
+    'app_express'      => true,
     // 默认应用
-    'default_app'      => 'index',
+    'default_app'      => 'admin',
     // 默认时区
     'default_timezone' => 'Asia/Shanghai',
 
@@ -28,7 +30,6 @@ return [
     // 错误显示信息,非调试模式有效
     'error_message'    => '页面错误！请稍后再试～',
     // 显示错误信息
-    'show_error_msg'   => true,
-    // JWT 密钥
-    'jwt_key'          => 'inis-!@#$%*&',
+    'show_error_msg'   => false,
+    // 'jwt_key' => 'inis-!@#$%*&'
 ];

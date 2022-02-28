@@ -1,0 +1,573 @@
+{extend name="/layouts/base" /}
+
+{block name="title"}新建页面 - {$CONFIG->SITE->title}{/block}
+
+{block name="content"}
+<div id="write-page" class="container-xxl">
+    
+    <div class="row mt-md-4 mt-2">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="dropdown float-end">
+                        <a href="javascript:;" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a v-on:click="initVditor()" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-autorenew me-1"></i>刷新
+                            </a>
+                            <a v-on:click="btnSave()" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-content-save me-1"></i>保存
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label>标题</label>
+                                <input v-model="page.title" type="text" class="form-control" maxlength="64" data-toggle="maxlength" data-threshold="10" placeholder="标题">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label>别名*</label>
+                                <input v-model="page.alias" type="text" class="form-control" placeholder="必填且只能是英文，用于区分" onkeyup="this.value=this.value.replace(/[^a-zA-Z]/g,'')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <input v-show="false" v-on:change="uploadMD($event)" id="input-md" type="file" accept=".md">
+                    
+                    <!-- 编辑器 -->
+                    <div id="vditor"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- 拓展编辑器 - 人性化语法 - 开始 -->
+    <!-- 插入彩色文字 -->
+    <div id="insert_color_text" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">插入彩色文字</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">选择颜色</label>
+                        <div class="col-9">
+                            <div class="btn-group">
+                                    <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{insert_color_text.title || ''}}
+                                        <span class="caret"></span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a v-on:click="set_insert_data('insert_color_text',{class:'text-muted'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-secondary fill-bg mr-2"></span>
+                                            灰色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_color_text',{class:'text-dark'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-dark fill-bg mr-2"></span>
+                                            黑色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_color_text',{class:'text-white'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-white fill-bg mr-2"></span>
+                                            白色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_color_text',{class:'text-primary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-primary fill-bg mr-2"></span>
+                                            紫色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_color_text',{class:'text-success'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-success fill-bg mr-2"></span>
+                                            绿色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_color_text',{class:'text-info'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-info fill-bg mr-2"></span>
+                                            蓝色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_color_text',{class:'text-warning'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-warning fill-bg mr-2"></span>
+                                            黄色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_color_text',{class:'text-danger'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-danger fill-bg mr-2"></span>
+                                            红色
+                                        </a>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>文字内容</label>
+                        <textarea class="form-control domain-textarea" rows="5" v-model="insert_color_text.text" v-on:keyup.enter="insertTag('insert_color_text')" placeholder="内容"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                    <button v-on:click="insertTag('insert_color_text')" type="button" class="btn btn-outline-light" data-bs-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 插入带背景颜色的文字 -->
+    <div id="insert_bg_color_text" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">插入彩色文字</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">选择颜色</label>
+                        <div class="col-9">
+                            <div class="btn-group">
+                                    <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{insert_bg_color_text.title || ''}}
+                                        <span class="caret"></span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a v-on:click="set_insert_data('insert_bg_color_text',{class:'badge-secondary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="badge-secondary fill-bg mr-2"></span>
+                                            灰色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_bg_color_text',{class:'badge-dark'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="badge-dark fill-bg mr-2"></span>
+                                            黑色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_bg_color_text',{class:'badge-light'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="badge-light fill-bg mr-2"></span>
+                                            白色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_bg_color_text',{class:'badge-primary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="badge-primary fill-bg mr-2"></span>
+                                            紫色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_bg_color_text',{class:'badge-success'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="badge-success fill-bg mr-2"></span>
+                                            绿色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_bg_color_text',{class:'badge-info'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="badge-info fill-bg mr-2"></span>
+                                            蓝色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_bg_color_text',{class:'badge-warning'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="badge-warning fill-bg mr-2"></span>
+                                            黄色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_bg_color_text',{class:'badge-danger'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="badge-danger fill-bg mr-2"></span>
+                                            红色
+                                        </a>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">背景</label>
+                        <div class="col-9">
+                            <select id="insert_bg_color_text-mode-select2" class="form-control select2" data-control="select2" data-dropdown-parent="#insert_bg_color_text" data-placeholder="init..."></select>
+                        </div>
+                    </div>
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">圆角</label>
+                        <div class="col-9">
+                            <select id="insert_round_color_text-mode-select2" class="form-control select2" data-control="select2" data-dropdown-parent="#insert_bg_color_text" data-placeholder="init..."></select>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>文字内容</label>
+                        <textarea class="form-control domain-textarea" rows="5" v-model="insert_bg_color_text.text" v-on:keyup.enter="insertTag('insert_bg_color_text')" placeholder="内容"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                    <button v-on:click="insertTag('insert_bg_color_text')" type="button" class="btn btn-outline-light" data-bs-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 插入高亮引用 -->
+    <div id="insert_highlight" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">插入高亮引用</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">字体颜色</label>
+                        <div class="col-9">
+                            <div class="btn-group">
+                                    <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{insert_highlight.text_color_title || ''}}
+                                        <span class="caret"></span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a v-on:click="set_insert_data('insert_highlight',{text_color:'text-muted'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-secondary fill-bg mr-2"></span>
+                                            灰色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{text_color:'text-dark'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-dark fill-bg mr-2"></span>
+                                            黑色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{text_color:'text-white'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-white fill-bg mr-2"></span>
+                                            白色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{text_color:'text-primary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-primary fill-bg mr-2"></span>
+                                            紫色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{text_color:'text-success'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-success fill-bg mr-2"></span>
+                                            绿色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{text_color:'text-info'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-info fill-bg mr-2"></span>
+                                            蓝色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{text_color:'text-warning'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-warning fill-bg mr-2"></span>
+                                            黄色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{text_color:'text-danger'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-danger fill-bg mr-2"></span>
+                                            红色
+                                        </a>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">背景颜色</label>
+                        <div class="col-9">
+                            <div class="btn-group">
+                                    <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{insert_highlight.bg_color_title || ''}}
+                                        <span class="caret"></span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'bg-secondary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-secondary fill-bg mr-2"></span>
+                                            灰色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'alert-secondary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="alert-secondary fill-bg mr-2"></span>
+                                            淡灰
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'alert-light'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="alert-light fill-bg mr-2"></span>
+                                            白色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'bg-light'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-light fill-bg mr-2"></span>
+                                            深白
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'bg-white'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-white fill-bg mr-2"></span>
+                                            纯白
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'bg-dark'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-dark fill-bg mr-2"></span>
+                                            黑色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'alert-dark'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="alert-dark fill-bg mr-2"></span>
+                                            淡黑
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'bg-danger'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-danger fill-bg mr-2"></span>
+                                            红色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'alert-danger'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="alert-danger fill-bg mr-2"></span>
+                                            淡红
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'bg-warning'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-warning fill-bg mr-2"></span>
+                                            黄色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'alert-warning'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="alert-warning fill-bg mr-2"></span>
+                                            淡黄
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'bg-info'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-info fill-bg mr-2"></span>
+                                            蓝色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'alert-info'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="alert-info fill-bg mr-2"></span>
+                                            淡蓝
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'bg-success'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-success fill-bg mr-2"></span>
+                                            绿色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'alert-success'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="alert-success fill-bg mr-2"></span>
+                                            淡色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'bg-primary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-primary fill-bg mr-2"></span>
+                                            紫色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_highlight',{bg_color:'alert-primary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="alert-primary fill-bg mr-2"></span>
+                                            淡紫
+                                        </a>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>文字内容</label>
+                        <textarea class="form-control domain-textarea" rows="5" v-model="insert_highlight.text" v-on:keyup.enter="insertTag('insert_highlight')" placeholder="内容"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                    <button v-on:click="insertTag('insert_highlight')" type="button" class="btn btn-outline-light" data-bs-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 插入按钮 -->
+    <div id="insert_btn" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">插入按钮</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">选择颜色</label>
+                        <div class="col-9">
+                            <div class="btn-group">
+                                    <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{insert_btn.color_title || ''}}
+                                        <span class="caret"></span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a v-on:click="set_insert_data('insert_btn',{class:'secondary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="btn-secondary fill-bg mr-2"></span>
+                                            灰色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_btn',{class:'dark'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="btn-dark fill-bg mr-2"></span>
+                                            黑色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_btn',{class:'light'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="btn-light fill-bg mr-2"></span>
+                                            白色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_btn',{class:'primary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="btn-primary fill-bg mr-2"></span>
+                                            紫色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_btn',{class:'success'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="btn-success fill-bg mr-2"></span>
+                                            绿色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_btn',{class:'info'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="btn-info fill-bg mr-2"></span>
+                                            蓝色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_btn',{class:'warning'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="btn-warning fill-bg mr-2"></span>
+                                            黄色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_btn',{class:'danger'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="btn-danger fill-bg mr-2"></span>
+                                            红色
+                                        </a>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">按钮类型</label>
+                        <div class="col-9">
+                            <select id="insert_outline_btn-select2" class="form-control select2" data-control="select2" data-dropdown-parent="#insert_btn" data-placeholder="init..."></select>
+                        </div>
+                    </div>
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">圆角</label>
+                        <div class="col-9">
+                            <select id="insert_round_btn-select2" class="form-control select2" data-control="select2" data-dropdown-parent="#insert_btn" data-placeholder="init..."></select>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>跳转地址</label>
+                        <input v-model="insert_btn.url" type="text" class="form-control" placeholder="选填：如需跳转，请填写网址">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>文字内容</label>
+                        <textarea v-model="insert_btn.text" v-on:keyup.enter="insertTag('insert_btn')" class="form-control domain-textarea" rows="5" placeholder="内容"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                    <button v-on:click="insertTag('insert_btn')" type="button" class="btn btn-outline-light" data-bs-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 插入收缩框 -->
+    <div id="insert_collapse" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">插入收缩框</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">展开</label>
+                        <div class="col-9">
+                            <select id="insert_collapse_active-select2" class="form-control select2" data-control="select2" data-dropdown-parent="#insert_collapse" data-placeholder="init..."></select>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>标题</label>
+                        <input v-model="insert_collapse.text" v-on:keyup.enter="insertTag('insert_collapse')" type="text" class="form-control" placeholder="收缩框标题">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                    <button v-on:click="insertTag('insert_collapse')" type="button" class="btn btn-outline-light" data-bs-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 插入tab -->
+    <div id="insert_tabs" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">插入tab</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">小标题颜色</label>
+                        <div class="col-9">
+                            <div class="btn-group">
+                                    <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{insert_tabs.text_color_title || ''}}
+                                        <span class="caret"></span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a v-on:click="set_insert_data('insert_tabs',{text_color:'text-muted'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-secondary fill-bg mr-2"></span>
+                                            灰色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_tabs',{text_color:'text-dark'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-dark fill-bg mr-2"></span>
+                                            黑色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_tabs',{text_color:'text-white'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-white fill-bg mr-2"></span>
+                                            白色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_tabs',{text_color:'text-primary'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-primary fill-bg mr-2"></span>
+                                            紫色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_tabs',{text_color:'text-success'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-success fill-bg mr-2"></span>
+                                            绿色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_tabs',{text_color:'text-info'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-info fill-bg mr-2"></span>
+                                            蓝色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_tabs',{text_color:'text-warning'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-warning fill-bg mr-2"></span>
+                                            黄色
+                                        </a>
+                                        <a v-on:click="set_insert_data('insert_tabs',{text_color:'text-danger'})" class="dropdown-item flex-center" href="javascript:;">
+                                            <span class="bg-danger fill-bg mr-2"></span>
+                                            红色
+                                        </a>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div class="form-group row mb-3">
+                        <label class="col-3 col-form-label">类型</label>
+                        <div class="col-9">
+                            <select id="insert_tabs_mode-select2" class="form-control select2" data-control="select2" data-dropdown-parent="#insert_tabs" data-placeholder="init..."></select>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>大标题</label>
+                        <input v-model="insert_tabs.title" v-on:keyup.enter="insertTag('insert_tabs')" type="text" class="form-control" placeholder="选填">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>小标题</label>
+                        <input v-model="insert_tabs.item_title" v-on:keyup.enter="insertTag('insert_tabs')" type="text" class="form-control" placeholder="必填">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                    <button v-on:click="insertTag('insert_tabs')" type="button" class="btn btn-outline-light" data-bs-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 插入图片或文件 -->
+    <div id="insert_files" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">插入图片或文件</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>您可以填写图片或文件的外链地址，或点击按钮上传</p>
+                    <div class="form-group mb-0">
+                        <div class="input-group">
+                            <input v-model="insert_files.url" type="text" class="form-control" placeholder="填写文件地址或点击按钮上传">
+                            <input v-show="false" v-on:change="uoloadFiles($event)" type="file" accept="image/*" id="upload-files" multiple>
+                            <div class="input-group-append">
+                                <button v-on:click="runUpload()" class="btn btn-dark" type="button">上传</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                    <button v-on:click="insertFile()" type="button" class="btn btn-outline-light" data-bs-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 拓展编辑器 - 人性化语法 - 结束 -->
+    
+    <teleport to="body">
+    <div class="inis-save">
+        <button v-on:click="btnSave(edit.id,true)" type="button" class="btn btn-icon">
+            <svg t="1640673768171" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="21650" width="24" height="24"><path d="M860.2 41H163.8C96.1 41 41 96.1 41 163.8v696.3C41 927.9 96.1 983 163.8 983h696.3c67.8 0 122.9-55.1 122.9-122.9V163.8C983 96.1 927.9 41 860.2 41z m-532.5 81.9h368.6v163.8c0 22.6-18.4 41-41 41H368.6c-22.6 0-41-18.4-41-41V122.9z m573.4 737.3c0 22.6-18.4 41-41 41H163.8c-22.6 0-41-18.4-41-41V163.8c0-22.6 18.4-41 41-41h81.9v163.8c0 67.8 55.1 122.9 122.9 122.9h286.7c67.8 0 122.9-55.1 122.9-122.9V122.9h81.9c22.6 0 41 18.4 41 41v696.3z" p-id="21651" fill="#00afec"></path><path d="M593.9 276.5c28.2 0 51.2-23 51.2-51.2s-23-51.2-51.2-51.2c-28.2 0-51.2 23-51.2 51.2s23.1 51.2 51.2 51.2zM737.3 675.8H286.7c-22.5 0-41 18.4-41 41 0 22.5 18.4 41 41 41h450.6c22.5 0 41-18.4 41-41-0.1-22.5-18.5-41-41-41z" p-id="21652" fill="#00afec"></path></svg>
+        </button>
+    </div>
+    </teleport>
+</div>
+{/block}
+
+{block name="head"}
+<link href="{$CONFIG->ROOT}libs/vditor/dist/index.css?v={$CONFIG->VERSION}" rel="stylesheet">
+{/block}
+
+{block name="script"}
+<script src="{$CONFIG->ROOT}libs/vditor/dist/index.min.js?v={$CONFIG->VERSION}"></script>
+<script src="{$CONFIG->ROOT}js/pages/write-page.js?v={$CONFIG->VERSION}"></script>
+{/block}

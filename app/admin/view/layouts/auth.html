@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover">
+        
+        <title>{block name="title"}{$CONFIG->SITE->title}{/block}</title>
+        <link rel="shortcut icon" href="{$CONFIG->SITE->favicon}">
+        
+        {block name="seo"}
+        <meta name="author" content="racns,兔子"/>
+        <meta name="keywords" content="{$CONFIG->SITE->keywords}">
+        <meta itemprop="image" content="{$CONFIG->SITE->favicon}">
+        <meta name="description" content="{$CONFIG->SITE->description}">
+        {/block}
+        
+        <script src="{$CONFIG->ROOT}libs/vue3.js?v={$CONFIG->VERSION}"></script>
+        <script src="{$CONFIG->ROOT}libs/axios.min.js?v={$CONFIG->VERSION}"></script>
+        <script src="{$CONFIG->ROOT}utils/helper.js?v={$CONFIG->VERSION}"></script>
+        
+        <link href="{$CONFIG->ROOT}css/icons.min.css?v={$CONFIG->VERSION}" rel="stylesheet" type="text/css">
+        <link href="{$CONFIG->ROOT}css/app.min.css?v={$CONFIG->VERSION}" rel="stylesheet" type="text/css" id="light-style">
+        <link href="{$CONFIG->ROOT}css/app-dark.min.css?v={$CONFIG->VERSION}" rel="stylesheet" type="text/css" id="dark-style">
+        <link rel="stylesheet" href="{$CONFIG->ROOT}css/style.css?v={$CONFIG->VERSION}">
+        <link rel="stylesheet" href="{$CONFIG->ROOT}css/media.css?v={$CONFIG->VERSION}">
+        
+        {block name="head"}{/block}
+    </head>
+
+    <body class="loading authentication-bg" data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false, "leftSidebarCondensed":false, "leftSidebarScrollable":false,"darkMode":false, "showRightSidebarOnStart": true}'>
+        <div class="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5">
+            <div class="container">
+                {block name="content"}
+				<div class="row">
+                    主内容
+                </div>
+				{/block}
+            </div>
+        </div>
+        
+        <!-- 页脚 - 开始 -->
+		<footer class="footer footer-alt">
+		    <div class="one-word"></div>
+            2020 - {:date("Y")} © INIS - <a href="//inis.cc" class="text-muted" target="_blank">inis.cc</a> | <a href="//beian.miit.gov.cn" class="text-muted" target="_blank">{$CONFIG->SITE->copy}</a>
+        </footer>
+        <!-- 页脚 - 结束 -->
+        
+        <script src="{$CONFIG->ROOT}js/vendor.min.js?v={$CONFIG->VERSION}"></script>
+        <script src="{$CONFIG->ROOT}js/app.min.js?v={$CONFIG->VERSION}"></script>
+        
+        {block name="script"}{/block}
+    </body>
+</html>

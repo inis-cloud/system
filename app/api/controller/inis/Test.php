@@ -5,7 +5,7 @@ namespace app\api\controller\inis;
 
 use think\Request;
 use inis\utils\{helper};
-use app\index\controller\Tool;
+use app\admin\controller\Tool;
 use think\facade\{Db, Cache, Config, Validate, Filesystem, Log};
 use app\model\mysql\{Users, Links, Banner, Visit, Article, Comments};
 
@@ -45,7 +45,7 @@ class Test extends Base
         // 获取请求参数
         $param = $request->param();
         
-        return $this->create($param, $msg, $code, ['method'=>'POST']);
+        return $this->create($param, $msg, $code);
     }
 
     /**

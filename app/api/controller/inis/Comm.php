@@ -5,7 +5,7 @@ namespace app\api\controller\inis;
 
 use app\BaseController;
 use think\{Request, Response};
-use app\index\controller\Tool;
+use app\admin\controller\Tool;
 use inis\utils\{File, helper};
 use think\facade\{Config, Validate};
 use think\exception\ValidateException;

@@ -1,0 +1,250 @@
+{extend name="/layouts/base" /}
+
+{block name="title"}个人资料 - {$CONFIG->SITE->title}{/block}
+
+{block name="content"}
+<div id="edit-profile" class="container-xxl">
+    
+    <div class="row mt-md-4 mt-2">
+        <div class="col-sm-12">
+            <div class="card bg-white">
+                <div class="card-body profile-user-box">
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="avatar-lg">
+                                        <input v-show="false" v-on:change="upload($event)" type="file" accept="image/*" id="btn_file">
+                                        <img v-on:click="clickUpload()" :src="login_account.head_img" class="rounded-circle img-thumbnail pointer" height="100">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div>
+                                        <h4 class="mt-1 mb-1 text-muted">{{login_account.nickname}}</h4>
+                                        <p class="font-13 text-muted">{{login_account.description}}</p>
+                                        
+                                        <!--<ul class="mb-0 list-inline text-light">-->
+                                        <!--    <li class="list-inline-item me-3">-->
+                                        <!--        <h5 class="mb-1">$ 25,184</h5>-->
+                                        <!--        <p class="mb-0 font-13 text-white-50">Total Revenue</p>-->
+                                        <!--    </li>-->
+                                        <!--    <li class="list-inline-item">-->
+                                        <!--        <h5 class="mb-1">5482</h5>-->
+                                        <!--        <p class="mb-0 font-13 text-white-50">Number of Orders</p>-->
+                                        <!--    </li>-->
+                                        <!--</ul>-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-4">
+                            <div class="text-center mt-sm-0 mt-3 text-sm-end">
+                                <button v-on:click="btnSave()" type="button" class="btn btn-light">
+                                    <i class="mdi mdi-content-save me-1"></i>保存信息
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row" id="edit-profile1" :value="login_account.id">
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="header-title mb-3">个人信息</h4>
+                    <div class="tab-content mb-0 b-0">
+                        <div class="tab-pane fade active show">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">昵称</label>
+                                        <div class="col-md-9">
+                                            <input v-model="login_account.nickname" type="text" class="form-control" placeholder="您的称呼">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">性别</label>
+                                        <div class="col-md-9 sex">
+                                            <select id="sex-select2" class="form-control select2" data-bs-toggle="select2"></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">描述</label>
+                                        <div class="col-md-9">
+                                            <input v-model="login_account.description" type="text" class="form-control" placeholder="">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">头像地址</label>
+                                        <div class="col-md-9">
+                                            
+                                            <div class="input-group">
+                                                <input v-model="login_account.head_img" type="text" class="form-control" placeholder="填写或点击按钮上传">
+                                                <div class="input-group-append">
+                                                    <button v-on:click="clickUpload()" class="btn btn-dark" type="button">上传</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">主页地址</label>
+                                        <div class="col-md-9">
+                                            <input v-model="login_account.address_url" type="text" class="form-control" placeholder="">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">赞赏配置</label>
+                                        <div class="col-md-9">
+                                            <button type="button" class="btn btn-block btn-light" data-bs-toggle="modal" data-bs-target="#fill-praise-modal">点击配置</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="header-title mb-3">帐号安全</h4>
+                    <div class="tab-content mb-0 b-0">
+                        <div class="tab-pane fade active show">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">登录帐号</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" placeholder="帐号" v-model="login_account.account" onkeyup="this.value=this.value.replace(/\s+/g,'')">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">邮箱地址</label>
+                                        <div class="col-md-9">
+                                            <input type="email" class="form-control" placeholder="用于找回密码或邮箱登录" v-model="login_account.email" onkeyup="this.value=this.value.replace(/\s+/g,'')">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">手机号码</label>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" placeholder="用于找回密码或手机登录" v-model="login_account.phone" maxlength="11" onkeyup="this.value=this.value.replace(/[^\d]/g,'')">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">修改密码</label>
+                                        <div class="col-md-9">
+                                            <input type="password" class="form-control" v-model="password1" placeholder="请输入新密码" onkeyup="this.value=this.value.replace(/\s+/g,'')">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mb-3">
+                                        <label class="col-md-3 col-form-label">确认密码</label>
+                                        <div class="col-md-9">
+                                            <input type="password" class="form-control" v-model="password2" placeholder="请再次输入新密码" onkeyup="this.value=this.value.replace(/\s+/g,'')">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Token 验证说明 - 开始 -->
+    <div id="fill-praise-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-token-modalLabel">什么是 赞赏配置 ？</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>文章详情页会展示赞赏的二维码，用于用户打赏作者，激励创作</p>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card-body pb-0">
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">QQ</label>
+                                    <div class="col-9">
+                                        <div class="input-group">
+                                            <input v-model="login_account.qq_pay" type="text" class="form-control" placeholder="填写收款码地址或点击按钮上传">
+                                            <div class="input-group-append">
+                                                <input v-show="false" v-on:change="uploadPay($event, 'qq_pay')" type="file" accept="image/*" id="qq-pay" />
+                                                <button v-on:click="qqClick" class="btn btn-dark" type="button">上传</button>
+                                            </div>
+                                        </div>
+                                        <div v-if="qq_speed != 1 && qq_speed != 0" class="progress-w-percent users-upload-head">
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar" role="progressbar" :style="'width: '+ qq_speed * 100 +'%'" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">微信</label>
+                                    <div class="col-9">
+                                        <div class="input-group">
+                                            <input v-model="login_account.wechat_pay" type="text" class="form-control" placeholder="填写收款码地址或点击按钮上传">
+                                            <div class="input-group-append">
+                                                <input v-show="false" v-on:change="uploadPay($event)" type="file" accept="image/*" id="wechat-pay" />
+                                                <button v-on:click="wechatClick" class="btn btn-dark" type="button">上传</button>
+                                            </div>
+                                        </div>
+                                        <div v-if="wechat_speed != 1 && wechat_speed != 0" class="progress-w-percent users-upload-head">
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar" role="progressbar" :style="'width: '+ wechat_speed * 100 +'%'" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row mb-3">
+                                    <label class="col-3 col-form-label">支付宝</label>
+                                    <div class="col-9">
+                                        <div class="input-group">
+                                            <input v-model="login_account.alipay" type="text" class="form-control" placeholder="填写收款码地址或点击按钮上传">
+                                            <div class="input-group-append">
+                                                <input v-show="false" v-on:change="uploadPay($event, 'ali')" type="file" accept="image/*" id="ali-pay" />
+                                                <button v-on:click="aliClick" class="btn btn-dark" type="button">上传</button>
+                                            </div>
+                                        </div>
+                                        <div v-if="ali_speed != 1 && ali_speed != 0" class="progress-w-percent users-upload-head">
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar" role="progressbar" :style="'width: '+ ali_speed * 100 +'%'" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">关闭</button>
+                    <button v-on:click="btnSave()" type="button" class="btn btn-light" data-bs-dismiss="modal">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Token 验证说明 - 结束 -->
+
+    <teleport to="body">
+    <div class="inis-save">
+        <button v-on:click="btnSave()" type="button" class="btn btn-icon">
+            <svg t="1640673768171" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="21650" width="24" height="24"><path d="M860.2 41H163.8C96.1 41 41 96.1 41 163.8v696.3C41 927.9 96.1 983 163.8 983h696.3c67.8 0 122.9-55.1 122.9-122.9V163.8C983 96.1 927.9 41 860.2 41z m-532.5 81.9h368.6v163.8c0 22.6-18.4 41-41 41H368.6c-22.6 0-41-18.4-41-41V122.9z m573.4 737.3c0 22.6-18.4 41-41 41H163.8c-22.6 0-41-18.4-41-41V163.8c0-22.6 18.4-41 41-41h81.9v163.8c0 67.8 55.1 122.9 122.9 122.9h286.7c67.8 0 122.9-55.1 122.9-122.9V122.9h81.9c22.6 0 41 18.4 41 41v696.3z" p-id="21651" fill="#00afec"></path><path d="M593.9 276.5c28.2 0 51.2-23 51.2-51.2s-23-51.2-51.2-51.2c-28.2 0-51.2 23-51.2 51.2s23.1 51.2 51.2 51.2zM737.3 675.8H286.7c-22.5 0-41 18.4-41 41 0 22.5 18.4 41 41 41h450.6c22.5 0 41-18.4 41-41-0.1-22.5-18.5-41-41-41z" p-id="21652" fill="#00afec"></path></svg>
+        </button>
+    </div>
+    </teleport>
+</div>
+{/block}
+
+{block name="script"}
+<script src="{$CONFIG->ROOT}js/pages/edit-profile.js?v={$CONFIG->VERSION}"></script>
+{/block}

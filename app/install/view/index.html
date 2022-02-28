@@ -9,20 +9,21 @@
 	<meta name="author" content="inis,racns,兔子"/>
 
     <!-- favicon -->
-    <link rel="shortcut icon" href="index/assets/images/logo-2.png">
+    <link rel="shortcut icon" href="favicon.ico">
 
     <!-- 依赖 - 开始 -->
-    <link rel="stylesheet" href="index/assets/css/vendor/jquery-jvectormap-1.2.2.css">
-    <script src="index/assets/libs/vue3.js"></script>
-    <script src="index/assets/libs/axios.min.js"></script>
-    <script src="index/assets/libs/lottie/lottie.min.js"></script>
-    <script src="index/assets/js/utils/helper.js"></script>
+    <!--<link rel="stylesheet" href="/admin/css/vendor/jquery-jvectormap-1.2.2.css">-->
+    <script src="/admin/libs/vue3.js"></script>
+    <script src="/admin/libs/axios.min.js"></script>
+    <script src="/admin/libs/lottie/lottie.min.js"></script>
+    <script src="/admin/utils/helper.js"></script>
     <!-- 依赖 - 结束 -->
 
     <!-- APP CSS - 开始 -->
-    <link rel="stylesheet" href="index/assets/css/icons.min.css">
-    <link rel="stylesheet" href="index/assets/css/app.min.css">
-    <link rel="stylesheet" href="index/assets/css/style.css">
+    <link rel="stylesheet" href="/admin/css/icons.min.css">
+    <link rel="stylesheet" href="/admin/css/app.min.css" id="light-style">
+    <link rel="stylesheet" href="/admin/css/app-dark.min.css" id="dark-style">
+    <link rel="stylesheet" href="/admin/css/style.css">
     <!-- APP CSS - 结束 -->
     </head>
 
@@ -40,25 +41,25 @@
                                 <div id="progressbarwizard">
                                     <ul class="nav nav-tabs nav-justified nav-bordered mb-0">
                                         <li class="nav-item">
-                                            <a v-on:click="next('database')" href="javascript:;" class="nav-link rounded-0 pt-2 pb-2">
+                                            <a v-on:click="next('database')" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
                                                 <i class="mdi mdi-yin-yang mr-1"></i>
                                                 <span class="d-none d-sm-inline">数据库配置</span>
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a v-on:click="isDatabase()" href="javascript:;" class="nav-link rounded-0 pt-2 pb-2">
+                                            <a v-on:click="isDatabase()" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
                                                 <i class="mdi mdi-checkbox-marked-circle-outline mr-1"></i>
                                                 <span class="d-none d-sm-inline">环境检查</span>
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a v-on:click="isSetting()" href="javascript:;" class="nav-link rounded-0 pt-2 pb-2">
+                                            <a v-on:click="isSetting()" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
                                                 <i class="mdi mdi-account-circle mr-1"></i>
                                                 <span class="d-none d-sm-inline">帐号设置</span>
                                             </a>
                                         </li>
                                         <li v-if="is_instal" class="nav-item">
-                                            <a v-on:click="next('instal')" href="javascript:;" class="nav-link rounded-0 pt-2 pb-2">
+                                            <a v-on:click="next('instal')" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
                                                 <i class="mdi mdi-spin mdi-star mr-1"></i>
                                                 <span class="d-none d-sm-inline">安装过程</span>
                                             </a>
@@ -275,7 +276,8 @@
             </div>
         </div>
         
-        <script src="index/assets/js/app.min.js"></script>
-        <script src="index/assets/js/install/index.js"></script>
+        <script src="/admin/js/vendor.min.js"></script>
+        <script src="/admin/js/app.min.js"></script>
+        <script src="/admin/js/install/index.js"></script>
     </body>
 </html>

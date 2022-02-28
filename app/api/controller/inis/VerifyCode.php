@@ -173,6 +173,10 @@ class VerifyCode extends Base
         $template = str_replace('{valid_time}' , $valid_time, $template);
         
         // 发送评论信息到邮箱
-        $this->tool->sendMail($email,$site.'注册验证码',$template);
+        $this->tool->sendMail([
+            'email'  =>$email,
+            'title'  =>$site.'注册验证码',
+            'content'=>$template
+        ]);
     }
 }

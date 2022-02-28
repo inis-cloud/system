@@ -1,0 +1,195 @@
+{extend name="/layouts/base" /}
+
+{block name="title"}管理公告 - {$CONFIG->SITE->title}{/block}
+
+{block name="content"}
+<div id="manage-placard" class="container-xxl">
+    
+    <div class="row mt-md-4 mt-2">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    
+                    <div class="dropdown float-end">
+                        <a href="javascript:;" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a v-on:click="initData('','',true)" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-autorenew me-1"></i>刷新
+                            </a>
+                            <a v-on:click="edit = {}" data-bs-toggle="modal" data-bs-target="#fill-edit-modal" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-plus me-1"></i>添加公告
+                            </a>
+                            <a v-on:click="deletePlacard()" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi mdi-delete-outline me-1"></i>批量删除
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="row pb-2">
+                        <div class="com-md-6">
+                            <div class="card-body pt-0 pb-0">
+                                <div class="app-search d-block">
+                                    <div class="input-group">
+                                        <input v-model="search_value" v-on:keyup.enter.native="initData('','',true)" type="text" class="form-control mw-250" placeholder="标题或内容" data-bs-toggle="tooltip" data-original-title="支持模糊查询">
+                                        <span class="mdi mdi-magnify"></span>
+                                        <div class="input-group-append">
+                                            <button v-on:click="initData('','',true)" class="btn btn-primary" type="button">搜索</button>
+                                        </div>
+                                        <button v-on:click="initState()" data-bs-toggle="modal" data-bs-target="#fill-edit-modal" type="button" class="btn btn-primary d-none d-lg-block ml-2">
+                                            <i class="mdi mdi-plus me-1"></i>添加
+                                        </button>
+                                        <button v-on:click="deletePlacard()" type="button" class="btn btn-primary d-none d-lg-block ml-2">
+                                            <i class="mdi mdi mdi-delete-outline me-1"></i>批量删除
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 加载动画 开始 -->
+                    <div v-if="is_load" class="table-responsive is_load mb-2 flex-center">
+                        <div class="spinner-border text-primary m-1" role="status"></div>
+                        <div>加载中...</div>
+                    </div>
+                    <!-- 加载动画 结束 -->
+                    
+                    <div v-else-if="!is_load" class="table-responsive-sm">
+                        <table class="table table-centered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <div class="custom-control custom-checkbox">
+                                            <input v-on:click="selectAll" type="checkbox" class="custom-control-input" id="select-all">
+                                            <label class="custom-control-label" for="select-all"></label>
+                                        </div>
+                                    </th>
+                                    <th>标题</th>
+                                    <th>内容</th>
+                                    <th>分类</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="data in placard.data" :key="data.id">
+                                    <td>
+                                        <div class="custom-control custom-checkbox">
+                                            <input :name="data.id" type="checkbox" class="custom-control-input checkbox-item" :id="'select-' + data.id">
+                                            <label class="custom-control-label" :for="'select-' + data.id"></label>
+                                        </div>
+                                    </td>
+                                    <td v-on:click="initData(data.id)" data-bs-toggle="modal" data-bs-target="#fill-edit-modal" class="table-user pointer">
+                                        {{data.title || ''}}
+                                    </td>
+                                    <td>{{data.content || '无'}}</td>
+                                    <td>
+                                        <span v-if="data.type == 'all'" class="badge badge-dark-lighten badge-pill">{{sort[data.type] || '无'}}</span>
+                                        <span v-if="data.type == 'web'" class="badge badge-primary-lighten badge-pill">{{sort[data.type] || '无'}}</span>
+                                        <span v-if="data.type == 'qq'" class="badge badge-info-lighten badge-pill">{{sort[data.type] || '无'}}</span>
+                                        <span v-if="data.type == 'wechat'" class="badge badge-success-lighten badge-pill">{{sort[data.type] || '无'}}</span>
+                                    </td>
+                                    <td>{{natureTime(data.create_time)}}</td>
+                                    <td>
+                                        <button v-on:click="initData(data.id)" data-bs-toggle="modal" data-bs-target="#fill-edit-modal" type="button" class="btn btn-light btn-sm mr-1">
+                                            <i class="mdi mdi-square-edit-outline"></i>
+                                        </button>
+                                        <button v-on:click="deletePlacard(data.id)" type="button" class="btn btn-light btn-sm">
+                                            <i class="mdi mdi-delete-outline"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="flex space-between align-items-center mt-2">
+                        <div class="d-none d-md-block">
+                            共 {{placard.page}} 页 {{placard.count}} 条数据
+                        </div>
+                        <div v-if="!page_is_load && is_page_show" class="btn-group">
+                            <button v-on:click="initData('',1)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-left"></i></button>
+                            <button v-for="(item, index) in page_list" :key="index" v-on:click="initData('',item)" :class="(page == item) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-light'">
+                                {{item}}
+                            </button>
+                            <button v-on:click="initData('',placard.page)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑用户 - 结束 -->
+    <div id="fill-edit-modal" class="modal fade" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="fill-primary-modalLabel" aria-hidden="true">
+        <!-- modal-dialog-centered -->
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content modal-filled bg-primary">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="fill-primary-modalLabel">{{title}}</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="card-body pb-0">
+                            <div class="form-group row mb-3">
+                                <label class="col-3 col-form-label">标题</label>
+                                <div class="col-9">
+                                    <input v-model="edit.title" type="text" class="form-control" placeholder="公告的标题">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-3">
+                                <label class="col-3 col-form-label">分类</label>
+                                <div class="col-9">
+                                    <select id="type-select2" class="form-control select2" data-control="select2" data-dropdown-parent="#fill-edit-modal" data-placeholder="init..."></select>
+                                </div>
+                            </div>
+                            <div class="form-group row mb-2">
+                                <label class="col-3 col-form-label">跳转方式</label>
+                                <div class="col-9 flex align-center">
+                                    <div class="custom-control custom-radio mr-2">
+                                        <input v-model="jump" value="inside" type="radio" id="customRadio1" name="customRadio" class="custom-control-input form-check-input me-1">
+                                        <label class="custom-control-label pointer" for="customRadio1">站内跳转</label>
+                                    </div>
+                                    <div class="custom-control custom-radio">
+                                        <input v-model="jump" value="outside" type="radio" id="customRadio2" name="customRadio" class="custom-control-input form-check-input me-1">
+                                        <label class="custom-control-label pointer" for="customRadio2">站外跳转</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-3"></div>
+                                <div class="col-9">
+                                    <input v-show="jump == 'outside'" type="text" class="form-control" placeholder="请以http://或https://开头" v-model="edit.opt.url" onkeyup>
+                                    <div v-show="jump == 'inside'">
+                                        <select id="inside-select2" class="form-control select2"  data-control="select2" data-dropdown-parent="#fill-edit-modal" data-placeholder="init..."></select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row mb-3">
+                                <label class="col-3 col-form-label">公告内容</label>
+                                <div class="col-9">
+                                    <textarea v-model="edit.content" class="form-control domain-textarea" rows="4" placeholder="请填写公告内容"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">关闭</button>
+                    <button v-on:click="save" type="button" class="btn btn-light">保存配置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 编辑用户 - 结束 -->
+</div>
+{/block}
+
+{block name="script"}
+<script src="{$CONFIG->ROOT}js/pages/manage-placard.js?v={$CONFIG->VERSION}"></script>
+{/block}

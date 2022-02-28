@@ -1,0 +1,78 @@
+<div id="setting" class="end-bar">
+    <div class="rightbar-title">
+        <a href="javascript:void(0);" class="end-bar-toggle float-end">
+            <i class="dripicons-cross noti-icon"></i>
+        </a>
+        <h5 class="m-0">自定义UI</h5>
+    </div>
+    <div class="rightbar-content h-100" data-simplebar="">
+        
+        <div class="p-3">
+            <div class="alert alert-warning" role="alert">
+                <strong>自定义整体配色方案，侧边栏菜单等。 </strong>
+            </div>
+            
+            <h5 class="mt-3">配色方案</h5>
+            <hr class="mt-1">
+            
+            <div class="form-check form-switch mb-1">
+                <input v-model="config.mode.theme" value="light" class="form-check-input" type="radio" name="color-scheme-mode">
+                <label class="form-check-label" for="light-mode-check">日间模式</label>
+            </div>
+            
+            <div class="form-check form-switch mb-1">
+                <input v-model="config.mode.theme" value="dark" class="form-check-input" type="radio" name="color-scheme-mode">
+                <label class="form-check-label" for="dark-mode-check">夜间模式</label>
+            </div>
+            
+            <h5 class="mt-4">宽度</h5>
+            <hr class="mt-1">
+            <div class="form-check form-switch mb-1">
+                <input v-model="config.mode.layout" value="fluid" class="form-check-input" type="radio" name="width">
+                <label class="form-check-label" for="fluid-check">全屏模式</label>
+            </div>
+            
+            <div class="form-check form-switch mb-1">
+                <input v-model="config.mode.layout" value="boxed" id="setting-layout-boxed" class="form-check-input" type="radio" name="width">
+                <label class="form-check-label" for="boxed-check">盒子模型</label>
+            </div>
+            
+            <h5 class="mt-4">侧边栏</h5>
+            <hr class="mt-1">
+            <div class="form-check form-switch mb-1">
+                <input v-model="config.mode.leftbar.theme" value="default" class="form-check-input" type="radio" name="theme">
+                <label class="form-check-label" for="default-check">默认</label>
+            </div>
+            
+            <div class="form-check form-switch mb-1">
+                <input v-model="config.mode.leftbar.theme" value="light" class="form-check-input" type="radio" name="theme">
+                <label class="form-check-label" for="light-check">白色</label>
+            </div>
+            
+            <div class="form-check form-switch mb-3">
+                <input v-model="config.mode.leftbar.theme" value="dark" class="form-check-input" type="radio" name="theme">
+                <label class="form-check-label" for="dark-check">黑色</label>
+            </div>
+            
+            <div class="form-check form-switch mb-1">
+                <input v-model="config.mode.leftbar.compact" value="fixed" class="form-check-input" type="radio" name="compact">
+                <label class="form-check-label" for="fixed-check">固定</label>
+            </div>
+            
+            <div class="form-check form-switch mb-1">
+                <input v-model="config.mode.leftbar.compact" value="condensed" class="form-check-input" type="radio" name="compact">
+                <label class="form-check-label" for="condensed-check">收缩</label>
+            </div>
+            
+            <div class="form-check form-switch mb-1">
+                <input v-model="config.mode.leftbar.compact" value="scrollable" id="setting-leftbar-scrollable" class="form-check-input" type="radio" name="compact">
+                <label class="form-check-label" for="scrollable-check">滚动</label>
+            </div>
+            
+            <div class="d-grid mt-4">
+                <button v-on:click="reset()" type="button" class="btn btn-primary">重置配置</button>
+            </div>
+        </div>
+        
+    </div>
+</div>

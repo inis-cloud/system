@@ -1,0 +1,136 @@
+{extend name="/layouts/base" /}
+
+{block name="title"}管理页面 - {$CONFIG->SITE->title}{/block}
+
+{block name="content"}
+<div id="manage-page" class="container-xxl">
+    
+    <div class="row mt-md-4 mt-2">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    
+                    <div class="dropdown float-end">
+                        <a href="javascript:;" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a v-on:click="initData('','',true)" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-autorenew me-1"></i>刷新
+                            </a>
+                            <a v-on:click="clickUpload()" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-application-import me-1"></i>导入
+                            </a>
+                            <a href="/admin/write-page.html" class="dropdown-item">
+                                <i class="mdi mdi-plus me-1"></i>新建页面
+                            </a>
+                            <a v-on:click="deletePage()" href="javascript:;" class="dropdown-item">
+                                <i class="mdi mdi-delete-outline me-1"></i>批量删除
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="row pb-2">
+                        <div class="com-md-6">
+                            <div class="card-body pt-0 pb-0">
+                                <div class="app-search d-block">
+                                    <div class="input-group">
+                                        <input v-model="search_value" v-on:keyup.enter.native="initData('','',true)" type="text" class="form-control mw-250" placeholder="标题" data-toggle="tooltip" data-original-title="支持模糊查询">
+                                        <span class="mdi mdi-magnify"></span>
+                                        <div class="input-group-append">
+                                            <button v-on:click="initData('','',true)" class="btn btn-primary" type="button">搜索</button>
+                                        </div>
+                                        <input v-show="false" v-on:change="files($event)" id="input-files" type="file" multiple="multiple" accept=".md">
+                                        <a href="/admin/write-page.html" class="btn btn-primary d-none d-lg-block ml-2">
+                                            <i class="mdi mdi-plus me-1"></i>新建
+                                        </a>
+                                        <button v-on:click="clickUpload()" class="btn btn-primary d-none d-lg-block ml-2" data-bs-toggle="tooltip" data-original-title="导入Markdown文章（.md后缀文件）">
+                                            <i class="mdi mdi-application-import me-1"></i>导入
+                                        </button>
+                                        <button v-on:click="deletePage()" type="button" class="btn btn-primary d-none d-lg-block ml-2"><i class="mdi mdi-delete-outline me-1"></i>批量删除</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 加载动画 开始 -->
+                    <div v-if="is_load" class="table-responsive is_load mb-2 flex-center">
+                        <div class="spinner-border text-primary m-1" role="status"></div>
+                        <div>加载中...</div>
+                    </div>
+                    <!-- 加载动画 结束 -->
+                    
+                    <div v-else-if="!is_load" class="table-responsive-sm">
+                        <table class="table table-centered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <div class="custom-control custom-checkbox">
+                                            <input v-on:click="selectAll" type="checkbox" class="custom-control-input" id="select-all">
+                                            <label class="custom-control-label" for="select-all"></label>
+                                        </div>
+                                    </th>
+                                    <th>标题</th>
+                                    <th>别名</th>
+                                    <th>创建时间</th>
+                                    <th>显示</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="data in pages.data" :key="data.id">
+                                    <td>
+                                        <div class="custom-control custom-checkbox">
+                                            <input :name="data.id" type="checkbox" class="custom-control-input checkbox-item" :id="'select-' + data.id">
+                                            <label class="custom-control-label" :for="'select-' + data.id"></label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a :href="'/admin/write-page.html?id=' + data.id">
+                                            {{data.title}}
+                                        </a>
+                                    </td>
+                                    <td>{{data.alias}}</td>
+                                    <td>{{natureTime(data.create_time)}}</td>
+                                    <td>
+                                        <div>
+                                            <input v-on:click="isShow(data.id)" v-model="is_show" :value="data.id" :id="'enable-' + data.id" type="checkbox" data-switch="success">
+                                            <label :for="'enable-' + data.id" data-on-label="Yes" data-off-label="No" class="mb-0 d-block"></label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a :href="'/admin/write-page.html?id=' + data.id" class="btn btn-light btn-sm mr-1">
+                                            <i class="mdi mdi-square-edit-outline"></i>
+                                        </a>
+                                        <button v-on:click="deletePage(data.id)" type="button" class="btn btn-light btn-sm">
+                                            <i class="mdi mdi-delete-outline"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="flex space-between align-items-center mt-2">
+                        <div class="d-none d-md-block">
+                            共 {{pages.page}} 页 {{pages.count}} 条数据
+                        </div>
+                        <div v-if="!page_is_load && is_page_show" class="btn-group">
+                            <button v-on:click="initData('',1)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-left"></i></button>
+                            <button v-for="(item, index) in page_list" :key="index" v-on:click="initData('',item)" :class="(page == item) ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-light'">{{item}}</button>
+                            <button v-on:click="initData('',pages.page)" type="button" class="btn btn-light btn-sm"><i class="mdi mdi-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{/block}
+
+{block name="script"}
+<script src="{$CONFIG->ROOT}js/pages/manage-page.js?v={$CONFIG->VERSION}"></script>
+{/block}

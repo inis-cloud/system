@@ -96,7 +96,7 @@ return [
         'author'  =>  $author,
         'docsify' =>  $docsify . 'file',
         'content' =>  '可以获取后端目录下的文件信息等',
-        'scenes'  =>  ['文件系统','随机图','随机文本']
+        'scenes'  =>  ['文件系统','随机图','随机文本','违禁词']
     ],
     [
         'title'   =>  '聚合 - 接口',

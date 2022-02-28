@@ -369,7 +369,11 @@ class Comments extends Base
                         // 模板变量替换
                         $template = str_replace($tags,$replace,$template);
                         // 发送评论信息到邮箱
-                        $this->tool->sendMail($email['email'],$site.'评论通知',$template);
+                        $this->tool->sendMail([
+                            'email'  =>$email['email'],
+                            'title'  =>$site.'评论通知',
+                            'content'=>$template
+                        ]);
                     }
                 }
             }
@@ -381,7 +385,11 @@ class Comments extends Base
             // 模板变量替换
             $template = str_replace($tags,$replace,$template);
             // 发送评论信息到邮箱
-            $this->tool->sendMail($email,$site.'评论通知',$template);
+            $this->tool->sendMail([
+                'email'  =>$email,
+                'title'  =>$site.'评论通知',
+                'content'=>$template
+            ]);
             
             // 用户间评论
             if (!empty($param['pid']) and (int)$param['pid'] != 0) {
@@ -397,7 +405,11 @@ class Comments extends Base
                         // 模板变量替换
                         $template = str_replace($tags,$replace,$template);
                         // 发送评论信息到邮箱
-                        $this->tool->sendMail($email['email'], $site.'评论通知',$template);
+                        $this->tool->sendMail([
+                            'email'  =>$email['email'],
+                            'title'  =>$site.'评论通知',
+                            'content'=>$template
+                        ]);
                     }
                 }
             }

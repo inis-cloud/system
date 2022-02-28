@@ -10,11 +10,11 @@ use Firebase\JWT\{JWT, ExpiredException, BeforeValidException, SignatureInvalidE
 
 class handle
 {
-    protected $key = '';
+    protected $config;
     
     public function __construct()
     {
-        $this->key = Config::get('app.jwt_key');
+        $this->config = Config::get('inis');
     }
     
     /**
@@ -44,8 +44,6 @@ class handle
         
         $mode   = !empty($param['mode']) ? $param['mode'] : null;
         
-        // $request->param = 'ThinkPHP';
-        
         // ↑↑↑ 前置中间件执行区域 ↑↑↑
         $reponse = $next($request);
         // ↓↓↓ 后置中间件执行区域 ↓↓↓
@@ -69,26 +67,26 @@ class handle
                 $msg  = '非法访问！';
                 
                 // 禁止未登录操作
-                if(isset($param['login-token']) or isset($header['login-token'])){
+                if (isset($param['login-token']) or isset($header['login-token'])) {
                     
                     $login_token = (isset($header['login-token'])) ? $header['login-token'] : $param['login-token'];
                     
-                    try{
+                    try {
                         
                         JWT::$leeway = 60;
-                        $decoded = JWT::decode($login_token, $this->key, ['HS256']);
+                        $decoded = JWT::decode($login_token, $this->config['jwt']['key'], [$this->config['jwt']['encrypt']]);
                         $arr = (array) $decoded;
                         
-                    }catch (SignatureInvalidException $e){
+                    } catch (SignatureInvalidException $e){
                         $msg = '签名不正确！';
                         $reponse = json(['data'=>$data,'code'=>$code,'msg'=>$msg]);
-                    }catch (BeforeValidException $e){
+                    } catch (BeforeValidException $e){
                         $msg = 'login-token失效！';
                         $reponse = json(['data'=>$data,'code'=>$code,'msg'=>$msg]);
-                    }catch (ExpiredException $e){
+                    } catch (ExpiredException $e){
                         $msg = 'login-token失效！';
                         $reponse = json(['data'=>$data,'code'=>$code,'msg'=>$msg]);
-                    }catch (Exception $e){
+                    } catch (Exception $e){
                         $msg = '未知错误！';
                         $reponse = json(['data'=>$data,'code'=>$code,'msg'=>$msg]);
                     };

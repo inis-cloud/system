@@ -1,0 +1,296 @@
+<div id="nav" class="navbar-custom">
+    
+    <ul class="list-unstyled topbar-menu float-end mb-0">
+        
+        <li class="dropdown notification-list d-lg-none">
+            <a class="nav-link dropdown-toggle arrow-none" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                <i class="dripicons-search noti-icon text-info"></i>
+            </a>
+        </li>
+        
+        <li class="dropdown notification-list lottie">
+            <a data-bs-toggle="modal" data-bs-target="#update-info" class="nav-link dropdown-toggle arrow-none" href="javascript:;">
+                <!-- 图标 -->
+                <div id="lottie-beil"></div>
+                <!-- 点点 -->
+                <span v-show="update.is_show" class="bg-danger dots"></span>
+            </a>
+        </li>
+        
+        <!-- d-sm-inline-block -->
+        <li class="dropdown notification-list d-none">
+            <a class="nav-link dropdown-toggle arrow-none" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                <i class="dripicons-view-apps noti-icon" style="color:#50b5ff"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated dropdown-lg p-0">
+                
+                <div class="p-2">
+                    <div class="row g-0">
+                        <div class="col">
+                            <a class="dropdown-icon-item" href="#">
+                                <img src="{$CONFIG->USER->head_img}" alt="slack">
+                                <span>Slack</span>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a class="dropdown-icon-item" href="#">
+                                <img src="{$CONFIG->USER->head_img}" alt="Github">
+                                <span>GitHub</span>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a class="dropdown-icon-item" href="#">
+                                <img src="{$CONFIG->USER->head_img}" alt="dribbble">
+                                <span>Dribbble</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-0">
+                        <div class="col">
+                            <a class="dropdown-icon-item" href="#">
+                                <img src="{$CONFIG->USER->head_img}" alt="bitbucket">
+                                <span>Bitbucket</span>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a class="dropdown-icon-item" href="#">
+                                <img src="{$CONFIG->USER->head_img}" alt="dropbox">
+                                <span>Dropbox</span>
+                            </a>
+                        </div>
+                        <div class="col">
+                            <a class="dropdown-icon-item" href="#">
+                                <img src="{$CONFIG->USER->head_img}" alt="G Suite">
+                                <span>G Suite</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </li>
+        
+        <li class="notification-list">
+            <a class="nav-link end-bar-toggle" href="javascript:;">
+                <i class="dripicons-gear noti-icon" style="color:#50b5ff"></i>
+            </a>
+        </li>
+        
+        <li class="dropdown notification-list">
+            <a class="nav-link dropdown-toggle nav-user arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                <span class="account-user-avatar"> 
+                    <img src="{$CONFIG->USER->head_img}" alt="{$CONFIG->USER->description}" class="rounded-circle">
+                </span>
+                <span>
+                    <span class="account-user-name">{$CONFIG->USER->nickname}</span>
+                    <span class="account-position">{$CONFIG->USER->email}</span>
+                </span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated topbar-dropdown-menu profile-dropdown">
+                
+                <div class=" dropdown-header noti-title">
+                    <h6 class="text-overflow m-0">{$CONFIG->USER->nickname}，您好！</h6>
+                </div>
+                
+                <a href="/admin/edit-profile.html" class="dropdown-item notify-item">
+                    <i class="mdi mdi-account-circle me-1"></i>
+                    <span>个人资料</span>
+                </a>
+                
+                <a href="/admin/write-article.html" class="dropdown-item notify-item">
+                    <i class="mdi mdi-account-edit me-1"></i>
+                    <span>撰写文章</span>
+                </a>
+                
+                <a href="/admin/system.html" class="dropdown-item notify-item">
+                    <i class="mdi mdi-lifebuoy me-1"></i>
+                    <span>系统配置</span>
+                </a>
+                
+                <a href="/admin/comm/logout" class="dropdown-item notify-item">
+                    <i class="mdi mdi-logout me-1"></i>
+                    <span>退出登录</span>
+                </a>
+            </div>
+        </li>
+        
+    </ul>
+    <button class="button-menu-mobile open-left">
+        <i class="mdi mdi-menu"></i>
+    </button>
+    <div class="app-search dropdown d-none d-lg-block">
+        <div class="from">
+            <div class="input-group">
+                <input v-model="search_key" type="text" class="form-control dropdown-toggle" placeholder="关键词搜索" id="top-search">
+                <span class="mdi mdi-magnify search-icon"></span>
+                <button class="input-group-text btn-info" type="button">搜索</button>
+            </div>
+        </div>
+        
+        <div class="dropdown-menu dropdown-menu-animated dropdown-lg" id="search-dropdown">
+            
+            <div class="dropdown-header noti-title">
+                <h5 class="text-overflow mb-2">搜索到 <span class="text-danger">{{search.result.length || 0}}</span> 条内容</h5>
+            </div>
+            
+            <a v-for="(item, index) in search.result" :key="index" :href="item.url" class="dropdown-item notify-item">
+                <i class="font-16 me-1">#</i>
+                <span>{{item.name}}</span>
+            </a>
+        </div>
+    </div>
+    
+    <teleport to="body">
+    <div v-show="update.genuine" id="update-info" class="modal fade customize-progress" tabindex="-1" role="dialog" aria-labelledby="primary-header-modalLabel" style="display: none;" aria-hidden="true">
+        <div v-show="!update.is_show" class="modal-dialog">
+            <div class="modal-content modal-filled bg-success">
+                <div class="modal-body p-4">
+                    <div class="text-center">
+                        <i class="dripicons-checkmark h1"></i>
+                        <h4 class="mt-2">已经是最新版！</h4>
+                        <p class="mt-3">
+                            当前系统暂无更新！更多资讯您可以前往
+                            <a href="//inis.cc" target="_blank" class="text-white">inis 社区</a>
+                            获取
+                        </p>
+                        <a href="//inis.cc" target="_blank" class="btn btn-light my-2 mr-2 me-2">inis 社区</a>
+                        <button v-on:click="restore()" type="button" class="btn btn-light my-2" data-toggle="tooltip" data-original-title="进行系统修复，不会删除原有数据">系统修复</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-show="update.is_show" class="modal-dialog modal-lg">
+            <div class="modal-content">
+                
+                <div class="modal-body p-1 pt-3 pb-3 p-md-4">
+                    <div class="text-center">
+                        <i class="dripicons-information h1 text-info"></i>
+                        <h4 class="mt-2">{{update.info.title}}</h4>
+                    </div>
+                    
+                    <div id="progressbarwizard">
+                    
+                        <ul class="nav nav-tabs nav-justified nav-bordered mb-0">
+                            <li class="nav-item">
+                                <a href="#update-content" data-toggle="tab" class="nav-link rounded-0 pt-2 pb-2 active">
+                                    <i class="mdi mdi-checkbox-marked-circle-outline mr-1"></i>
+                                    <span class="d-none d-sm-inline">更新内容</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#update-notes" data-toggle="tab" class="nav-link rounded-0 pt-2 pb-2">
+                                    <i class="mdi mdi-spin mdi-star mr-1"></i>
+                                    <span class="d-none d-sm-inline">更新过程</span>
+                                </a>
+                            </li>
+                        </ul>
+                    
+                        <div class="tab-content b-0 mb-0">
+                    
+                            <div id="bar" class="progress mb-3" style="height: 7px;">
+                                <div class="bar progress-bar progress-bar-striped progress-bar-animated bg-success"></div>
+                            </div>
+                    
+                            <div class="tab-pane active" id="update-content">
+                                <div class="alert alert-light bg-light text-dark border-0" role="alert">
+                                    <span>版本号：{{update.info.version}}</span>
+                                    <span class="float-right">更新时间：{{natureTime(update.info.update_time)}}</span>
+                                </div>
+                                <div class="customize-scroll" style="max-height:450px">
+                                    <div class="table-responsive-sm p-2">
+                                        <table class="table customize-table table-centered mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>序号</th>
+                                                    <th>说明</th>
+                                                    <th>-</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(item, index) in update.content" :key="index">
+                                                    <td>{{index + 1}}</td>
+                                                    <td>{{item}}</td>
+                                                    <td>
+                                                        <svg t="1642523210900" class="icon" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1760" width="12" height="12"><path d="M483.84768 867.808C466.37568 885.792 441.73568 896 415.87968 896 390.05568 896 365.41568 885.792 347.94368 867.808L27.46368 547.552C-9.17632 508.864-9.17632 450.336 27.46368 411.648 44.26368 394.944 67.30368 385.088 91.68768 384.256 118.72768 383.008 144.93568 393.024 163.46368 411.648L415.87968 664 860.61568 219.552C878.31168 201.952 902.88768 192 928.58368 192 954.24768 192 978.82368 201.952 996.51968 219.552 1033.15968 258.208 1033.15968 316.704 996.51968 355.36L483.84768 867.808Z" p-id="1761" fill="#707070"></path></svg>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div v-if="!update.fulfill && update.is_show" class="flex-center mt-2">
+                                    <ul class="list-inline mb-0 wizard">
+                                        <li class="next list-inline-item float-right">
+                                            <button v-on:click="getNewTables()" type="button" class="btn btn-info">开始更新</button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane" id="update-notes">
+                                <div v-if="update.fulfill" class="alert alert-success" role="alert">
+                                    <i class="dripicons-checkmark mr-2"></i> 更新 <strong>已完成</strong> ！
+                                </div>
+                                <div v-else class="alert alert-info" role="alert">
+                                    <i class="dripicons-information mr-2"></i> 更新完成之前，请 <strong>不要刷新</strong> 或 <strong>关闭</strong> 当前窗口
+                                </div>
+                                <div class="customize-scroll" style="max-height:450px">
+                                    <div class="table-responsive-sm p-2">
+                                        <table class="table customize-table table-centered mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>名称</th>
+                                                    <th>-</th>
+                                                    <th>说明</th>
+                                                    <th>状态</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(item, index) in update.notes" :key="index">
+                                                    <td>{{item.name || ''}}</td>
+                                                    <td>
+                                                        <svg v-if="item.state == 'success'" t="1642523210900" class="icon" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1760" width="12" height="12"><path d="M483.84768 867.808C466.37568 885.792 441.73568 896 415.87968 896 390.05568 896 365.41568 885.792 347.94368 867.808L27.46368 547.552C-9.17632 508.864-9.17632 450.336 27.46368 411.648 44.26368 394.944 67.30368 385.088 91.68768 384.256 118.72768 383.008 144.93568 393.024 163.46368 411.648L415.87968 664 860.61568 219.552C878.31168 201.952 902.88768 192 928.58368 192 954.24768 192 978.82368 201.952 996.51968 219.552 1033.15968 258.208 1033.15968 316.704 996.51968 355.36L483.84768 867.808Z" p-id="1761" fill="#707070"></path></svg>
+                                                        <span v-else-if="empty(item.state)">-</span>
+                                                        <svg v-else-if="item.state == 'cache'" t="1642599159698" class="icon" style="margin-left: -2px;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11220" width="16" height="16"><path d="M512.66280359 912.83100045c-227.88660496 0-413.26540601-185.37880105-413.26540601-413.265406s185.37880105-413.29486395 413.26540601-413.29486393c75.79527335 0 149.94090218 20.7089301 214.40959852 59.87325807 19.97248167 12.15139925 26.30593824 38.17748707 14.18399693 58.13523979-12.15139925 19.94302372-38.14802914 26.2764803-58.13523977 14.18399694-51.19789547-31.15176897-110.17268647-47.58929812-170.45835568-47.58929814-181.22523186 0-328.66220933 147.46643541-328.66220933 328.69166727s147.43697747 328.66220933 328.66220933 328.66220934 328.69166727-147.43697747 328.69166728-328.66220934c0-56.79490361-14.71423981-112.750256-42.52253285-161.84190894-11.53278256-20.32597692-4.37450373-46.16058815 15.92201524-57.67864175 20.3848928-11.53278256 46.13113022-4.37450373 57.67864174 15.92201525 35.04021673 61.80275299 53.5398015 132.20722375 53.5398015 203.58380647-0.01472898 227.90133391-185.42298797 413.28013498-413.30959291 413.28013497z" fill="#707070" p-id="11221"></path><path d="M679.54201986 596.51166697h-160.54575968c-51.75759629 0-93.83826009-42.0806638-93.83826011-93.8382601v-160.54575969c0-23.36014448 18.95618282-42.30159835 42.30159834-42.30159833s42.30159835 18.95618282 42.30159834 42.30159833v160.54575969c0 5.0962232 4.12411126 9.22033445 9.22033445 9.22033446h160.5457597c23.36014448 0 42.30159835 18.95618282 42.30159833 42.30159832 0.01472898 23.37487345-18.9267249 42.31632729-42.28686937 42.31632732z" fill="#707070" p-id="11222"></path></svg>
+                                                        <span v-else-if="item.state == 'error' && item.reset" v-on:click="tableInfo(item.id)" class="pointer">
+                                                            <svg t="1642599497768" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="13439" width="16" height="16"><path d="M684.032 403.456q-17.408-8.192-15.872-22.016t11.776-22.016q3.072-2.048 19.968-15.872t41.472-33.28q-43.008-49.152-102.4-77.312t-129.024-28.16q-64.512 0-120.832 24.064t-98.304 66.048-66.048 98.304-24.064 120.832q0 63.488 24.064 119.808t66.048 98.304 98.304 66.048 120.832 24.064q53.248 0 100.864-16.896t87.04-47.616 67.584-72.192 41.472-90.624q7.168-23.552 26.624-38.912t46.08-15.36q31.744 0 53.76 22.528t22.016 53.248q0 14.336-5.12 27.648-21.504 71.68-63.488 132.096t-99.84 103.936-128.512 68.096-148.48 24.576q-95.232 0-179.2-35.84t-145.92-98.304-98.304-145.92-36.352-178.688 36.352-179.2 98.304-145.92 145.92-98.304 179.2-36.352q105.472 0 195.584 43.52t153.6 118.272q23.552-17.408 39.424-30.208t19.968-15.872q6.144-5.12 13.312-7.68t13.312 0 10.752 10.752 6.656 24.576q1.024 9.216 2.048 31.232t2.048 51.2 1.024 60.416-1.024 58.88q-1.024 34.816-16.384 50.176-8.192 8.192-24.576 9.216t-34.816-3.072q-27.648-6.144-60.928-13.312t-63.488-14.848-53.248-14.336-29.184-9.728z" p-id="13440" fill="#707070"></path></svg>
+                                                            刷新
+                                                        </span>
+                                                    </td>
+                                                    <td>{{item.des || ''}}</td>
+                                                    <td>
+                                                        <span v-if="item.state == 'success'"><i class="mdi mdi-circle text-success"></i> 完成</span>
+                                                        <span v-if="item.state == 'cache'"><i class="mdi mdi-circle text-info"></i> 等待中</span>
+                                                        <span v-else-if="empty(item.state)"><i class="mdi mdi-circle text-warning"></i> 获取中</span>
+                                                        <span v-else-if="item.state == 'error'"><i class="mdi mdi-circle text-danger"></i> 失败</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div> 
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div v-if="!update.genuine" id="update-info" class="modal fade" tabindex="-1" role="dialog" aria-modal="true" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content modal-filled bg-danger">
+                <div class="modal-body p-4">
+                    <div class="text-center">
+                        <i class="dripicons-wrong h1"></i>
+                        <p class="mt-3">您的系统未添加授权，无法获取更新信息，请前往<a href="//inis.cc" target="_blank" class="text-white">inis 社区</a>添加授权！</p>
+                        <a href="//inis.cc/admin/comm/login?url=/admin/warrant" target="_blank" class="btn btn-light my-2">inis 社区</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </teleport>
+</div>

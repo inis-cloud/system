@@ -66,7 +66,7 @@ class Other extends Base
         $result = [];
         
         // 存在的方法
-        $method = ['ua','qq','icp','ping','hot'];
+        $method = ['ua','qq','icp','ping','hot','domain'];
         
         // 动态方法且方法存在
         if (in_array($IID, $method)) $result = $this->$IID($param);
@@ -384,5 +384,4 @@ class Other extends Base
         
         return $result;
     }
-    
 }
