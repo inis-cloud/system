@@ -13,30 +13,30 @@
   array (
     'cache/adapter-common' => 
     array (
+      'pretty_version' => '1.3.0',
+      'version' => '1.3.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '8788309be72aa7be69b88cdc0687549c74a7d479',
+    ),
+    'cache/filesystem-adapter' => 
+    array (
       'pretty_version' => '1.2.0',
       'version' => '1.2.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '6b87c5cbdf03be42437b595dbe5de8e97cd1d497',
+      'reference' => 'f1faaae40aaa696ef899cef6f6888aedb90b419b',
     ),
-    'cache/filesystem-adapter' => 
+    'cache/tag-interop' => 
     array (
       'pretty_version' => '1.1.0',
       'version' => '1.1.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '1501ca71502f45114844824209e6a41d87afb221',
-    ),
-    'cache/tag-interop' => 
-    array (
-      'pretty_version' => '1.0.1',
-      'version' => '1.0.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '909a5df87e698f1665724a9e84851c11c45fbfb9',
+      'reference' => 'b062b1d735357da50edf8387f7a8696f3027d328',
     ),
     'curl/curl' => 
     array (
@@ -175,12 +175,12 @@
     ),
     'phpmailer/phpmailer' => 
     array (
-      'pretty_version' => 'v6.5.3',
-      'version' => '6.5.3.0',
+      'pretty_version' => 'v6.6.0',
+      'version' => '6.6.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'baeb7cde6b60b1286912690ab0693c7789a31e71',
+      'reference' => 'e43bac82edc26ca04b36143a48bde1c051cfd5b1',
     ),
     'psr/cache' => 
     array (
@@ -300,17 +300,17 @@
     ),
     'symfony/polyfill-mbstring' => 
     array (
-      'pretty_version' => 'v1.23.1',
-      'version' => '1.23.1.0',
+      'pretty_version' => 'v1.25.0',
+      'version' => '1.25.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '9174a3d80210dca8daa7f31fec659150bbeabfc6',
+      'reference' => '0abb51d2f102e00a4eefcf46ba7fec406d245825',
     ),
     'symfony/polyfill-php72' => 
     array (
-      'pretty_version' => 'v1.23.0',
-      'version' => '1.23.0.0',
+      'pretty_version' => 'v1.25.0',
+      'version' => '1.25.0.0',
       'aliases' => 
       array (
       ),
@@ -318,39 +318,39 @@
     ),
     'symfony/polyfill-php80' => 
     array (
-      'pretty_version' => 'v1.23.1',
-      'version' => '1.23.1.0',
+      'pretty_version' => 'v1.25.0',
+      'version' => '1.25.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '1100343ed1a92e3a38f9ae122fc0eb21602547be',
+      'reference' => '4407588e0d3f1f52efb65fbe92babe41f37fe50c',
     ),
     'symfony/var-dumper' => 
     array (
-      'pretty_version' => 'v4.4.34',
-      'version' => '4.4.34.0',
+      'pretty_version' => 'v4.4.39',
+      'version' => '4.4.39.0',
       'aliases' => 
       array (
       ),
-      'reference' => '2d0c056b2faaa3d785bdbd5adecc593a5be9c16e',
+      'reference' => '35237c5e5dcb6593a46a860ba5b29c1d4683d80e',
     ),
     'tightenco/collect' => 
     array (
-      'pretty_version' => 'v8.76.1',
-      'version' => '8.76.1.0',
+      'pretty_version' => 'v8.83.2',
+      'version' => '8.83.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'c7e8131653480146d4c32c2523d53e0e59a7af19',
+      'reference' => 'd9c66d586ec2d216d8a31283d73f8df1400cc722',
     ),
     'topthink/framework' => 
     array (
-      'pretty_version' => 'v6.0.9',
-      'version' => '6.0.9.0',
+      'pretty_version' => 'v6.0.12',
+      'version' => '6.0.12.0',
       'aliases' => 
       array (
       ),
-      'reference' => '0b5fb453f0e533de3af3a1ab6a202510b61be617',
+      'reference' => 'e478316ac843c1a884a3b3a7a94db17c4001ff5c',
     ),
     'topthink/think' => 
     array (
@@ -363,12 +363,12 @@
     ),
     'topthink/think-helper' => 
     array (
-      'pretty_version' => 'v3.1.5',
-      'version' => '3.1.5.0',
+      'pretty_version' => 'v3.1.6',
+      'version' => '3.1.6.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'f98e3ad44acd27ae85a4d923b1bdfd16c6d8d905',
+      'reference' => '769acbe50a4274327162f9c68ec2e89a38eb2aff',
     ),
     'topthink/think-installer' => 
     array (
@@ -390,12 +390,12 @@
     ),
     'topthink/think-orm' => 
     array (
-      'pretty_version' => 'v2.0.45',
-      'version' => '2.0.45.0',
+      'pretty_version' => 'v2.0.52',
+      'version' => '2.0.52.0',
       'aliases' => 
       array (
       ),
-      'reference' => '3dcf9af447b048103093840833e8c74ab849152f',
+      'reference' => '407a60658f37fc57422ab95a9922c6f69af90f46',
     ),
     'topthink/think-template' => 
     array (

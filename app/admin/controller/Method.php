@@ -123,7 +123,7 @@ class Method extends Base
                     $users->save();
                     
                     // 清除缓存
-                    Cache::tag('users')->clear();
+                    Cache::tag(['users','group'])->clear();
                     
                     if ($clear_login) {
                         
@@ -193,7 +193,7 @@ class Method extends Base
             $users->save();
             
             // 清除缓存
-            Cache::tag('users')->clear();
+            Cache::tag(['users','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -242,7 +242,7 @@ class Method extends Base
             Users::destroy($id_arr);
             
             // 清除缓存
-            Cache::tag('users')->clear();
+            Cache::tag(['users','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -297,7 +297,7 @@ class Method extends Base
             ));
             
             // 清除缓存
-            Cache::tag('article')->clear();
+            Cache::tag(['article','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -363,7 +363,7 @@ class Method extends Base
             }
             
             // 清除缓存
-            Cache::tag('page')->clear();
+            Cache::tag(['page','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -390,7 +390,7 @@ class Method extends Base
             Page::destroy($id_arr);
             
             // 清除缓存
-            Cache::tag('page')->clear();
+            Cache::tag(['page','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -469,7 +469,7 @@ class Method extends Base
             $sort->save();
             
             // 清除缓存
-            Cache::tag('article-sort')->clear();
+            Cache::tag(['article-sort','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -487,7 +487,7 @@ class Method extends Base
             ArticleSort::destroy($param['id']);
             
             // 清除缓存
-            Cache::tag('article-sort')->clear();
+            Cache::tag(['article-sort','group'])->clear();
             
             $data = [];
             $code = 200;
@@ -557,7 +557,7 @@ class Method extends Base
             $sort->save();
             
             // 清除缓存
-            Cache::tag('links-sort')->clear();
+            Cache::tag(['links-sort','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -575,7 +575,7 @@ class Method extends Base
             LinksSort::destroy($param['id']);
             
             // 清除缓存
-            Cache::tag('links-sort')->clear();
+            Cache::tag(['links-sort','group'])->clear();
             
             $data = [];
             $code = 200;
@@ -628,7 +628,7 @@ class Method extends Base
             $links->save();
             
             // 清除缓存
-            Cache::tag('links')->clear();
+            Cache::tag(['links','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -646,7 +646,7 @@ class Method extends Base
             Links::destroy($param['id']);
             
             // 清除缓存
-            Cache::tag('links')->clear();
+            Cache::tag(['links','group'])->clear();
             
             $data = [];
             $code = 200;
@@ -686,7 +686,7 @@ class Method extends Base
             $banner->save();
             
             // 清除缓存
-            Cache::tag('banner')->clear();
+            Cache::tag(['banner','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -704,7 +704,7 @@ class Method extends Base
             Banner::destroy($param['id']);
             
             // 清除缓存
-            Cache::tag('banner')->clear();
+            Cache::tag(['banner','group'])->clear();
             
             $data = [];
             $code = 200;
@@ -756,7 +756,7 @@ class Method extends Base
             $tag->save();
             
             // 清除缓存
-            Cache::tag('tag')->clear();
+            Cache::tag(['tag','group'])->clear();
 
             return $this->create($data, $msg, $code);
         }
@@ -778,7 +778,7 @@ class Method extends Base
             Tag::destroy($param['id']);
             
             // 清除缓存
-            Cache::tag('tag')->clear();
+            Cache::tag(['tag','group'])->clear();
             
             $data = [];
             $code = 200;
@@ -803,7 +803,7 @@ class Method extends Base
             Article::destroy($param['id'], $model);
             
             // 清除缓存
-            Cache::tag('article')->clear();
+            Cache::tag(['article','group'])->clear();
             
             $data = [];
             $code = 200;
@@ -826,7 +826,7 @@ class Method extends Base
             $article->restore();
             
             // 清除缓存
-            Cache::tag('article')->clear();
+            Cache::tag(['article','group'])->clear();
             
             $data = [];
             $code = 200;
@@ -862,7 +862,7 @@ class Method extends Base
                 $comments->save();
                 
                 // 清除缓存
-                Cache::tag('comments')->clear();
+                Cache::tag(['comments','group'])->clear();
                 
                 $code = 200;
                 $msg  = '更新成功！';
@@ -893,7 +893,7 @@ class Method extends Base
             Comments::destroy($id_arr);
             
             // 清除缓存
-            Cache::tag('comments')->clear();
+            Cache::tag(['comments','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -968,7 +968,7 @@ class Method extends Base
             $music->save();
             
             // 清理缓存
-            Cache::tag('music')->clear();
+            Cache::tag(['music','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -997,7 +997,7 @@ class Method extends Base
             Music::destroy($id_arr);
             
             // 清除缓存
-            Cache::tag('music')->clear();
+            Cache::tag(['music','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -1063,7 +1063,7 @@ class Method extends Base
             $placard->save();
             
             // 清理缓存
-            Cache::tag('placard')->clear();
+            Cache::tag(['placard','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -1090,7 +1090,7 @@ class Method extends Base
             Placard::destroy($id_arr);
             
             // 清除缓存
-            Cache::tag('placard')->clear();
+            Cache::tag(['placard','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }

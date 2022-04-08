@@ -78,6 +78,9 @@
                             enable: true,       // 启用代码高亮
                             lineNumber: true    // 启用行号
                         },
+                        math: {
+                            engine: 'MathJax',
+                        }
                     },
                     // 编辑器异步渲染完成后的回调方法
                     after: () => {

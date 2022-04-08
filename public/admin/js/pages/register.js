@@ -106,7 +106,7 @@
                     const code = document.querySelector("#code");
                     
                     let timeStop = setInterval(()=>{
-                    
+                        
                         time--;
                         
                         if (time > 0) {

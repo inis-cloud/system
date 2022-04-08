@@ -94,12 +94,14 @@
                             // style: 'monokai',   // 样式
                         },
                         markdown:{
-                            autoSpace: true,    // 自动空格
-                            fixTermTypo: true,  // 自动矫正术语
-                            toc: true,          // 插入目录
-                            paragraphBeginningSpace: true,  // 首行缩进二字符
-                            sanitize: true,     // 启用过滤 XSS
+                            // autoSpace: true,    // 自动空格
+                            // fixTermTypo: true,  // 自动矫正术语
+                            // toc: true,          // 插入目录
+                            // paragraphBeginningSpace: true,  // 首行缩进二字符
                             // mark: true,         // 	启用 mark 标记
+                        },
+                        math: {
+                            engine: 'MathJax',
                         }
                     },
                     // 编辑器异步渲染完成后的回调方法

@@ -38,7 +38,7 @@ class handle
         $method = ['POST','PUT','DELETE'];
         // 允许免登陆的请求接口
         $obtain = ['search','comments','verify-code','test','proxy','cache'];
-        $allow  = ['users?mode=login','users?mode=register'];
+        $allow  = ['users?mode=login','users?mode=register','users?mode=check'];
         // 请求接口地址
         $path   = $request->pathinfo();
         
@@ -62,7 +62,7 @@ class handle
                 
             } else {
                 
-                $data = [];
+                $data = [$path];
                 $code = 403;
                 $msg  = '非法访问！';
                 

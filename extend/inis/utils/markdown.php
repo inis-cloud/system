@@ -152,7 +152,7 @@ class markdown
             if ($tabs_type == "default") {
                 // Tab 头
                 $tab .= "<li class=\"nav-item\">
-                    <a href=\"#$id\" data-toggle=\"tab\" aria-expanded=\"false\" class=\"nav-link $active\">
+                    <a href=\"#$id\" data-toggle=\"tab\" data-bs-toggle=\"tab\" aria-expanded=\"false\" class=\"nav-link $active\">
                         <span class=\"$item_class\" $style>$name</span>
                     </a>
                 </li>";

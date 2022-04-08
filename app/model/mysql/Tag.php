@@ -60,7 +60,7 @@ class Tag extends Model
         
         // 获取当前分类
         $tag    = self::where($config['where'])->find($id);
-        $where   = ['tag_id','like','%|'.$id.'|%'];
+        $where   = ['tag_id','like','%|'.$tag['id'].'|%'];
         
         if ($tag) {
             // 文章总数量

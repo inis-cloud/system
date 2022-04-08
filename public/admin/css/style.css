@@ -424,7 +424,7 @@ img.rounded-circle.img-thumbnail {
 }
 
 
-.dots{height:5px;width:5px;font-size:0;text-align:center;padding:0;position:absolute;top:20px;right:10px;animation:shadow-pulse-dots 1s infinite;border-radius:50%;-webkit-border-radius:50%}
+.dots{height:5px;width:5px;font-size:0;text-align:center;padding:0;position:absolute;top:0px;right:5px;animation:shadow-pulse-dots 1s infinite;border-radius:50%;-webkit-border-radius:50%}
 .count-mail{height:5px;width:5px;font-size:10px;text-align:center;line-height:15px;padding:0;position:absolute;top:25px;right:10px;animation:shadow-pulse 1s infinite;border-radius:50%}
 @keyframes shadow-pulse-dots{
     0%{box-shadow:0 0 0 0px rgba(230,65,65,0.2)}

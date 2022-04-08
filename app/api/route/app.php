@@ -30,7 +30,7 @@ Route::group(function () {
     Route::resource(':INAME', 'inis.:INAME')->rest([
         'read'  =>['GET'   , '/:IID', 'read'],
         'update'=>['PUT'   , '/:IID', 'update'],
-        'delete'=>['DELETE', '/:IID', 'delete']
+        'delete'=>['DELETE', '/:IID', 'delete'],
     ]);
     Route::resource('links-sort'    , 'inis.LinksSort')->rest([
         'read'  =>['GET'   , '/:IID', 'read'],

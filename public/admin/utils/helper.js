@@ -18,176 +18,168 @@ class helper{
         this.config = {
             log: false
         }
-        
-        /* 定义 get 方法 */
-        const getCookie     = (name) => this.getCookie(name)
-        const query         = {string:(name)=>this.getQueryString(name)}
-        const page          = {name:()=>this.getPageName()}
-        const strCount      = {count:(string,search)=>this.getStringCount(string,search)}
-        const getStorage    = (namespace,key) => this.getStorage(namespace,key)
-        const getBrowser    = (all) => this.getBrowser(all)
-        const getRandomNum  = {num:(min,max) => this.getRandomNum(min,max)}
-        const getKeyName    = {name:(keycode)=>this.getKeyName(keycode)}
-        
+
         // 链式操作 get 属性
-        this.get         = { cookie:getCookie, query, page, string:strCount, storage:getStorage, browser:getBrowser, random:getRandomNum, key:getKeyName }
+        this.get         = {
+            cookie : (name)  => this.getCookie(name),
+            query  : {
+                string:(name) => this.getQueryString(name)
+            },
+            page   : {
+                name:()=>this.getPageName()
+            },
+            string : {
+                count:(string,search)=>this.getStringCount(string,search)
+            },
+            storage: (namespace,key) => this.getStorage(namespace,key),
+            session: (namespace,key) => this.getSession(namespace,key),
+            browser: (all) => this.getBrowser(all),
+            random : {
+                num:(min,max) => this.getRandomNum(min,max)
+            },
+            key    : {
+                name:(keycode)=>this.getKeyName(keycode)
+            }
+        }
 
-
-
-        /* 定义 set 方法 */
-        const setCookie  = (name,value,exdays)   => this.setCookie(name,value,exdays)
-        const setStorage = (namespace,key,value) => this.setStorage(namespace,key,value)
-        const css        = (classOrId,css,cover) => this.setCss(classOrId,css,cover)
-        const copyText   = {text: (text,remark)  => this.setCopyText(text,remark)}
-        const setLinks   = (url,type,tag)        => this.setLinks(url,type,tag)
-        
         // 链式操作 set 属性
-        this.set         = { cookie:setCookie, storage:setStorage, css, copy:copyText, links:setLinks }
+        this.set         = {
+            cookie : (name,value,exdays)   => this.setCookie(name,value,exdays),
+            storage: (namespace,key,value) => this.setStorage(namespace,key,value),
+            session: (namespace,key,value) => this.setSession(namespace,key,value),
+            css    : (classOrId,css,cover) => this.setCss(classOrId,css,cover),
+            copy   : {
+                text: (text,remark)        => this.setCopyText(text,remark)
+            },
+            links  : (url,type,tag)        => this.setLinks(url,type,tag)
+        }
 
-
-
-        /* 定义 clear 方法 */
-        const hasStorage = (key)  => this.hasStorage(key)
-        
         // 链式操作 has 属性
-        this.has         = { storage:hasStorage }
+        this.has           = {
+            storage:(key)  => this.hasStorage(key),
+            session:(key)  => this.hasSession(key),
+            cookie :(key)  => this.hasCookie(key)
+        }
 
-
-
-
-        /* 定义 clear 方法 */
-        const clearCookie  = (name) => this.clearCookie(name)
-        const clearStorage = (key)  => this.clearStorage(key)
-        
         // 链式操作 delete 属性
-        this.clear      = { cookie:clearCookie, storage:clearStorage }
+        this.clear         = {
+            cookie :(name) => this.clearCookie(name),
+            storage:(key)  => this.clearStorage(key),
+            session:(key)  => this.clearSession(key)
+        }
 
-
-
-        /* 定义 create 方法 */
-        const paging       = (item,page,numb) => this.createPaging(item,page,numb)
-        const createArray  = (min,max,step)   => this.createArray(min,max,step)
-        
         // 链式操作 create 属性
-        this.create  = { paging, array:createArray }
+        this.create  = {
+            paging: (item,page,numb) => this.createPaging(item,page,numb),
+            array : (min,max,step)   => this.createArray(min,max,step)
+        }
 
-
-
-        /* 定义 is 方法 */
-        const mobile      = () => this.isMobile()
-        const NULL        = (value) => this.isNull(value)
-        const empty       = (value) => this.isEmpty(value)
-        const email       = (value,bool) => this.isEmail(value,bool)
-        const isUrl       = (url) => this.isUrl(url)
-        const isPhone     = (string) => this.isPhone(string)
-        const isIdCard    = {card:(string) => this.isIdCard(string)}
-        const isStringEnd = {end:(string,target)=>this.isStringEnd(string,target)}
-        const isDomain    = (domain)=>this.isDomain(domain)
-        const isTrue      = (data)=>this.isTrue(data)
-        const isFalse     = (data)=>this.isFalse(data)
-        
         // 链式操作 is 属性
-        this.is      = { mobile, NULL, empty, email, url:isUrl, id:isIdCard, phone:isPhone, string:isStringEnd, domain:isDomain, true:isTrue, false:isFalse }
+        this.is      = {
+            mobile: () => this.isMobile(),
+            NULL  : (value) => this.isNull(value),
+            empty : (value) => this.isEmpty(value),
+            email : (value,bool) => this.isEmail(value,bool),
+            url   : (url) => this.isUrl(url),
+            id    : {
+                card:(string) => this.isIdCard(string)
+            },
+            phone : (string) => this.isPhone(string),
+            string:{
+                end: (string,target) => this.isStringEnd(string,target)
+            },
+            domain: (domain) => this.isDomain(domain),
+            true  : (data) => this.isTrue(data),
+            false : (data) => this.isFalse(data)
+        }
 
-
-
-        /* 定义 in 方法 */
-        const inArray  = (search,array) => this.inArray(search,array)
-        
         // 链式操作 in 属性
-        this.in        = { array:inArray }
+        this.in     = {
+            array:(search,array) => this.inArray(search,array)
+        }
 
-
-
-        /* 定义 time 方法 */
-        const nature  = (timestamp,type) => this.natureTime(timestamp,type)
-        const to      = {date:(unixTime,type)=>this.timeToDate(unixTime,type)}
-        const response= () =>this.responseTime()
-        
         // 链式操作 time 属性
-        this.time     = { nature, to, response }
+        this.time   = {
+            nature:(timestamp,type) => this.natureTime(timestamp,type),
+            to:{
+                date:(unixTime,type)=>this.timeToDate(unixTime,type)
+            },
+            response:() =>this.responseTime(),
+            down: (timestamp, date) => this.timeDown(timestamp, date)
+        }
 
-
-
-
-        /* 定义 date 方法 */
-        const dateTo  = {time:(date)=>this.dateToTime(date)}
-        
         // 链式操作 date 属性
-        this.date     = { to:dateTo }
+        this.date   = {
+            to    : {
+                time: (date) => this.dateToTime(date)
+            }
+        }
 
-
-
-
-        /* 定义 trim 方法 */
-        const trimArray   = (arr) => this.trimArray(arr)
-        const trimString  = (value,type) => this.trimString(value,type)
-        
         // 链式操作 trim 属性
-        this.trim   = {array:trimArray, string:trimString}
+        this.trim   = {
+            array  : (array)      => this.trimArray(array),
+            string : (value,type) => this.trimString(value,type)
+        }
 
-
-
-        /* 定义 format 方法 */
-        const bytes = (bytes,decimals,unit) => this.formatBytes(bytes,decimals,unit)
-        const number= (number,unit) => this.formatNumber(number,unit)
-        
         // 链式操作 format 属性
-        this.format = { bytes, number }
+        this.format = {
+            bytes  : (bytes,decimals,unit) => this.formatBytes(bytes,decimals,unit),
+            number : (number,unit) => this.formatNumber(number,unit)
+        }
 
-
-
-        /* 定义 array 方法 */
-        const unique = (array) => this.arrayUnique(array)
-        const arrayObjectUnique = {unique:(array, key)  => this.arrayObjectUnique(array, key)}
-        const arraySortTwo = {two:(array,key,sort) => this.arraySortTwo(array,key,sort)}
-        const arraySearch  = (array, key, value)   => this.arraySearch(array, key, value)
-        
         // 链式操作 array 属性
-        this.array = { unique, sort:arraySortTwo, search:arraySearch, object:arrayObjectUnique }
-        
-        
-        
-        const deepMerge = {merge:(object1,object2) => this.deepMerge(object1,object2)}
-        
+        this.array = {
+            unique : (array) => this.arrayUnique(array),
+            sort   : {
+                two: (array,key,sort)   => this.arraySortTwo(array,key,sort)
+            },
+            search : (array, key, value)=> this.arraySearch(array, key, value),
+            object : {
+                unique:(array, key)     => this.arrayObjectUnique(array, key)
+            },
+            to     : {
+                tree: (array, key) => this.arrayToTree(array, key)
+            }
+        }
+
         // 链式操作 object 属性
-        this.object= {deep:deepMerge}
+        this.object= {
+            deep: {
+                merge: (object1,object2) => this.deepMerge(object1,object2)
+            },
+            to: {
+                array: data => this.objectToArray(data)
+            }
+        }
 
-
-
-
-        /* 定义 compare 方法 */
-        const CompareVersion = (versionA,versionB,parting) => this.CompareVersion(versionA,versionB,parting)
-        
         // 链式操作 compare 属性
-        this.compare = { version:CompareVersion }
+        this.compare = {
+            version:(versionA,versionB,parting) => this.CompareVersion(versionA,versionB,parting)
+        }
 
-
-
-
-
-
-
-        /* 定义 to 方法 */
-        const toScroll = (y,time) => this.toScroll(y,time)
-        
         // 链式操作 to 属性
-        this.to = { scroll:toScroll }
-    
+        this.to = {
+            scroll: (y,time) => this.toScroll(y,time)
+        }
 
-
-    
-    
-    
-        /* 定义 fetch 方法 */
-        const fetchGet    = (url,params,config) => this.fetchGet(url,params,config)
-        const fetchPut    = (url,params,config) => this.fetchPut(url,params,config)
-        const fetchPost   = (url,params,config) => this.fetchPost(url,params,config)
-        const fetchPatch  = (url,params,config) => this.fetchPatch(url,params,config)
-        const fetchDelete = (url,params,config) => this.fetchDelete(url,params,config)
-        
         // 链式操作 fetch 属性
-        this.fetch = { get:fetchGet, put:fetchPut, post:fetchPost, patch:fetchPatch, delete:fetchDelete }
+        this.fetch = {
+            get:    (url,params,config) => this.fetchGet(url,params,config),
+            put:    (url,params,config) => this.fetchPut(url,params,config),
+            post:   (url,params,config) => this.fetchPost(url,params,config),
+            patch:  (url,params,config) => this.fetchPatch(url,params,config),
+            delete: (url,params,config) => this.fetchDelete(url,params,config),
+        }
+
+        // 链式操作 image 属性
+        this.image = {
+            base64: (file, config) => this.imageBase64(file, config)
+        }
+
+        // 链式操作 dom 属性
+        this.dom = {
+            append: (target,string) => this.domAppend(target,string)
+        }
     }
 
     /**
@@ -198,37 +190,34 @@ class helper{
      * @param {number} numb 显示页脚数量
      * @return {Array} result 返回一维数组
      */
-    createPaging(item,page,numb)
+    createPaging(item = 1, page = 5, numb = 5)
     {
-        item = item || 1;
-        page = page || 4;
-        numb = numb || 7;
-        
+
         let [result, mean] = [[],[]];
-        
-        if(item > page) item = page;
-        if(item <= 0) item = 1;
-        
-        if(numb % 2 == 0) mean = numb / 2;
+
+        if (item > page) item = page;
+        if (item <= 0)   item = 1;
+
+        if (numb % 2 == 0) mean = numb / 2;
         else mean = (numb-1)/2;
-        
+
         let min = ((item - mean) <= 0) ? 1 : item - mean;
         let max = item + mean;
-        
-        if(numb % 2 == 0){
-            if(min <= 0 || item <= numb) [min = 1, max = numb];
+
+        if (numb % 2 == 0) {
+            if (min <= 0 || item <= numb) [min = 1, max = numb];
             else if(item > page-numb) [min = page-numb+1, max = page];
             else [min = item-mean+1, max = min + numb-1];
-            if(max >= page) max = page;
-        }else{
-            if(min <= 0) min = 1;
-            if(max >= page) max = page;
+            if (max >= page) max = page;
+        } else {
+            if (min <= 0) min = 1;
+            if (max >= page) max = page;
             else if(item <= mean+1 && item <= page) max = numb;
             // if(item > page-(mean+1)) min = page-(numb-1);
         }
-        
+
         result = this.createArray(min,max)
-        
+
         return result;
     }
 
@@ -268,11 +257,8 @@ class helper{
      */
     getQueryString(name)
     {
-        let result = [];
-        let reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
-        let param = window.location.search.substr(1).match(reg);
-        if(param != null) result = unescape(param[2]); else result = null;
-        return result;
+        const params = this.parseUrl()
+        return !this.isEmpty(params[name]) ? params[name] : null
     }
 
     /**
@@ -314,7 +300,7 @@ class helper{
     getKeyName(keycode)
     {
         let result = null
-        
+
         const keyCodeMap = {
             8: 'Backspace',
             9: 'Tab',
@@ -337,7 +323,7 @@ class helper{
             42: 'Print Screen',
             45: 'Insert',
             46: 'Delete',
-            
+
             48: '0',
             49: '1',
             50: '2',
@@ -348,7 +334,7 @@ class helper{
             55: '7',
             56: '8',
             57: '9',
-            
+
             65: 'A',
             66: 'B',
             67: 'C',
@@ -375,10 +361,10 @@ class helper{
             88: 'X',
             89: 'Y',
             90: 'Z',
-            
+
             91: 'Windows',
             93: 'Right Click',
-            
+
             96: 'Numpad 0',
             97: 'Numpad 1',
             98: 'Numpad 2',
@@ -394,7 +380,7 @@ class helper{
             109: 'Numpad -',
             110: 'Numpad .',
             111: 'Numpad /',
-            
+
             112: 'F1',
             113: 'F2',
             114: 'F3',
@@ -407,7 +393,7 @@ class helper{
             121: 'F10',
             122: 'F11',
             123: 'F12',
-            
+
             144: 'Num Lock',
             145: 'Scroll Lock',
             182: 'My Computer',
@@ -424,10 +410,10 @@ class helper{
             221: ']',
             222: '\''
         };
-        
+
         if (keyCodeMap[keycode]) result = keyCodeMap[keycode];
         else console.warn('Unknow Key(Key Code:' + keycode + ')');
-        
+
         return result
     }
 
@@ -441,24 +427,24 @@ class helper{
     {
         let result = false
         let time   = Math.round(new Date / 1000)
-        
+
         if (this.isEmpty(namespace)) console.warn('请输入需要查询的key!')
         else {
-            
+
             let storage = localStorage.getItem(namespace)
-            
+
             if (!this.isEmpty(storage)) {
                 if (typeof key == "boolean" && key) {
-                    
+
                     result = JSON.parse(storage)
                     // 判断是否已过期
                     if (result.hasOwnProperty("end_time") && !this.isEmpty(result.end_time) && result.end_time <= time) result = "expire"
-                    
+
                 } else if (typeof key == "boolean") result = storage
                 else {
-                    
+
                     storage = JSON.parse(storage)
-                    
+
                     if (this.isEmpty(storage[key])) result = null
                     else {
                         result = storage[key]
@@ -483,44 +469,44 @@ class helper{
     {
         // 返回结果
         let result = false
-        
+
         if (this.isEmpty(namespace)) console.warn('请输入需要存储的key名称！')
         else if (this.isEmpty(key))  console.warn('键值key不得为空！')
         else {
-            
+
             let storage  = localStorage.getItem(namespace)
-            
+
             // 如果不存在，则新建
             if (!storage) storage = {}
             else storage = JSON.parse(storage)
-            
+
             if (typeof key == 'string') {
-                
+
                 // 如果不存在，则新建
                 if (!storage[key]) storage[key] = {}
-                
+
                 if (typeof value == 'object') {
-                    
+
                     // 动态保存
                     for (let item in value) {
                         if (item == 'time' && this.isEmpty(value[item])) storage[key]["end_time"] = null
                         else if (item == 'time') storage[key]["end_time"] = value[item] + Math.round(new Date / 1000)
                         else storage[key][item] = value[item]
                     }
-                    
+
                 } else storage[key]["value"] = value
-                
+
             } else if (typeof key == 'object') for (let item in key) {
-                
+
                 if (item == 'time' && this.isEmpty(key[item])) storage["end_time"] = null
                 else if (item == 'time') storage["end_time"] = key[item] + Math.round(new Date / 1000)
                 else storage[item] = key[item]
             }
-            
+
             result = true
             localStorage.setItem(namespace, JSON.stringify(storage))
         }
-        
+
         return result
     }
 
@@ -532,14 +518,14 @@ class helper{
     hasStorage(key)
     {
         let result = false
-        
+
         if (this.isEmpty(key)) console.warn('请给一个localStorage的key值')
         else if (localStorage.getItem(key) != null) result = true
-        
+
         return result
     }
 
-     /**
+    /**
      * @name 清除指定缓存
      * @param {string} key
      * @return {object}
@@ -547,13 +533,139 @@ class helper{
     clearStorage(key)
     {
         let result = false
-        
+
         if (this.isEmpty(key)) console.warn('请给一个localStorage的key值')
         else {
             localStorage.removeItem(key)
             result = true
         }
-        
+
+        return result
+    }
+
+    /**
+     * @name 获取sessionStorage数据
+     * @param {string} namespace [sessionStorage的key值]
+     * @param {string} key [sessionStorage的value中JSON对象的key值]
+     * @return {string}
+     */
+    getSession(namespace, key = true)
+    {
+        let result = false
+        let time   = Math.round(new Date / 1000)
+
+        if (this.isEmpty(namespace)) console.warn('请输入需要查询的key!')
+        else {
+
+            let storage = sessionStorage.getItem(namespace)
+
+            if (!this.isEmpty(storage)) {
+                if (typeof key == "boolean" && key) {
+
+                    result = JSON.parse(storage)
+                    // 判断是否已过期
+                    if (result.hasOwnProperty("end_time") && !this.isEmpty(result.end_time) && result.end_time <= time) result = "expire"
+
+                } else if (typeof key == "boolean") result = storage
+                else {
+
+                    storage = JSON.parse(storage)
+
+                    if (this.isEmpty(storage[key])) result = null
+                    else {
+                        result = storage[key]
+                        // 判断是否已过期
+                        if (typeof result == "object" && result.hasOwnProperty("end_time") && !this.isEmpty(result.end_time) && result.end_time <= time) result = "expire"
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
+    /**
+     * @name 设置sessionStorage数据
+     * @param {string} namespace [sessionStorage的key值]
+     * @param {string || object} key [sessionStorage的value中JSON对象的key值]
+     * @param {string} value [sessionStorage的value中JSON对象的value值]
+     * @return {boolean}
+     */
+    setSession(namespace, key, value)
+    {
+        // 返回结果
+        let result = false
+
+        if (this.isEmpty(namespace)) console.warn('请输入需要存储的key名称！')
+        else if (this.isEmpty(key))  console.warn('键值key不得为空！')
+        else {
+
+            let storage  = sessionStorage.getItem(namespace)
+
+            // 如果不存在，则新建
+            if (!storage) storage = {}
+            else storage = JSON.parse(storage)
+
+            if (typeof key == 'string') {
+
+                // 如果不存在，则新建
+                if (!storage[key]) storage[key] = {}
+
+                if (typeof value == 'object') {
+
+                    // 动态保存
+                    for (let item in value) {
+                        if (item == 'time' && this.isEmpty(value[item])) storage[key]["end_time"] = null
+                        else if (item == 'time') storage[key]["end_time"] = value[item] + Math.round(new Date / 1000)
+                        else storage[key][item] = value[item]
+                    }
+
+                } else storage[key]["value"] = value
+
+            } else if (typeof key == 'object') for (let item in key) {
+
+                if (item == 'time' && this.isEmpty(key[item])) storage["end_time"] = null
+                else if (item == 'time') storage["end_time"] = key[item] + Math.round(new Date / 1000)
+                else storage[item] = key[item]
+            }
+
+            result = true
+            sessionStorage.setItem(namespace, JSON.stringify(storage))
+        }
+
+        return result
+    }
+
+    /**
+     * @name 判断缓存是否存在
+     * @param {string} key
+     * @return {object}
+     */
+    hasSession(key)
+    {
+        let result = false
+
+        if (this.isEmpty(key)) console.warn('请给一个sessionStorage的key值')
+        else if (!this.isEmpty(sessionStorage.getItem(key)) ) result = true
+
+        return result
+    }
+
+    /**
+     * @name 清除指定缓存
+     * @param {string} key
+     * @return {object}
+     */
+    clearSession(key)
+    {
+        let result = false
+
+        if (this.isEmpty(key)) console.warn('请给一个sessionStorage的key值')
+        else {
+            sessionStorage.removeItem(key)
+            result = true
+        }
+
         return result
     }
 
@@ -570,28 +682,28 @@ class helper{
         if (this.isEmpty(classOrId)) console.warn('请选择需要设置的DOM元素')
         else if (this.isEmpty(css))  console.warn('请设置CSS')
         else {
-            
+
             let DOM = document.querySelector(classOrId)
-            
+
             // 覆盖
             if (cover) DOM.style.cssText = css
             else {
-                
+
                 let css_arr = this.trimArray(css.split(';'))
                 for (let item of css_arr) {
-                    
+
                     let arr = item.split(":")
-                    
+
                     if (item.indexOf('!important') != -1) {
                         let suffix = arr[1].split("!")
                         DOM.style.setProperty(this.trimString(arr[0], 2), this.trimString(suffix[0], 2), this.trimString(suffix[1], 2))
                     } else DOM.style.setProperty(this.trimString(arr[0], 2), this.trimString(arr[1], 2))
                 }
             }
-            
+
             result = true
         }
-        
+
         return result
     }
 
@@ -606,23 +718,23 @@ class helper{
         let result = Math.round(new Date() / 1000)
         type = type || 1
         timestamp = timestamp || result
-        
+
         if (type == 1) {
-            
+
             let zeroize = (num) => { return (String(num).length == 1 ? '0': '') + num; }
             let curTimestamp = parseInt(new Date().getTime() / 1000);
             let timestampDiff = curTimestamp - timestamp;
             let curDate = new Date(curTimestamp * 1000);
             let tmDate = new Date(timestamp * 1000);
-            
+
             let Y = tmDate.getFullYear(),
-            m = tmDate.getMonth() + 1,
-            d = tmDate.getDate();
-            
+                m = tmDate.getMonth() + 1,
+                d = tmDate.getDate();
+
             let H = tmDate.getHours(),
-            i = tmDate.getMinutes(),
-            s = tmDate.getSeconds();
-            
+                i = tmDate.getMinutes(),
+                s = tmDate.getSeconds();
+
             if (timestampDiff < 60) {
                 result = "刚刚";
             } else if (timestampDiff < 3600) {
@@ -631,7 +743,7 @@ class helper{
                 result = '今天' + zeroize(H) + ':' + zeroize(i);
             } else {
                 let newDate = new Date((curTimestamp - 86400) * 1000);
-                
+
                 if (newDate.getFullYear() == Y && newDate.getMonth() + 1 == m && newDate.getDate() == d) {
                     result = '昨天' + zeroize(H) + ':' + zeroize(i);
                 } else if (curDate.getFullYear() == Y) {
@@ -640,26 +752,26 @@ class helper{
                     result = Y + '-' + zeroize(m) + '-' + zeroize(d) + ' ' + zeroize(H) + ':' + zeroize(i);
                 }
             }
-            
+
         } else if(type == 2){
-            
+
             let mistiming = Math.round(new Date() / 1000) - timestamp;
             let postfix = mistiming > 0 ? "前" : "后";
             mistiming = Math.abs(mistiming);
             let arrr = ["年", "个月", "星期", "天", "小时", "分钟", "秒"];
             let arrn = [31536000, 2592000, 604800, 86400, 3600, 60, 1];
-            
+
             for (let i = 0; i < 7; i++) {
                 let inm = Math.floor(mistiming / arrn[i]);
                 if (inm != 0) result = inm + arrr[i] + postfix;
             }
-            
+
         } else if (type == 4) {
-            
+
             result = new Date(parseInt(timestamp) * 1000).toLocaleString().replace(/:\d{1,2}$/,' ');
-            
+
         } else if (type == 5) {
-            
+
             const now    = Math.round(new Date / 1000)
             const second = Math.floor(now - timestamp)
             const minute = Math.floor(second / 60)
@@ -682,7 +794,7 @@ class helper{
             else if (second > 0) result = second + '秒前'
             else result = '刚刚'
         }
-        
+
         return result;
     }
 
@@ -699,7 +811,7 @@ class helper{
      * Y/m/d H:i:s     = 2018/01/11 11:08:31
      * Y年m月d日       = 2018年01月11日
      * Y年m月d日 H:i:s = 2018年01月11日 11:08:31
-    */
+     */
     timeToDate(unixTime, type = "Y-M-D H:i:s")
     {
         let date = new Date(unixTime * 1000);
@@ -733,6 +845,35 @@ class helper{
     }
 
     /**
+     * @name 倒计时
+     * @param {Number} timestamp 时间戳
+     * @param {Boolean} date 是否时期格式
+     * #param {Object} result
+     *
+     */
+    timeDown(timestamp = (Math.round(new Date / 1000)) + 6000, date = false)
+    {
+        // 结束时间
+        const end      = date ? Math.round(new Date(timestamp) / 1000) : timestamp
+        // 当前时间
+        const start    = Math.round(new Date / 1000)
+        // 剩余时间
+        const lefttime = parseInt((end - start) / 1000)
+        // 剩余天数
+        const day      = parseInt(lefttime / 3600 / 24)
+        // 剩余小时数
+        const hour     = parseInt((lefttime / 3600) % 24)
+        // 剩余分钟数
+        const minute   = parseInt((lefttime / 60) % 60)
+        // 剩余秒数
+        const second   = parseInt(lefttime % 60)
+        // 是否倒计时结束
+        const finish   = lefttime <= 0 ? true : false
+
+        return {day,hour,minute,second,finish}
+    }
+
+    /**
      * @name 日期格式转时间戳
      * @return {number} result
      */
@@ -756,23 +897,23 @@ class helper{
     performance(storage = false)
     {
         let result = {}
-        
-            
+
+
         try {
-            
+
             let timing   = performance.timing || {},
-            memory       = performance.memory || {};
+                memory       = performance.memory || {};
             if (inisHelper.isEmpty(timing)) if (!inisHelper.isEmpty(timing.domLoading))     timing = performance.timing;
             if (inisHelper.isEmpty(memory)) if (!inisHelper.isEmpty(memory.usedJSHeapSize)) memory = performance.memory;
             let loadTime = (timing.loadEventEnd - timing.loadEventStart) / 1000;
-            
+
             if (loadTime < 0) {
                 setTimeout(()=>{
                     this.performance(storage);
                 }, 200);
                 return;
             }
-            
+
             result.redirect = {
                 'des':'重定向时间',
                 'reason':'拒绝重定向！比如，https://inis.cn/ 就不该写成 https://inis.cn',
@@ -859,14 +1000,14 @@ class helper{
                 'unit':'毫秒(ms)',
                 'value':(timing.unloadEventEnd - timing.unloadEventStart)
             }
-            
+
         } catch(e) {
             console.warn(e)
         }
-        
+
         // 设置缓存
         if (storage) this.setStorage('performance', result)
-        
+
         return result;
     }
 
@@ -878,10 +1019,10 @@ class helper{
     isNull(value = "")
     {
         let result = false;
-        
+
         if (value == null || typeof(value) == 'undefined' || value === undefined || value.length === 0) result = true;
         else result = false;
-        
+
         return result;
     }
 
@@ -893,23 +1034,23 @@ class helper{
     isEmpty(data = null)
     {
         let result = false;
-        
+
         if (Array.isArray(data)){
-            
+
             if (Array.prototype.isPrototypeOf(data) && data.length === 0) result = true;
-            
+
         } else if (typeof data == 'number') {
             result = isNaN(data)
         } else if (!this.isNull(data)) {
-            
+
             if (data instanceof Object) {
-                
+
                 if (JSON.stringify(data) == "{}") result = true
-                
+
             } else if ((data + '').replace(/(^\s*)|(\s*$)/g, '').length === 0) result = true;
-            
+
         } else result = true;
-        
+
         return result;
     }
 
@@ -922,18 +1063,18 @@ class helper{
     isEmail(value, bool = false)
     {
         let [result, pattern]  = [false, ''];
-            
+
         if (bool) {
-            
+
             pattern = /^[0-9a-zA-Z_]{5,12}@(163|126|qq|yahoo|gmail|sina)\.(com|com\.cn|cn|la)$/;
-            
+
         } else {
-            
+
             pattern = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
         }
-        
+
         result = pattern.test(value);
-        
+
         return result;
     }
 
@@ -959,19 +1100,19 @@ class helper{
     {
         let isMobile = {
             Android: function () {
-                 return navigator.userAgent.match(/Android/i) ? true : false;
+                return navigator.userAgent.match(/Android/i) ? true : false;
             },
             BlackBerry: function () {
-                 return navigator.userAgent.match(/BlackBerry/i) ? true : false;
+                return navigator.userAgent.match(/BlackBerry/i) ? true : false;
             },
             iOS: function () {
-                 return navigator.userAgent.match(/iPhone|iPad|iPod/i) ? true : false;
+                return navigator.userAgent.match(/iPhone|iPad|iPod/i) ? true : false;
             },
             Windows: function () {
-                 return navigator.userAgent.match(/IEMobile/i) ? true : false;
+                return navigator.userAgent.match(/IEMobile/i) ? true : false;
             },
             any: function () {
-                 return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
+                return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Windows());
             }
         };
         return isMobile.any();
@@ -988,7 +1129,7 @@ class helper{
         if (this.isEmpty(string)) console.warn("请输入一个电话号码")
         else return /^(\+?0?86\-?)?1[3456789]\d{9}$/.test(string)
     }
-    
+
     /**
      *
      * @name   判断字符串末位是否为指定值
@@ -1001,12 +1142,12 @@ class helper{
         let result = false,
             start  = string.length - target.length,
             end    = string.substr(start,target.length);
-            
+
         if (end == target) result = true;
-        
+
         return result;
     }
-    
+
     /**
      *
      * @name   判断域名是否合法
@@ -1014,19 +1155,19 @@ class helper{
      * @return {Boolean}
      */
     isDomain(domain = null) {
-        
+
         let result = false
-        
+
         if (this.config.log) if (this.isEmpty(domain)) console.warn('参数一不得为空：<domian = null : string>')
-        
+
         const rule = /^(([-\u4E00-\u9FA5a-z0-9]{1,63})\.)+([\u4E00-\u9FA5a-z]{2,63})\.?$/
-        
+
         // 过滤 http(s):// 和 / 并 校验规则
         result = (rule.test((domain.replace(/^https?\:\/\//i, '')).replace(/\//g,''))) ? true : false
-        
+
         return result;
     }
-    
+
     /**
      *
      * @name   判断是否为TRUE
@@ -1034,20 +1175,20 @@ class helper{
      * @return {Boolean}
      */
     isTrue(data = null) {
-        
+
         let result = false
-        
+
         if (this.config.log) if (this.isEmpty(data)) console.warn('参数一不得为空：<data = null : any>')
-        
+
         if (typeof data == 'string')         result = (data == 'true') ? true : false
         else if (typeof data == 'number')    result = (data == 1) ? true : false
         else if (typeof data == 'boolean')   result = data
         else if (typeof data == 'object')    result = !this.isEmpty(data)
         else if (typeof data == 'undefined') result = false
-        
+
         return result;
     }
-    
+
     /**
      *
      * @name   判断是否为FALSE
@@ -1055,42 +1196,42 @@ class helper{
      * @return {Boolean}
      */
     isFalse(data = null) {
-        
+
         let result = true
-        
+
         if (this.config.log) if (this.isEmpty(data)) console.warn('参数一不得为空：<data = null : any>')
-        
+
         if (typeof data == 'string')         result = (data == 'false') ? true : false
         else if (typeof data == 'number')    result = (data == 0) ? true : false
         else if (typeof data == 'boolean')   result = data
         else if (typeof data == 'object')    result = this.isEmpty(data)
         else if (typeof data == 'undefined') result = true
-        
+
         return result;
     }
-    
+
     /**
      * @name 设置cookie
      * @param {string} name
      * @param {string} value
-     * @param {number} exdays
+     * @param {number} exdays 单位秒
      */
-    setCookie(name, value, exdays = 1)
+    setCookie(name, value, exdays = 3600)
     {
         let result = true;
-        
+
         if (this.isEmpty(name)) result = '请设置 cookie 名称！'
         else {
-            
+
             let time = new Date
-            
-            time.setTime(time.getTime() + (exdays * 24 * 60 * 60 * 1000));
-            
+
+            time.setTime(time.getTime() + (exdays * 1000));
+
             let expires = "expires=" + time.toUTCString();
-            
+
             document.cookie = name + "=" + value + "; " + expires;
         }
-        
+
         return result;
     }
 
@@ -1104,9 +1245,9 @@ class helper{
         let result = null;
         if (this.isEmpty(name)) result = '请输入需要查询的 cookie 名称！'
         else if (document.cookie.length > 0) {
-            
+
             let begin = document.cookie.indexOf(name + '=');
-            
+
             if (begin !== -1) {
                 // cookie值的初始位置
                 begin += name.length + 1;
@@ -1123,16 +1264,31 @@ class helper{
     }
 
     /**
+     * @name 检查cookie是否存在
+     * @param {string} name
+     */
+    hasCookie(name)
+    {
+        let result = false;
+        if (this.isEmpty(name)) result = '请输入需要查询的 cookie 名称！'
+        else if (document.cookie.length > 0) {
+            let begin = document.cookie.indexOf(name + '=');
+            if (begin !== -1) result = true;
+        }
+        return result
+    }
+
+    /**
      * @name 清除cookie
      * @param {string} name
      */
     clearCookie(name)
     {
         let result = true;
-        
+
         if (this.isEmpty(name)) result = '请输入需要删除的 cookie 名称！'
         else this.setCookie(name, "", -1);
-        
+
         return result;
     }
 
@@ -1145,9 +1301,9 @@ class helper{
     inArray(search,array)
     {
         let result = false;
-        
+
         for (let i in array) if (array[i] == search) result = true;
-        
+
         return result;
     }
 
@@ -1158,11 +1314,11 @@ class helper{
      */
     trimArray(arr)
     {
-        
+
         let result = arr.filter(function (s) {
-           return s && s.trim();
+            return s && s.trim();
         });
-        
+
         return result;
     }
 
@@ -1175,29 +1331,29 @@ class helper{
     trimString(value, type = 1)
     {
         let result = value
-        
+
         if(!this.isEmpty(value)){
             switch (type) {
-            case 1:
-                result = value.replace(/\s+/g, '')
-                break;
-            case 2:
-                result = value.replace(/(^\s*)|(\s*$)/g, '')
-                break;
-            case 3:
-                result = value.replace(/(^\s*)/g, '')
-                break;
-            case 4:
-                result = value.replace(/(\s*$)/g, '')
-                break;
-            default:
-                result = value
+                case 1:
+                    result = value.replace(/\s+/g, '')
+                    break;
+                case 2:
+                    result = value.replace(/(^\s*)|(\s*$)/g, '')
+                    break;
+                case 3:
+                    result = value.replace(/(^\s*)/g, '')
+                    break;
+                case 4:
+                    result = value.replace(/(\s*$)/g, '')
+                    break;
+                default:
+                    result = value
             }
         }
-        
+
         return result;
     }
-    
+
     /*
      * @name 数组去重
      * @param {array} array
@@ -1207,7 +1363,7 @@ class helper{
     {
         return Array.from(new Set(array))
     }
-    
+
     /*
      * @name 数组对象去重
      * @param {array}  array [数组对象]
@@ -1233,18 +1389,18 @@ class helper{
     formatBytes (bytes, decimals, unit = true)
     {
         let result = '';
-        
+
         if (bytes === 0) result = '0';
         else {
             let k = 1024;
             let dm = decimals + 1 || 3;
             let sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
             let i = Math.floor(Math.log(bytes) / Math.log(k));
-            
+
             if (unit) result = (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
             else result = (bytes / Math.pow(k, i)).toPrecision(dm)
         }
-        
+
         return result;
     }
 
@@ -1257,9 +1413,9 @@ class helper{
     formatNumber (number = 1, unit = true)
     {
         number = parseInt(number)
-        
+
         let [result,units] = [null,null]
-        
+
         if (number >= 100000000) {
             units  = '亿'
             result = Math.round(number / 10000000) / 10
@@ -1267,104 +1423,120 @@ class helper{
             units  = '万'
             result = Math.round(number / 1000) / 10
         } else result = number
-        
+
         if (unit) result = result + units
-        
+
         return result
     }
 
     /*
      * @name 图片转base64
+     * @param {Object} files
      * @param {Object} config
      */
-    base64(config)
+    imageBase64(file, config = {})
     {
-        let options = {
-            // 清晰度比率 0-1 越小照片大小越小，但越不清晰 默认0.8
-            rate	 : config.rate 	   || 0.8,
-            // 压缩后照片 最大宽度/高度
-            maxWidth : config.maxNum   || 680,
+        const opt = {
+            // 是否压缩图片
+            density  : true,
+            // 压缩等级，范围 0-1 ，数值越小照片体积越小，但越不清晰 默认0.8
+            level	 : 0.8,
+            // 压缩后照片 最大宽度/高度 - null返回原始尺寸
+            maxWidth : 680,
             // 回调函数返回压缩成功后的
-            callBack : config.callBack || (()=>{
-                console.warn("回调函数callBack未定义!")
-            }),
-            // 绑定的DOM元素的#id或.class
-            el		 : config.el 	   || '',
-            files    : config.files    || '',
+            callBack : () => {}
         }
-        
-        if(this.is.empty(options.el)) handleImg(files)
-        else document.querySelector(options.el).onchange = ((e) => {
-            
-            /* 多图上传 */
-            let files = e.target.files;
-            handleImg(files)
-        })
-        
-        function handleImg(files){
-            
-            if(this.is.empty(files)) return (()=>{
-                console.warn('未找到files文件')
-            })
-            
-            let imgData = []
-            
-            for(let item of files){
-                
-                let data = {
-                    'file': item,
-                    'name': item.name,
-                    'size': (new helper()).formatBytes(item.size),
-                    'type': item.type,
-                }
-                
-                let reader = new FileReader();
-                reader.readAsDataURL(item)
-                reader.onload = function (e) {
+
+        // 合并配置
+        config = {...opt, ...config}
+
+        return new Promise((resolve, reject) => {
+
+            if (!window.FileReader) reject('浏览器对FileReader方法不兼容')
+
+            let reader = new FileReader
+
+            reader.readAsDataURL(file)
+
+            // 开始读取
+            reader.onloadstart= (e) => {}
+            // 正在读取中
+            reader.onprogress = (e) => {}
+            // 中断读取
+            reader.onabort    = (e) => {}
+            // 读取成功
+            reader.onload     = function (e) {
+
+                if (!config.density) {
+
+                    resolve(reader.result)
+                    // 回调函数
+                    config.callBack(reader.result)
+
+                } else {
+
                     // 得到base64 url
-                    let dataUrl = this.result;
-                    let image = new Image();
-                    image.src = dataUrl;
-                    image.onload = function (e) {
-                        let width = image.width, height = image.height;
-                        let scale = width / height;
+                    let dataUrl    = reader.result
+                    let image      = new Image()
+                    image.src      = dataUrl;
+
+                    image.onload   = function (e) {
+
+                        let width  = image.width, height = image.height;
+                        let scale  = width / height;
                         let canvas = document.createElement("canvas");
-                        let ctx = canvas.getContext('2d');
+                        let ctx    = canvas.getContext('2d');
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        if (width - height >= 0) {
-                            let width1 = options.maxWidth;
-                            let height1 = parseInt(width1 / scale);
-                            if (width >= width1) {
-                                canvas.width = width1;
-                                canvas.height = height1;
-                                ctx.drawImage(image, 0, 0, width1, height1);
-                            } else {
-                                canvas.width = width;
-                                canvas.height = height;
-                                ctx.drawImage(image, 0, 0, width, height);
-                            }
+
+                        // 最大宽度为空，原尺寸输出
+                        if ((new helper).isEmpty(config.maxWidth)) {
+
+                            canvas.width  = width;
+                            canvas.height = height;
+                            ctx.drawImage(image, 0, 0, width, height)
+
                         } else {
-                            scale = height / width;
-                            height1 = options.maxWidth;
-                            width1 = parseInt(height1 / scale);
-                            if (height >= height1) {
-                                canvas.width = width1;
-                                canvas.height = height1;
-                                ctx.drawImage(image, 0, 0, width1, height1);
+
+                            if (width - height >= 0) {
+                                let width1  = config.maxWidth;
+                                let height1 = parseInt(width1 / scale);
+                                if (width >= width1) {
+                                    canvas.width  = width1;
+                                    canvas.height = height1;
+                                    ctx.drawImage(image, 0, 0, width1, height1);
+                                } else {
+                                    canvas.width  = width;
+                                    canvas.height = height;
+                                    ctx.drawImage(image, 0, 0, width, height);
+                                }
                             } else {
-                                canvas.width = width;
-                                canvas.height = height;
-                                ctx.drawImage(image, 0, 0, width, height);
+                                scale   = height / width;
+                                height1 = config.maxWidth;
+                                width1  = parseInt(height1 / scale);
+                                if (height >= height1) {
+                                    canvas.width  = width1;
+                                    canvas.height = height1;
+                                    ctx.drawImage(image, 0, 0, width1, height1);
+                                } else {
+                                    canvas.width  = width;
+                                    canvas.height = height;
+                                    ctx.drawImage(image, 0, 0, width, height);
+                                }
                             }
                         }
-                        let cropStr = canvas.toDataURL("image/jpeg", options.rate);
-                        data['base64'] = cropStr
-                        imgData = data
-                        options.callBack(imgData);
+
+                        const base64 = canvas.toDataURL("image/jpeg", config.level)
+
+                        resolve(base64)
+                        config.callBack(base64)
                     }
                 }
             }
-        }
+            // 读取异常
+            reader.onerror    = function(error) {
+                reject(error)
+            }
+        })
     }
 
     /*
@@ -1375,20 +1547,20 @@ class helper{
     getBrowser(all = false)
     {
         let result = {name:'other',version:''}
-        
+
         if (!all) {
-            
+
             let sys = {},
                 ua = navigator.userAgent.toLowerCase(),
                 s;
             (s = ua.match(/rv:([\d.]+)\) like gecko/)) ? sys.ie = s[1]:
                 (s = ua.match(/msie ([\d\.]+)/)) ? sys.ie = s[1] :
-                (s = ua.match(/edge\/([\d\.]+)/)) ? sys.edge = s[1] :
-                (s = ua.match(/firefox\/([\d\.]+)/)) ? sys.firefox = s[1] :
-                (s = ua.match(/(?:opera|opr).([\d\.]+)/)) ? sys.opera = s[1] :
-                (s = ua.match(/chrome\/([\d\.]+)/)) ? sys.chrome = s[1] :
-                (s = ua.match(/version\/([\d\.]+).*safari/)) ? sys.safari = s[1] : 0;
-                
+                    (s = ua.match(/edge\/([\d\.]+)/)) ? sys.edge = s[1] :
+                        (s = ua.match(/firefox\/([\d\.]+)/)) ? sys.firefox = s[1] :
+                            (s = ua.match(/(?:opera|opr).([\d\.]+)/)) ? sys.opera = s[1] :
+                                (s = ua.match(/chrome\/([\d\.]+)/)) ? sys.chrome = s[1] :
+                                    (s = ua.match(/version\/([\d\.]+).*safari/)) ? sys.safari = s[1] : 0;
+
             // 根据关系进行判断
             if (sys.ie)      result = {name:'IE',version:sys.ie}
             if (sys.edge)    result = {name:'EDGE',version:sys.edge}
@@ -1396,9 +1568,9 @@ class helper{
             if (sys.chrome)  result = {name:'Chrome',version:sys.chrome}
             if (sys.opera)   result = {name:'Opera',version:sys.opera}
             if (sys.safari)  result = {name:'Safari',version:sys.safari}
-            
+
         } else {
-            
+
             result = {
                 browser:function(){
                     var u = navigator.userAgent, app = navigator.appVersion;
@@ -1458,9 +1630,9 @@ class helper{
         let textarea   = document.createElement("textarea");
         textarea.value = text
         document.body.appendChild(textarea);
-        
+
         textarea.select();
-        
+
         // 为textarea添加监听事件方便对剪贴板内容进行二次修改
         if (!this.isEmpty(remark)) textarea.addEventListener("copy", (event)=>{
             let clipboardData = event.clipboardData || window.clipboardData;
@@ -1471,16 +1643,16 @@ class helper{
                 clipboardData.setData("text/plain", text + remark);
             }
         });
-        
+
         // 执行复制操作
         if (document.execCommand("copy")) result = true
-        
+
         // document.execCommand('copy') 如果内容复制的不全
         // document.execCommand('copy') // 前先进行document.execCommand('selectAll')选中所有内容即可
-        
+
         // 移除input框
         document.body.removeChild(textarea);
-        
+
         return result;
     }
 
@@ -1507,7 +1679,7 @@ class helper{
         }
         return array
     }
-    
+
     /*
      * @name 数组内搜索
      * @param {array} array [{},{}]
@@ -1517,7 +1689,7 @@ class helper{
     arraySearch(array, key, value)
     {
         let result = []
-        
+
         if (this.isEmpty(array)) {
             if (this.config.log) console.warn('第一参数请给一个数组，格式 [{},{}]')
         } else if (this.isEmpty(key)) {
@@ -1529,10 +1701,10 @@ class helper{
                 if (item[key].indexOf(value) != -1) result.push(item)
             })
         }
-        
+
         return result
     }
-    
+
     /*
      * @name 是否为有效链接
      * @param {string} url [链接]
@@ -1554,22 +1726,22 @@ class helper{
     CompareVersion(versionA, versionB, parting = '.')
     {
         if (versionA && versionB) {
-            
+
             // 将两个版本号拆成数字
             let arrayA = versionA.split(parting)
             let arrayB = versionB.split(parting)
             let minLength = Math.min(arrayA.length, arrayB.length)
             let position = 0
             let diff = 0
-            
+
             // 依次比较版本号每一位大小，当对比得出结果后跳出循环（后文有简单介绍）
             while (position < minLength && ((diff = parseInt(arrayA[position]) - parseInt(arrayB[position])) == 0)) position++;
-            
+
             diff = (diff != 0) ? diff: (arrayA.length - arrayB.length);
-            
+
             // 若versionA大于versionB，则返回true
             return diff > 0;
-            
+
         } else {
             // 输入为空
             if (this.config.log) console.warn("版本号不能为空");
@@ -1610,19 +1782,19 @@ class helper{
     customProcessApi(url = "", api = "api")
     {
         let result = url
-        
-        if (!this.is.empty(url)) {
-            
+
+        if (!this.isEmpty(url)) {
+
             let prefix = "//"
-            
+
             if (url.indexOf("https://") != -1)     prefix = "https://"
             else if (url.indexOf("http://") != -1) prefix = "http://"
-            
+
             // 过滤http(s):// - 转数组 - 去空
             result = ((url.replace(/http(s)?:\/\//g,"")).split("/")).filter((s)=>{
                 return s && s.trim();
             });
-            
+
             if (result.length == 1) result = prefix + result[0] + "/" + api + "/"
             else if (result.length == 2) {
                 result = prefix + result[0] + "/" + result[1] + "/"
@@ -1640,22 +1812,22 @@ class helper{
     parseUrl(url)
     {
         url = !url ? window.location.href : url;
-        
+
         if (url.indexOf('?') === -1) return {};
-        
+
         let search = url[0] === '?' ? url.substr(1) : url.substring(url.lastIndexOf('?') + 1);
-        
+
         if (search === '') return {};
-        
+
         search = search.split('&');
-        
+
         let query = {};
-        
+
         for (let i = 0; i < search.length; i++) {
             let pair = search[i].split('=');
             query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
         }
-        
+
         return query;
     }
 
@@ -1668,18 +1840,18 @@ class helper{
     stringfy(obj)
     {
         let s = [],
-        
-        add = ( key, value ) => {
-            // 空数据处理
-            value = ((encodeURIComponent(value) == 'undefined') ? '' : value)
-            s[ s.length ] = encodeURIComponent( key ) + "=" + encodeURIComponent( value );
-        };
-        
+
+            add = ( key, value ) => {
+                // 空数据处理
+                value = ((encodeURIComponent(value) == 'undefined') ? '' : value)
+                s[ s.length ] = encodeURIComponent( key ) + "=" + encodeURIComponent( value );
+            };
+
         if (Array.isArray(obj)) for ( let v in obj ) add(v, obj[v]);
         else for ( let prefix in obj ) {
             this.stringfyBuild( prefix, obj[ prefix ], add );
         }
-        
+
         return s.join( "&" );
     }
 
@@ -1702,7 +1874,7 @@ class helper{
             }
         } else add( prefix, obj );
     }
-    
+
     /**
      *
      * @name   静态资源按需批量引入
@@ -1714,53 +1886,53 @@ class helper{
     setLinks(url, type = 'script', tag)
     {
         let script = () => {        // 导入JS
-            
+
             tag = (this.isEmpty(tag)) ? 'body' : tag
             let script = document.createElement('script');
             script.setAttribute('type','text/javascript');
             script.setAttribute('src',url);
             document.getElementsByTagName(tag)[0].appendChild(script);
-            
+
         }, link = () => {           // 导入CSS
-            
+
             tag = (this.isEmpty(tag)) ? 'head' : tag
             let link = document.createElement('link');
             link.setAttribute('rel', 'stylesheet');
             link.setAttribute('href', url);
             document.getElementsByTagName(tag)[0].appendChild(link);
-            
+
         }, customize = (obj) => {   // 导入自定义链接
-            
+
             tag         = (this.isEmpty(tag)) ? 'body' : tag
             let config  = (!this.isEmpty(obj.config) ? obj.config : {type,tag})
             config.tag  = (this.isEmpty(config.tag)) ? tag : config.tag
             let element = document.createElement(config.type)
-            
+
             if (!this.isEmpty(obj)) for (let i in obj) {
                 if (i != 'config') element.setAttribute(i,obj[i]);
             }
-            
+
             document.getElementsByTagName(config.tag)[0].appendChild(element);
-            
+
         }, result = true
-        
+
         if (Array.isArray(url)) {
-            
+
             url.forEach(item=>{
                 this.setLinks(item, type, tag)
             })
-            
+
         } else if (typeof(url) == "object") {
             customize(url)
         } else if (typeof(url) == "string") {
-            
+
             if (type == 'script') script()
             else link()
         }
-        
+
         return result
     }
-    
+
     /**
      *
      * @name   RGB和HEX颜色互转
@@ -1772,30 +1944,30 @@ class helper{
     color(color, opacity = 1, type = 'rgba')
     {
         let result = ''
-        
+
         if (type == 'rgba') {
-            
+
             let rgba = "rgba(" + parseInt("0x" + color.slice(1, 3)) + "," + parseInt("0x" + color.slice(3, 5)) + "," + parseInt( "0x" + color.slice(5, 7)) + "," + opacity + ")";
-            
+
             result = {
                 red  : parseInt("0x" + color.slice(1, 3)),
                 green: parseInt("0x" + color.slice(3, 5)),
                 blue : parseInt("0x" + color.slice(5, 7)),
                 rgba
             }
-            
+
         } else {
-            
+
             let rgb = color.split(','),
                 r   = parseInt(rgb[0].split('(')[1]),
                 g   = parseInt(rgb[1]),
                 b   = parseInt(rgb[2].split(')')[0]);
             result  = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
         }
-        
+
         return result
     }
-    
+
     /**
      *
      * @name   网络请求 - GET
@@ -1808,7 +1980,7 @@ class helper{
         const response = await fetch(url + (this.isEmpty(params) ? '' : '?' + this.stringfy(params)), config);
         return await response.json();
     }
-    
+
     /**
      *
      * @name   网络请求 - POST
@@ -1826,19 +1998,19 @@ class helper{
             },
             body:(typeof params === 'object') ? (new helper).stringfy(params) : params
         }
-        
+
         // 合并配置
         if (!this.isEmpty(config)) for (let item in config) {
             if (item == 'headers')     opt[item] = {...opt[item], ...config[item]}
             else if (item == 'method') opt[item] = config[item].toUpperCase()
             else opt[item] = config[item]
         }
-        
+
         const response = await fetch(url, opt)
-        
+
         return await response.json();
     }
-    
+
     /**
      *
      * @name   网络请求 - PUT
@@ -1856,19 +2028,19 @@ class helper{
             },
             body:(typeof params === 'object') ? (new helper).stringfy(params) : params
         }
-        
+
         // 合并配置
         if (!this.isEmpty(config)) for (let item in config) {
             if (item == 'headers')     opt[item] = {...opt[item], ...config[item]}
             else if (item == 'method') opt[item] = config[item].toUpperCase()
             else opt[item] = config[item]
         }
-        
+
         const response = await fetch(url, opt)
-        
+
         return await response.json();
     }
-    
+
     /**
      *
      * @name   网络请求 - DEL
@@ -1886,19 +2058,19 @@ class helper{
             },
             body:(typeof params === 'object') ? (new helper).stringfy(params) : params
         }
-        
+
         // 合并配置
         if (!this.isEmpty(config)) for (let item in config) {
             if (item == 'headers')     opt[item] = {...opt[item], ...config[item]}
             else if (item == 'method') opt[item] = config[item].toUpperCase()
             else opt[item] = config[item]
         }
-        
+
         const response = await fetch(url, opt)
-        
+
         return await response.json();
     }
-    
+
     /**
      *
      * @name   网络请求 - PATCH
@@ -1916,19 +2088,19 @@ class helper{
             },
             body:(typeof params === 'object') ? (new helper).stringfy(params) : params
         }
-        
+
         // 合并配置
         if (!this.isEmpty(config)) for (let item in config) {
             if (item == 'headers')     opt[item] = {...opt[item], ...config[item]}
             else if (item == 'method') opt[item] = config[item].toUpperCase()
             else opt[item] = config[item]
         }
-        
+
         const response = await fetch(url, opt)
-        
+
         return await response.json();
     }
-    
+
     /**
      *
      * @name   对象深度合并
@@ -1938,15 +2110,92 @@ class helper{
      */
     deepMerge(object1, object2)
     {
-        
+
         for (let item in object2) {
             const map1    = object1[item] && object1[item].toString() === "[object Object]"
             const map2    = object2[item] && object2[item].toString() === "[object Object]"
             object1[item] = map1 && map2 ? this.deepMerge(object1[item], object2[item]) : object2[item]
         }
-        
+
         return object1;
     }
+
+    /**
+     *
+     * @name   对象转数组
+     * @param  {Object} data
+     * @return {Array} result
+     */
+    objectToArray(data)
+    {
+        let result = []
+
+        if (!this.isEmpty(data))
+            for (let item in data) result.push(data[item])
+
+        return result
+    }
+
+    // position 是相对于 element 元素的位置，位置参数如下：
+    // beforebegin：在 element 元素的前面。（同级）
+    // afterbegin：在 element 元素的第一个子节点前面。（子级）
+    // beforeend：在 element 元素的最后一个子节点后面。 （子级）
+    // afterend：在 element 元素的后面。（同级）
+    domAppend(target = 'body', string = '')
+    {
+        document.querySelector(target).insertAdjacentHTML('beforeend',string)
+    }
+
+    /**
+     *
+     * @name   数组转深度树
+     * @param  {Array} array [需要递归的数组]
+     * @param  {String} key [根基给定的key进行深度树]
+     * @return {Array} tree [返回的树]
+     */
+    arrayToTree(array, key = 'index') {
+        let tree = []
+        let copyArray = array.map(item=>item)
+        // 根据指定级别查找该级别的子孙级，并删除掉已经查找到的子孙级
+        const getChildrenByLevel = (currentLevelItem, array, level) => {
+            if (!currentLevelItem) return
+            // 将level值转成负数，再进行比较
+            let [minusCurrentLevel, children] = [-currentLevelItem[key], []]
+            for (let item of array) {
+                let levelItem = item
+                if (-levelItem[key] < minusCurrentLevel) children.push(levelItem)
+                // 只找最近那些子孙级
+                else break
+            }
+            // 从数组中删除已经找到的那些子孙级，以免影响到其他子孙级的查找
+            if (children.length > 0) array.splice(0, children.length)
+            return children
+        }
+        const getTree = (result, array, level) => {
+            // 首先将数组第一位移除掉，并添加到结果集中
+            let currentItem = array.shift()
+            currentItem.level = level
+            result.push(currentItem)
+            while (array.length > 0) {
+                if (!currentItem) return
+                // 根据当前级别获取它的子孙级
+                let children = getChildrenByLevel(currentItem, array, level)
+                // 如果当前级别没有子孙级则开始下一个
+                if (children.length == 0) {
+                    currentItem = array.shift()
+                    currentItem.level = level
+                    if (currentItem) result.push(currentItem)
+                    continue;
+                }
+                currentItem.children = []
+                // 查找到的子孙级继续查找子孙级
+                getTree(currentItem.children, children, level + 1)
+            }
+        }
+        getTree(tree, copyArray, 1)
+        return tree
+    }
+
 
 
     // END

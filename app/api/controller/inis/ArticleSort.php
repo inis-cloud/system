@@ -28,7 +28,7 @@ class ArticleSort extends Base
         // 存在的方法
         $method = ['one','all'];
         
-        $mode = (empty($param['id'])) ? 'all' : 'one';
+        $mode = (!isset($param['id']) and !isset($param['name'])) ? 'all' : 'one';
         
         // 动态方法且方法存在
         if (in_array($mode, $method)) $result = $this->$mode($param);
@@ -115,21 +115,27 @@ class ArticleSort extends Base
         // 是否获取缓存
         $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         
+        $where = [];
+        // 允许通过 where 进行查询的默认字段
+        $whereFind = ['id','name'];
+        foreach ($param as $key => $val) if (in_array($key, $whereFind)) $where[] = [$key,'=',$val];
+        
         $opt = [
             'page'   =>  (int)$param['page'], 
             'limit'  =>  (int)$param['limit'],
             'order'  =>  (string)$param['order'],
+            'where'  =>  $where
         ];
         
         // 设置缓存名称
-        $cache_name = 'article-sort?id='.$param['id'].'&page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
+        $cache_name = 'article-sort?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order']. '&where=' . json_encode($where);
         
         // 检查是否存在请求的缓存数据
         if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
         else {
             
             // 获取数据库数据
-            $data = ArticleSortModel::article((int)$param['id'], $opt);
+            $data = ArticleSortModel::article(null, $opt);
             
             // 屏蔽密码
             if (!empty($data['expand']['data'])) foreach ($data['expand']['data'] as $key => $val) {
@@ -139,8 +145,7 @@ class ArticleSort extends Base
             Cache::tag(['article-sort',$cache_name])->set($cache_name, json_encode($data));
         }
         
-        if (!Validate::isInteger($param['id'])) $msg = 'ID参数不合法！';
-        else if (empty($data)) $code = 204;
+        if (empty($data)) $code = 204;
         else {
             $msg  = '数据请求成功！';
             $code = 200;

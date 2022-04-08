@@ -136,7 +136,7 @@ class Comm extends BaseController
         $code = 400;
         $msg  = '非法访问！';
         
-        if(isset($param['login-token']) or isset($header['login-token'])){
+        if (isset($param['login-token']) or isset($header['login-token'])) {
             
             $login_token = (isset($header['login-token'])) ? $header['login-token'] : $param['login-token'];
             
@@ -207,7 +207,7 @@ class Comm extends BaseController
                     }
                     
                     // 随机默认头像
-                    $users->head_img = (new helper)->RandomImg("local", "storage/users/anime/");
+                    $users->head_img = (new helper)->RandomImg("local", "admin/images/anime/");
                     
                     $users->save();
                     $verify_code->delete();

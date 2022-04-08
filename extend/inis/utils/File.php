@@ -652,16 +652,16 @@ class File
     /*
      * 保存文件方法
      */
-    public function saveFile($url, $file, $path = './', $filename = '', $cover = true)
+    public function saveFile($fileName, $text, $filePath = './', $filename = '', $cover = true)
     {
         // 是否自定义文件名
-        if (empty($filename)) $filename = pathinfo($url, PATHINFO_BASENAME);
+        if (empty($filename)) $filename = pathinfo($fileName, PATHINFO_BASENAME);
         // 是否覆盖原有内容
-        if ($cover) if (file_exists($path . $filename)) $this->unlinkFile($path . $filename);
+        if ($cover) if (file_exists($filePath . $filename)) $this->unlinkFile($filePath . $filename);
         // 打开文件
-        $resource = fopen($path . $filename, 'a');
+        $resource = fopen($filePath . $filename, 'a');
         // 写入文件
-        fwrite($resource, $file);
+        fwrite($resource, $text);
         // 关闭文件
         fclose($resource);
     }

@@ -675,7 +675,7 @@ class Comments extends Base
             $opt['order'] = [];
             $opt['group'] = ['email'];
             $opt['where'] = [];
-            $opt['field'] = ['id','email','nickname','url','expand','agent','article_id'];
+            $opt['field'] = ['id','email','nickname','url','expand','agent','article_id','pid'];
             $opt['limit'] = (!empty($param['limit'])) ? (int)$param['limit'] : 20;
             $order = (empty($param['order'])) ? 'desc' : $param['order'];
             

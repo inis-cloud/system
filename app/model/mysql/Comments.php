@@ -89,6 +89,8 @@ class Comments extends Model
                 $value['html']    = markdown::parse($value['html']);
             }
             
+            $value['pid'] = $data['pid'] != 0 ? self::field(['id','nickname','email','url'])->find($data['pid']) : [];
+            
             return $value;
             
         })->where($config['where'])->group($config['group'])->field($config['field'])->withoutField($config['withoutField'])->order($config['order'])->page($config['page'])->limit($config['limit'])->select($id);
@@ -106,10 +108,7 @@ class Comments extends Model
     // 找儿子算法 - ($tree == true) ? '无限递归' : '二级评论';
     public static function FindSon(int $id = null, $tree = true)
     {
-        $result = [];
-        
         $items  = self::ExpandAll(null, ['where'=>['pid'=>$id]])['data'];
-        
         $result = $items;
         
         foreach ($items as $key => $val) {
@@ -130,7 +129,7 @@ class Comments extends Model
             }
         }
         
-        return $result;
+        return json_decode($result, true);
     }
     
     // 封装拓展字段数据 - 根据文章的ID查询全部 - 返回全部

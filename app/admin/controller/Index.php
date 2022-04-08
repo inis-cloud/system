@@ -7,7 +7,9 @@
 
 namespace app\admin\controller;
 
+use Parsedown;
 use app\Request;
+use inis\utils\{markdown};
 use think\facade\{View, Session, Config};
 use app\model\mysql\{Tag, Page, Links, Users, Music, Banner, Placard, Options, Article, Comments, LinksSort, ArticleSort};
 
@@ -38,7 +40,8 @@ class Index extends Base
             ];
             
             // 获取热门文章
-            $popular  = Article::withAttr('expand',function ($value, $data){
+            $popular  = Article::withoutField(['content'])->where('views','>','20')->order('views','desc')->limit(5)->select();
+            $popular->withAttr('expand', function ($value, $data){
                 
                 $user = Users::field(['nickname','description','email','address_url','head_img'])->find($data['users_id'])->toArray();
                 
@@ -56,7 +59,7 @@ class Index extends Base
                 
                 return $value;
                 
-            })->withoutField(['content'])->where('views','>','20')->order('views','desc')->limit(5)->select();
+            });
             
             $data = ['count'=>$count,'popular'=>$popular];
             $code = 200;
@@ -218,7 +221,7 @@ class Index extends Base
             
             $data  = ['sort'=>$sort,'tag'=>$tag];
             
-            if(!empty($param['id'])) $data['article'] = Article::ExpandAll($param['id'], ['withoutField'=>null,'where'=>null]);
+            if (!empty($param['id'])) $data['article'] = Article::ExpandAll($param['id'], ['withoutField'=>null,'where'=>null]);
             
             $code  = 200;
             $msg   = 'ok';
@@ -451,7 +454,8 @@ class Index extends Base
             if(!empty($param['id'])){
                 
                 // 数据封装
-                $edit = Links::withAttr('sort_id',function ($value,$data){
+                $edit = Links::find($param['id']);
+                $edit->withAttr('sort_id',function ($value,$data){
                     
                     $sort = LinksSort::field(['id','name'])->select();
                     
@@ -459,7 +463,7 @@ class Index extends Base
                     
                     return $value;
                     
-                })->find($param['id']);
+                });
                 
                 $data['edit'] = $edit;
             }

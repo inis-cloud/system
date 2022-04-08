@@ -52,12 +52,12 @@ class ArticleSort extends Model
         $config = ['page'=>1,'limit'=>5,'order'=>'create_time asc','where'=>['is_show'=>1]];
         
         // 重组第二参数
-        foreach ($config as $key => $val) if(!in_array($key,$opt)) $config[$key] = $val;
+        foreach ($config as $key => $val) if (!in_array($key,$opt)) $config[$key] = $val;
         foreach ($opt as $key => $val) $config[$key] = $val;
         
         // 获取当前分类
         $sort    = self::where($config['where'])->find($id);
-        $where   = ['sort_id','like','%|'.$id.'|%'];
+        $where   = ['sort_id','like','%|'.$sort['id'].'|%'];
         
         if ($sort) {
             // 文章总数量
@@ -71,7 +71,7 @@ class ArticleSort extends Model
             foreach ($article as $val) $article_id[] = $val['id'];
             
             // 获取分类下的文章
-            if(!empty($article_id)) $data['data'] = Article::ExpandAll($article_id, ['order'=>$config['order'],'limit'=>$config['limit']]);
+            if (!empty($article_id)) $data['data'] = Article::ExpandAll($article_id, ['order'=>$config['order'],'limit'=>$config['limit']]);
             else $data['data'] = [];
             
             $sort['expand'] = $data;

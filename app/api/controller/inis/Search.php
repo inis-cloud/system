@@ -108,6 +108,8 @@ class Search extends Base
         if (empty($param['page']))  $param['page']  = 1;
         if (empty($param['limit'])) $param['limit'] = 5;
         if (empty($param['order'])) $param['order'] = 'create_time desc';
+        // 自动存储搜索记录
+        $auto = empty($param['record']) or $param['record'] == 'true' ? true : false;
         
         $value= (empty($param['value']))   ? '' : $param['value'];
         $sid  = (empty($param['sort_id'])) ? '' : $param['sort_id'];
@@ -121,7 +123,7 @@ class Search extends Base
         $data = Article::search($value, $opt, (int)$sid);
         
         // 非空存储搜索记录
-        if (!empty($value)) {
+        if (!empty($value) and $auto) {
             $record = iSearch::where(['name'=>$value])->findOrEmpty();
             if ($record->isEmpty()) {
                 $record->name = $value;
@@ -164,6 +166,8 @@ class Search extends Base
         
         // 搜索关键词
         $value= !empty($param['value']) ? $param['value'] : '';
+        // 自动存储搜索记录
+        $auto = empty($param['record']) or $param['record'] == 'true' ? true : false;
         
         // 查询范围
         $field= !empty($param['field']) ? $param['field'] : ['article','record','comments','page','links'];
@@ -234,7 +238,7 @@ class Search extends Base
         ]);
         
         // 非空存储搜索记录
-        if (!empty($value)) {
+        if (!empty($value) and $auto) {
             $record = iSearch::where(['name'=>$value])->findOrEmpty();
             if ($record->isEmpty()) {
                 $record->name = $value;
@@ -258,6 +262,8 @@ class Search extends Base
         if (empty($param['order'])) $param['order'] = 'create_time desc';
         
         $value= (empty($param['value'])) ? '' : $param['value'];
+        // 自动存储搜索记录
+        $auto = empty($param['record']) or $param['record'] == 'true' ? true : false;
         
         $opt  = [
             'page'  => (int)$param['page'],
@@ -269,7 +275,7 @@ class Search extends Base
         $data = Comments::ExpandAll(null, $opt);
         
         // 非空存储搜索记录
-        if (!empty($value)) {
+        if (!empty($value) and $auto) {
             $record = iSearch::where(['name'=>$value])->findOrEmpty();
             if ($record->isEmpty()) {
                 $record->name = $value;
@@ -293,6 +299,8 @@ class Search extends Base
         if (empty($param['order'])) $param['order'] = 'create_time desc';
         
         $value= (empty($param['value'])) ? '' : $param['value'];
+        // 自动存储搜索记录
+        $auto = empty($param['record']) or $param['record'] == 'true' ? true : false;
         
         $opt  = [
             'page'   => (int)$param['page'],
@@ -307,7 +315,7 @@ class Search extends Base
         $data = Page::ExpandAll(null, $opt);
         
         // 非空存储搜索记录
-        if (!empty($value)) {
+        if (!empty($value) and $auto) {
             $record = iSearch::where(['name'=>$value])->findOrEmpty();
             if ($record->isEmpty()) {
                 $record->name = $value;
@@ -331,6 +339,8 @@ class Search extends Base
         if (empty($param['order'])) $param['order'] = 'create_time desc';
         
         $value= (empty($param['value']))   ? '' : $param['value'];
+        // 自动存储搜索记录
+        $auto = empty($param['record']) or $param['record'] == 'true' ? true : false;
         
         $opt  = [
             'page'   => (int)$param['page'],
@@ -347,7 +357,7 @@ class Search extends Base
         $data = Links::ExpandAll(null, $opt);
         
         // 非空存储搜索记录
-        if (!empty($value)) {
+        if (!empty($value) and $auto) {
             $record = iSearch::where(['name'=>$value])->findOrEmpty();
             if ($record->isEmpty()) {
                 $record->name = $value;

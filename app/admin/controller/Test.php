@@ -37,32 +37,33 @@ class Test
 		header('Access-Control-Allow-Methods: GET, POST, PUT,DELETE,OPTIONS,PATCH');
     }
     
-    function array_merge_deep(...$arrs) {
-    	$merged = [];
-    	while ($arrs) {
-    		$array = array_shift($arrs);
-    		if (!$array) {
-    			continue;
-    		}
-    		foreach ($array as $key => $value) {
-    			if (is_string($key)) {
-    				if (is_array($value) && array_key_exists($key, $merged)
-    				&& is_array($merged[$key])) {
-    					$merged[$key] = $this->array_merge_deep(...[$merged[$key], $value]);
-    				} else {
-    					$merged[$key] = $value;
-    				}
-    			} else {
-    				$merged[] = $value;
-    			}
-    		}
-    	}
-    	return $merged;
-    }
-    
     public function index(Request $request)
     {
-        $data = [];
+        $data  = [];
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         // 实例化客户端

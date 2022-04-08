@@ -108,8 +108,8 @@ class Page extends Base
         $code = 400;
         $msg  = '无数据';
         
-        $id    = (!empty($param['id']))    ? $param['id']    : "";
-        $alias = (!empty($param['alias'])) ? $param['alias'] : "";
+        $id    = (!empty($param['id']))    ? $param['id']    : '';
+        $alias = (!empty($param['alias'])) ? $param['alias'] : '';
         
         // 是否开启了缓存
         $api_cache = $this->config['api_cache'];
@@ -122,16 +122,22 @@ class Page extends Base
         // 检查是否存在请求的缓存数据
         if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
         else {
-            // 获取数据库数据
-            if (!empty($id)) $data = PageModel::ExpandAll($id);
-            else $data = PageModel::ExpandAll(null, ['where'=>['alias'=>$alias]])['data'][0];
+            
+            $check = PageModel::whereOr(['id'=>$id,'alias'=>$alias])->findOrEmpty();
+            if ($check->isEmpty()) $data = [];
+            else {
+                
+                // 获取数据库数据
+                if (!empty($id)) $data = PageModel::ExpandAll($id);
+                else $data = PageModel::ExpandAll(null, ['where'=>['alias'=>$alias]])['data'][0];
+                
+                // 解析markdown语法
+                $data->content = Parsedown::instance()->setUrlsLinked(false)->text($data->content);
+                // 解析自定义标签
+                $data->content = markdown::parse($data->content);
+            }
             Cache::tag(['page',$cache_name])->set($cache_name, json_encode($data));
         }
-        
-        // 解析markdown语法
-        $data->content = Parsedown::instance()->setUrlsLinked(false)->text($data->content);
-        // 解析自定义标签
-        $data->content = markdown::parse($data->content);
         
         // 浏览量自增
         $this->visit($param);

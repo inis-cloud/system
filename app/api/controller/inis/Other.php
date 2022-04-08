@@ -179,6 +179,13 @@ class Other extends Base
         $code = 400;
         $msg  = 'ok';
         
+        // 允许的类型
+        $allow= ['chinaz','yudinet'];
+        // 配置默认类型
+        $type = empty($param['type']) ? 'chinaz' : $param['type'];
+        // 防止无类型
+        $type = in_array($type, $allow) ? $type : 'chinaz';
+        
         if (empty($param['domain'])) $msg = '请提交域名，用参数 domain 表示！';
         else if (!$this->helper->CheckDomain($param['domain'])) $msg = '域名格式不正确！';
         else {
@@ -200,28 +207,7 @@ class Other extends Base
             if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
             else {
                 
-                $url = 'https://icp.chinaz.com/' . $domain;
-                // 元数据采集规则
-                $rules = [
-                    'key'   => ['span','text'],
-                    'value' => ['p','text'],
-                ];
-                // 切片选择器
-                $range = '#first li';
-                $list  = QueryList::get($url)->rules($rules)->range($range)->queryData();
-                
-                // 字段名称替换
-                $array = [
-                    '主办单位名称'      =>  'unit',
-                    '主办单位性质'      =>  'nature',
-                    '网站备案/许可证号' =>  'copy',
-                    '网站名称'          =>  'name',
-                    '网站首页网址'      =>  'index',
-                    '审核时间'          =>  'time'
-                ];
-                
-                // 处理数据
-                foreach ($list as $val) if (in_array($val['key'], array_keys($array))) $data[$array[$val['key']]] = str_replace('查看截图','',$val['value']);
+                $data = $type == 'chinaz' ? $this->chinaz($domain) : $this->yudinet($domain);
                 
                 // 缓存两天
                 Cache::tag(['other',$cache_name])->set($cache_name, json_encode($data), 172800);
@@ -233,6 +219,73 @@ class Other extends Base
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    // 爬取站长之家的备案信息
+    public function chinaz($domain)
+    {
+        $data= [];
+        $url = 'https://icp.chinaz.com/' . $domain;
+        // 元数据采集规则
+        $rules = [
+            'key'   => ['span','text'],
+            'value' => ['p','text'],
+        ];
+        // 切片选择器
+        $range = '#first li';
+        $list  = QueryList::get($url)->rules($rules)->range($range)->queryData();
+        
+        // 字段名称替换
+        $array = [
+            '主办单位名称'      =>  'unit',
+            '主办单位性质'      =>  'nature',
+            '网站备案/许可证号' =>  'copy',
+            '网站名称'          =>  'name',
+            '网站首页网址'      =>  'index',
+            '审核时间'          =>  'time'
+        ];
+        
+        // 处理数据
+        foreach ($list as $val) if (in_array($val['key'], array_keys($array))) $data[$array[$val['key']]] = str_replace('查看截图','',$val['value']);
+        
+        return $data;
+    }
+    
+    public function yudinet($domain)
+    {
+        $data  = [];
+     
+        $url  = 'http://beian.yudinet.com/Account/QueryRecordStatus';
+        
+        // 采集正文内容
+        $html = QueryList::post($url, [
+            'queryType'     => 0,
+            'queryContent'  => $domain
+        ])->getHtml();
+        
+        // 匹配 table 数据
+        $table = QueryList::html($html)->find('table');
+        
+        // 采集表头
+        $th = $table->find('tr:eq(0)')->find('th')->texts();
+        // 采集表内容
+        $td = $table->find('tr:eq(1)')->map(function($row){
+            return $row->find('td')->texts()->all();
+        });
+        
+        // 字段名称替换
+        $array = [
+            '网站名称'    =>  'name',
+            '主体备案号'  =>  'main',
+            '网站备案号'  =>  'copy',
+            '备案状态'    =>  'status',
+        ];
+        
+        foreach ($th->all() as $key => $val) if (in_array($val, array_keys($array))) {
+            $data[$array[$val]] = $td->all()[0][$key];
+        }
+        
+        return $data;
     }
     
     // PING查询

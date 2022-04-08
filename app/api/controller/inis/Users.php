@@ -62,7 +62,7 @@ class Users extends Base
         $result = [];
         
         // 存在的方法
-        $method = ['saves','remove','login','register'];
+        $method = ['saves','remove','login','register','check'];
         
         $mode   = (empty($param['mode'])) ? 'saves' : $param['mode'];
         
@@ -335,7 +335,7 @@ class Users extends Base
                     }
                     
                     // 随机默认头像
-                    $users->head_img = $this->helper->RandomImg("local", "storage/users/anime/");
+                    $users->head_img = $this->helper->RandomImg("local", "admin/images/anime/");
                     
                     $users->save();
                     $verify_code->delete();
@@ -379,6 +379,8 @@ class Users extends Base
         else {
             
             $code = 200;
+            
+            $param['email'] = empty($param['email']) ? $this->user['data']->email : $param['email'];
             
             $email   = UsersModel::where(['email'=>$param['email']])->findOrEmpty();
             $account = UsersModel::where(['account'=>$param['account']])->findOrEmpty();
@@ -511,13 +513,13 @@ class Users extends Base
         
         $msg  = '验证码已发送至邮箱，'.$valid_time_str.'内有效！';
         
-        $this->sendEmail($email,$chars,$valid_time_str);
+        $this->sendEmail($email, $chars, $valid_time_str);
         
         return $msg;
     }
     
     // 发送邮箱通知
-    public function sendEmail($email,$code,$valid_time)
+    public function sendEmail($email, $code, $valid_time)
     {
         // 获取邮箱服务配置信息
         $options  = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
@@ -540,6 +542,43 @@ class Users extends Base
         $template = str_replace('{valid_time}' , $valid_time, $template);
         
         // 发送评论信息到邮箱
-        $this->tool->sendMail($email,$site.'邮箱换绑验证码',$template);
+        $this->tool->sendMail(['email'=>$email,'title'=>$site.'邮箱换绑验证码','content'=>$template]);
+    }
+    
+    // 校验合法登录 - 根据JWT
+    public function check($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = 'ok';
+        
+        if (isset($param['login-token']) or isset($header['login-token'])) {
+            
+            $token = (isset($header['login-token'])) ? $header['login-token'] : $param['login-token'];
+            
+            try {
+                
+                JWT::$leeway = 60;
+                $decoded = JWT::decode($token, $this->config['jwt']['key'], [$this->config['jwt']['encrypt']]);
+                $array   = (array) $decoded;
+                
+                $data = UsersModel::withoutField(['password'])->find($array['uid']);
+                $code = 200;
+                $msg  = '合法登录！';
+                
+            } catch (SignatureInvalidException $e){
+                // $e->getMessage()
+                $msg = '签名不正确！';
+            } catch (BeforeValidException $e){
+                $msg = 'login-token失效！';
+            } catch (ExpiredException $e){
+                $msg = 'login-token失效！';
+            } catch (Exception $e){
+                $msg = '未知错误！';
+            };
+            
+        } else $msg = '请通过 params or headers 的方式提交参数为 login-token 的JWT密钥';
+        
+        return ['data'=>$data,'msg'=>$msg,'code'=>$code];
     }
 }

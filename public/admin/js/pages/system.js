@@ -369,7 +369,7 @@
                 let encry_data = [{id: 0,text: 'ssl'},{id: 1,text: 'tls'}]
                 encry_data.forEach((item)=>{
                     // 设置预选中
-                    if(this.serve.email.opt.encry == item.text) item.selected = true
+                    if(this.serve.email.opt.encrypt == item.text) item.selected = true
                 });
                 $("#encrypt-select").select2({
                     data: encry_data,

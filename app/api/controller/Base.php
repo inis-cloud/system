@@ -80,9 +80,7 @@ abstract class Base
             $msg = '未知错误！';
         };
         
-        $result = ['data'=>$data,'code'=>$code,'msg'=>$msg];
-        
-        return $result;
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];;
     }
     
     public function __call($name, $arguments)

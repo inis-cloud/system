@@ -2,13 +2,15 @@
 
 namespace app\model\mysql;
 
-use inis\utils\{helper};
+use Parsedown;
 use think\facade\{Config};
 use think\{Model, Response};
+use inis\utils\{helper, markdown};
 use think\model\concern\SoftDelete;
 
 class Article extends Model
 {
+    
     // 设置软删除
     use SoftDelete;
     protected $deleteTime = 'delete_time';
@@ -68,13 +70,13 @@ class Article extends Model
         // 防止分页请求超出页码
         if ($config['page'] > $data['page']) $config['page'] = $data['page'];
         
-        $article = self::withTrashed()->whereOr($config['whereOr'])->withAttr('expand',function ($value,$data) {
+        $article = self::withTrashed()->whereOr($config['whereOr'])->withAttr('expand',function ($value, $data) {
             
             $helper = new helper;
             
             $user = Users::field(['nickname','description','email','address_url','head_img','opt'])->findOrEmpty($data['users_id']);
             
-            $pay = [];
+            $pay  = [];
             $pay_array = ['alipay','wechat_pay','qq_pay'];
             if (!empty($user['opt'])) foreach ($user['opt'] as $key => $val) if (in_array($key,$pay_array)) $pay[$key] = $val;
             
@@ -100,30 +102,26 @@ class Article extends Model
                 ];
             }
             
-            $tag = Tag::select(explode("|", $data['tag_id']));
+            $tag  = Tag::select(explode("|", $data['tag_id']));
             $sort = ArticleSort::select(explode("|", $data['sort_id']));
             
             // 随机颜色
             $color_arr = ['light','danger','dark','primary','success','info','warning'];
-            $rand = array_rand($color_arr);
+            $rand  = array_rand($color_arr);
             $color = $color_arr[$rand];
             
             $value['tag'] = [];
             $value['sort']= [];
             
-            foreach ($tag  as $key => $val){
-                $value['tag'][$key] = [
-                    'id'    =>  $val['id'],
-                    'name'  =>  $val['name'],
-                    'color' =>  (new helper)->RandArray()
-                ];
-            }
-            foreach ($sort as $key => $val){
-                $value['sort'][$key] = [
-                    'id'    =>  $val['id'],
-                    'name'  =>  $val['name'],
-                ];
-            }
+            foreach ($tag  as $key => $val) $value['tag'][$key] = [
+                'id'    =>  $val['id'],
+                'name'  =>  $val['name'],
+                'color' =>  (new helper)->RandArray()
+            ];
+            foreach ($sort as $key => $val) $value['sort'][$key] = [
+                'id'    =>  $val['id'],
+                'name'  =>  $val['name'],
+            ];
             
             // 统计评论
             $value['comments'] = sizeof(Comments::where(['article_id'=>$data['id']])->field(['article_id'])->select());
@@ -138,6 +136,16 @@ class Article extends Model
                 $value['img_src'] = (!empty($data['img_src'])) ? $data['img_src'] : $path;
                 
             } else $value['img_src'] = $data['img_src'];
+            
+            // 如果文章内容被屏蔽了
+            if (empty($data['content'])) $data['content'] = self::field(['content'])->find($data['id'])['content'];
+            // 正规匹配文章内的图片
+            $images = markdown::matchImg(markdown::parse(Parsedown::instance()->setUrlsLinked(false)->text($data['content'])));
+            // 重新组合文章内的图片
+            $value['images'] = array_map(function ($item){
+                $value = ['alt'=>$item['alt'],'src'=>$item['src']];
+                return $value;
+            }, $images);
             
             return $value;
             
@@ -265,7 +273,7 @@ class Article extends Model
         foreach ($comments as $key => $val) $comments[$key]['son'] = Comments::FindSon($val['id'], $config['tree']);
         
         // 冒泡排序
-        if (!$config['tree']) foreach ($comments as $key => $val) $comments[$key]['son'] = (new helper)->BubbSort($comments[$key]['son'], 'create_time');
+        // if (!$config['tree']) foreach ($comments as $key => $val) $comments[$key]['son'] = (new helper)->BubbSort($comments[$key]['son'], 'create_time');
         
         $data['data'] = $comments;
         
