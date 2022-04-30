@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace app\api\middleware;
 
 use Closure;
+use inis\utils\{FileLog};
 use app\model\mysql\{Options};
 use think\{Config, Request, Response};
 
@@ -23,6 +24,9 @@ class api
     // 构造器
     public function __construct(Config $config)
     {
+        $this->FileLog      = new FileLog([
+            'filePath' => app()->getRootPath() . 'runtime/storage/' . date('Y-m-d', time()) . '.log',
+        ]);
         $this->cookieDomain = $config->get('cookie.domain', '');
     }
     
@@ -124,6 +128,15 @@ class api
             $origin = idn_to_utf8($origin, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
             if (!in_array($origin, $domain)) return json($result);
         }
+
+        // 写入日志
+        $this->FileLog->save([
+            'ip'    =>  $request->ip(),
+            'url'   =>  $request->url(),
+            'method'=>  $request->method(),
+            'ua'    =>  $request->header('user-agent'),
+            'params'=>  $request->param(),
+        ]);
         
         // 回调本身并返回response对象
         return $reponse;

@@ -97,7 +97,13 @@
                             } else if (item == 'admin') {
                                 name = '后台日志'
                                 description = '将清理此前的所有后台访问日志'
-                            } else name = item
+                            } else if (item == 'storage') {
+                                name = '全局日志'
+                                description = '包含API访问日志等'
+                            } else {
+                                name = item
+                                description = '其他缓存'
+                            }
                             
                             size  = result[item].size
                             value = Math.round(size / 1024)

@@ -3,6 +3,7 @@
     const app = Vue.createApp({
         data() {
             return {
+                url      : inisHelper.get.query.string('url'),
                 account  : null,
                 password : null,
                 is_login : false,   // 是否登录中
@@ -62,7 +63,7 @@
                             
                             setTimeout(() => {
                                 
-                                window.location.href = '/';
+                                window.location.href = !inisHelper.is.empty(this.url) ? this.url : '/'
                                 
                             }, 100);
                             

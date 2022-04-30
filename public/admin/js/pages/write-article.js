@@ -42,9 +42,9 @@
             // 窗口关闭前事件
             this.destroy()
             
-            // 获取表情包数据
-            axios.get('/admin/json/emoji.json').then((res)=>{
-                this.emoji = res.data
+            // 获取表情包数据 /admin/json/emoji.json
+            axios.get('/api/emoji').then((res)=>{
+                this.emoji = res.data.data
                 this.initVditor()
             }).catch((err)=>{
                 this.emoji = {
@@ -72,7 +72,7 @@
                 this.contentEditor = new Vditor("vditor",{
                     height: 360,
                     minHeight: 500,
-                    cdn: '/admin/libs/vditor',
+                    cdn: 'https://cdn.inis.cc/comm/libs/vditor',
                     placeholder: '写点什么吧！',
                     icon: 'material',           // 图标风格
                     toolbarConfig: {

@@ -39,6 +39,28 @@ return [
             // 是否实时写入
             'realtime_write' => false,
         ],
+        'api' => [
+            // 日志记录方式
+            'type'           => 'File',
+            // 日志保存目录
+            'path'           => app()->getRuntimePath() . 'storage',
+            // 单文件日志写入
+            'single'         => false,
+            // 独立日志级别
+            'apart_level'    => [],
+            // 最大日志文件数量
+            'max_files'      => 0,
+            // 使用JSON格式记录
+            'json'           => true,
+            // 日志处理
+            'processor'      => null,
+            // 关闭通道日志写入
+            'close'          => false,
+            // 是否实时写入
+            'realtime_write' => false,
+            'time_format'    => 'Y-m-d H:i:s',
+            'format'         => '[%s][%s]:%s',
+        ],
         // 其它日志通道配置
     ],
 

@@ -9,6 +9,7 @@ namespace app\admin\controller;
 
 use app\Request;
 use inis\utils\{File};
+use app\model\sqlite\{Search};
 use think\exception\ValidateException;
 use app\validate\Users as UsersValidate;
 use think\facade\{Config, Cache, Session, Validate};
@@ -297,7 +298,7 @@ class Method extends Base
             ));
             
             // 清除缓存
-            Cache::tag(['article','group'])->clear();
+            Cache::tag(['article','group', 'article-sort', 'tag'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -557,7 +558,7 @@ class Method extends Base
             $sort->save();
             
             // 清除缓存
-            Cache::tag(['links-sort','group'])->clear();
+            Cache::tag(['links-sort','group','links'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -575,7 +576,7 @@ class Method extends Base
             LinksSort::destroy($param['id']);
             
             // 清除缓存
-            Cache::tag(['links-sort','group'])->clear();
+            Cache::tag(['links-sort','group','links'])->clear();
             
             $data = [];
             $code = 200;
@@ -628,7 +629,7 @@ class Method extends Base
             $links->save();
             
             // 清除缓存
-            Cache::tag(['links','group'])->clear();
+            Cache::tag(['links','group','links-sort'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -646,7 +647,7 @@ class Method extends Base
             Links::destroy($param['id']);
             
             // 清除缓存
-            Cache::tag(['links','group'])->clear();
+            Cache::tag(['links','group','links-sort'])->clear();
             
             $data = [];
             $code = 200;
@@ -803,7 +804,7 @@ class Method extends Base
             Article::destroy($param['id'], $model);
             
             // 清除缓存
-            Cache::tag(['article','group'])->clear();
+            Cache::tag(['article','group','article-sort','tag'])->clear();
             
             $data = [];
             $code = 200;
@@ -1137,10 +1138,12 @@ class Method extends Base
                     $code = 200;
                     $data = $options;
                 }
+                
+                // 清理有关文章的缓存
+                if ($param['key'] == 'config:system') Cache::tag(['article', 'article-sort', 'tag'])->clear();
+                // 清除缓存
+                Cache::tag(['options'])->clear();
             }
-            
-            // 清除缓存
-            Cache::tag('options')->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -1362,6 +1365,68 @@ class Method extends Base
             }
             
             $item->save();
+            
+            return $this->create($data, $msg, $code);
+        }
+    }
+    
+    /** 
+     * @name 新增和修改搜索记录
+     */
+    public function SaveSearch(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $param = $request->param();
+            
+            $data = [];
+            $code = 200;
+            $msg  = 'ok';
+            
+            // 允许用户提交并存储的字段
+            $obtain = ['name'];
+            $param['name'] = !empty($param['named']) ? $param['named'] : $param['name'];
+            
+            if (empty($param['id'])) $item = new Search;
+            else $item = Search::find($param['id']);
+            
+            // 存储数据
+            foreach ($param as $key => $val) {
+                // 判断字段是否允许存储，防提权
+                if (in_array($key, $obtain)) $item->$key = $val;
+            }
+            
+            $item->save();
+            
+            // 清理缓存
+            Cache::tag(['search','group'])->clear();
+            
+            return $this->create($data, $msg, $code);
+        }
+    }
+    
+    /** 
+     * @name 删除搜索记录
+     */
+    public function deleteSearch(Request $request)
+    {
+        if ($request->isPost()){
+            
+            $param = $request->param();
+            
+            $data  = [];
+            $code  = 200;
+            $msg   = 'ok';
+            
+            $id    = (empty($param['id'])) ? '' : $param['id'];
+            
+            // 字符串转数组并去空处理
+            $array = array_filter(explode(',', $id));
+            
+            Search::destroy($array);
+            
+            // 清除缓存
+            Cache::tag(['search','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }

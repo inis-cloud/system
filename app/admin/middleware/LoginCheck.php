@@ -24,6 +24,11 @@ class LoginCheck
     {
         // halt($request);
         
+        // 原路由
+        $old_route = $request->request('s');
+        // 新路由
+        $new_route = !empty($old_route) ? 'admin/comm/login?url='.$old_route : 'admin/comm/login';
+        
         $install = false;
         
         $File = new File;
@@ -36,7 +41,7 @@ class LoginCheck
         }
         
         // 登录验证
-        if (!preg_match('/login/', $request->pathinfo())) if (empty(Session::has('login_account'))) return redirect((string) url('admin/comm/login'));
+        if (!preg_match('/login/', $request->pathinfo())) if (empty(Session::has('login_account'))) return redirect((string) url($new_route));
         
         // 单点登录
         if (!empty(Session::get('login_account'))) {
@@ -59,10 +64,10 @@ class LoginCheck
                 Session::clear();
                 Cookie::delete('login_account');
                 
-                return redirect((string) url('admin/comm/login'));
+                return redirect((string) url($new_route));
             }
             
-        } else return redirect((string) url('admin/comm/login'));
+        } else return redirect((string) url($new_route));
         
         // ↑↑↑ 前置中间件执行区域 ↑↑↑
         $reponse = $next($request);

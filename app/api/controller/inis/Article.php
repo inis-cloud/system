@@ -6,9 +6,9 @@ namespace app\api\controller\inis;
 use Parsedown;
 use think\Request;
 use inis\utils\{markdown};
-use think\facade\{Cache, Validate};
+use think\facade\{Cache, Validate, Config};
 // use app\model\sqlite\{Visit as iVisit};
-use app\model\mysql\{Tag, Visit, Article as ArticleModel};
+use app\model\mysql\{Tag, Visit, Article as ArticleModel, Comments};
 
 class Article extends Base
 {
@@ -246,16 +246,20 @@ class Article extends Base
                 
                 if ($data['opt']['auth'] == 'password') {
                     
+                    // 获取修改前的OPT字段数据
+                    $oldOpt  = ArticleModel::field(['opt'])->find($data['id']);
+                    $oldOpt  = json_decode($oldOpt->getData('opt'), true);
+                    $password= !empty($oldOpt['password']) ? $oldOpt['password'] : '';
+                    
                     if (empty($param['password'])) {
-                        $code = 403;
+                        $code = 405;
                         $data = [];
-                        $msg  = '未经授权';
-                    } else if ($param['password'] != $data['opt']['password']) {
+                        $msg  = '当前文章需要输入密码才能访问';
+                    } else if ($param['password'] != $password) {
                         $code = 403;
                         $data = [];
                         $msg  = '密码错误';
                     } else {
-                        
                         $msg  = '数据请求成功！';
                         $code = 200;
                         // 浏览量自增
@@ -339,10 +343,13 @@ class Article extends Base
             // 获取数据库数据
             $data = ArticleModel::ExpandAll(null, $opt);
             
-            // 屏蔽密码
-            if (!empty($data['data'])) foreach ($data['data'] as $key => $val) {
-                if (!empty($val['opt']) and isset($val['opt']->password)) unset($val['opt']->password);
-            }
+            // 屏蔽密码 和
+            // if (!empty($data['data'])) foreach ($data['data'] as $key => $val) {
+                // $opt = $val['opt'];
+                // unset($opt['password']);
+                // $data['data'][$key]->opt = json_encode($opt);
+                // $data['data'][$key]->opt = 'aaa';
+            // }
             
             Cache::tag(['article'])->set($cache_name, json_encode($data));
         }
@@ -528,7 +535,10 @@ class Article extends Base
             
             // 屏蔽密码
             if (!empty($data['data'])) foreach ($data['data'] as $key => $val) {
-                if (!empty($val['opt']) and isset($val['opt']->password)) unset($val['opt']->password);
+                $opt = $val['opt'];
+                unset($opt['password']);
+                $data['data'][$key]->opt = json_encode($opt);
+                if (!isset($opt)) $data['data'][$key]->opt = json_encode(['empty'=>1]);
             }
             
             Cache::tag(['article',$cache_name])->set($cache_name, json_encode($data));
@@ -556,19 +566,23 @@ class Article extends Base
             $cache_name = 'article/next?id='.$param['id'];
             
             // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = Cache::get($cache_name);
+            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name), true);
             else {
                 
                 $map1 = ['id','>',$param['id']];
                 $map2 = ['id','<',$param['id']];
                 $map3 = ['is_show','=',1];
                 
-                $field= ['id','title','description','create_time','update_time','last_update_time'];
+                $field= ['id','title','description','img_src','views','create_time','update_time','last_update_time'];
                 
                 // 上一篇
                 $data['prev'] = ArticleModel::where([$map2, $map3])->field($field)->find();
+                if (!empty($data['prev']))  $data['prev']['expand'] = $this->imagesCover($data['prev']);
+                
                 // 下一篇
                 $data['next'] = ArticleModel::where([$map1, $map3])->field($field)->find();
+                if (!empty($data['next']))  $data['next']['expand'] = $this->imagesCover($data['next']);
+                
                 Cache::tag(['links',$cache_name])->set($cache_name, json_encode($data));
             }
         }
@@ -580,5 +594,34 @@ class Article extends Base
         else $msg = '数据请求成功！';
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+    
+    function imagesCover($data)
+    {
+        $result = [];
+        // 随机图 - 开启随机图 - 判断封面是否为空
+        $conf = Config::get('inis.random.article');
+        
+        if ($conf['enable']) {
+            
+            // 判断是否存在唯一的随机数，防止返回随机结果一致
+            $path = (strpos($conf['path'], '?')) ? $conf['path'] . '&id=' . $data['id'] : $conf['path'] . '?id=' . $data['id'];
+            $result['img_src'] = (!empty($data['img_src'])) ? $data['img_src'] : $path;
+            
+        } else $result['img_src'] = $data['img_src'];
+        
+        // 如果文章内容被屏蔽了
+        if (empty($data['content'])) $content = ArticleModel::field(['content'])->find($data['id'])['content'];
+        // 正规匹配文章内的图片
+        $images = markdown::matchImg(markdown::parse(Parsedown::instance()->setUrlsLinked(false)->text($content)));
+        // 重新组合文章内的图片
+        $result['images'] = array_map(function ($item){
+            return ['alt'=>$item['alt'],'src'=>$item['src']];
+        }, $images);
+        
+        // 统计评论
+        $result['comments']['count'] = sizeof(Comments::where(['article_id'=>$data['id']])->field(['article_id'])->select());
+        
+        return $result;
     }
 }

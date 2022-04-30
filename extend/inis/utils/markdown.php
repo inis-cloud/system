@@ -160,7 +160,7 @@ class markdown
                 $tabContents .= "<div class=\"tab-pane $show $active\" id=\"$id\">$text</div>";
             } else if ($tabs_type == "left" or $tabs_type == "right") {
                 // Tab 头
-                $tab .= "<a class=\"nav-link $active $show\" id=\"$id-tab\" data-toggle=\"pill\" href=\"#$id\" role=\"tab\" aria-controls=\"$id\" aria-selected=\"true\">
+                $tab .= "<a class=\"nav-link $active $show\" id=\"$id-tab\" data-toggle=\"pill\" data-bs-toggle=\"pill\" href=\"#$id\" role=\"tab\" aria-controls=\"$id\" aria-selected=\"true\">
                     <span class=\"$item_class\">$name</span>
                 </a>";
                 // Tab内容
@@ -270,7 +270,7 @@ class markdown
             $items .= "<div class=\"card mb-0\">
                 <div class=\"card-header\" id=\"$id\">
                     <h5 class=\"m-0\">
-                        <a $style class=\"custom-accordion-title d-block pt-2 pb-2\" data-toggle=\"collapse\" href=\"#$id-item\" aria-expanded=\"true\" aria-controls=\"$id-item\">
+                        <a $style class=\"custom-accordion-title d-block pt-2 pb-2\" data-toggle=\"collapse\" data-bs-toggle=\"collapse\" href=\"#$id-item\" aria-expanded=\"true\" aria-controls=\"$id-item\">
                             $name
                             <span class=\"float-right\">
                                 <svg class=\"$active\" t=\"1624267618081\" class=\"icon\" viewBox=\"0 0 1024 1024\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" p-id=\"3217\" width=\"16\" height=\"16\"><path d=\"M709.717333 546.901333a46.805333 46.805333 0 0 0 0-69.802666L368.981333 181.077333C340.949333 156.757333 298.666667 177.749333 298.666667 216.021333v591.957334c0 38.272 42.282667 59.306667 70.314666 34.944l340.736-296.021334z\" p-id=\"3218\" fill=\"#50b5ff\"></path></svg>

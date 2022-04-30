@@ -171,7 +171,7 @@
                 }
             },
             
-            /* 启用状态 */
+            // 启用状态
             isEnable(id){
                 
                 let [arr, status] = [this.is_enable, 0]
@@ -228,7 +228,7 @@
                 
                 /* 单图上传 */
                 let file  = event.target.files[0]
-                
+
                 let name  = file.name
                 name = name.split('.')
                 const warning = ['php','js','htm','html','xml','json','bat','vb','exe']

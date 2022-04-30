@@ -9,7 +9,8 @@ namespace app\admin\controller;
 
 use Parsedown;
 use app\Request;
-use inis\utils\{markdown};
+use inis\utils\{markdown, FileLog};
+use app\model\sqlite\{Search};
 use think\facade\{View, Session, Config};
 use app\model\mysql\{Tag, Page, Links, Users, Music, Banner, Placard, Options, Article, Comments, LinksSort, ArticleSort};
 
@@ -1105,6 +1106,127 @@ class Index extends Base
             
             return $this->create($data, $msg, $code);
         }
+    }
+    
+    /*
+     * #name 管理搜索
+     */
+    public function ManageSearch(Request $request)
+    {
+        if ($request->isPost()) {
+            
+            // 获取请求参数
+            $param = $request->param();
+            
+            if (empty($param['page']))  $param['page']  = 1;
+            if (empty($param['limit'])) $param['limit'] = 10;
+            if (empty($param['order'])) $param['order'] = 'count desc';
+            $search = (empty($param['search'])) ? '' : $param['search'];
+            
+            $map1 = ['name'  , 'like', '%'.$search.'%'];
+            
+            $opt = [
+                'page'   =>  (int)$param['page'], 
+                'limit'  =>  (int)$param['limit'],
+                'order'  =>  (string)$param['order'],
+                'whereOr'=>  [$map1],
+            ];
+            
+            // 获取数据
+            $items = Search::ExpandAll(null, $opt);
+            $data  = ['items'=>$items];
+            
+            // 查询操作
+            if (!empty($param['id'])) {
+                $data['edit'] = Search::ExpandAll($param['id'], ['where'=>null]);
+            }
+            
+            $code = 200;
+            $msg  = 'ok';
+            
+            return $this->create($data, $msg, $code);
+        }
+        
+        return View::fetch('/pages/manage-search');
+    }
+
+    /*
+     * #name 日志
+     */
+    public function Log(Request $request)
+    {
+        if ($request->isPost()) {
+            
+            // 获取请求参数
+            $param = $request->param();
+            
+            if (empty($param['page']))  $param['page']  = 1;
+            if (empty($param['limit'])) $param['limit'] = 10;
+            if (empty($param['order'])) $param['order'] = 'id desc';
+            $search = (empty($param['search'])) ? '' : $param['search'];
+            
+            $map1 = ['ip'    , '=', $search];
+            $map2 = ['method', '=', $search];
+            $map3 = ['url'   , '=', $search];
+            
+            $opt = [
+                'page'   =>  (int)$param['page'], 
+                'limit'  =>  (int)$param['limit'],
+                'order'  =>  (string)$param['order'],
+                'whereOr'=>  [$map1, $map2, $map3],
+            ];
+
+            // 获取数据
+            $data  = ['items'=>$this->ExpandLog($opt)];
+            
+            $code = 200;
+            $msg  = 'ok';
+            
+            return $this->create($data, $msg, $code);
+        }
+        
+        return View::fetch('/pages/log');
+    }
+
+    public function ExpandLog(array $opt = [])
+    {
+        // 第二参数默认配置
+        $config = ['page'=>1,'limit'=>5,'order'=>'id desc','whereOr'=>[],'where'=>[],
+            'filePath'=> app()->getRootPath() . 'runtime/storage/' . date('Y-m-d', time()) . '.log',
+        ];
+        
+        // 重组第二参数
+        foreach ($config as $key => $val) if(!in_array($key,$opt)) $config[$key] = $val;
+        foreach ($opt as $key => $val) $config[$key] = $val;
+
+        // 初始化
+        $FileLog = new FileLog([
+            // 日志文件路径
+            'filePath' => $config['filePath']
+        ]);
+        
+        // 总数量
+        $count  = count($FileLog->whereOr($config['whereOr'])->where($config['where'])->select());
+        $data['page']   = ceil($count / $config['limit']);
+        $data['count']  = $count;
+        
+        // 防止分页请求超出页码
+        if($config['page'] > $data['page']) $config['page'] = $data['page'];
+
+        $data['data'] = $FileLog->whereOr($config['whereOr'])->withAttr('expand', function ($value, $data){
+            
+            // 解析代理信息
+            $value['agent'] = [
+                'browser'=>$this->helper->GetClientBrowser($data['ua']),
+                'os'     =>$this->helper->GetClientOS($data['ua']),
+                'mobile' =>$this->helper->GetClientMobile($data['ua']),
+            ];
+
+            return $value;
+            
+        })->where($config['where'])->order($config['order'])->page($config['page'])->limit($config['limit'])->select();
+
+        return $data;
     }
 
     // END

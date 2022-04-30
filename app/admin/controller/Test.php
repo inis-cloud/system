@@ -6,12 +6,12 @@ use app\Request;
 use Metowolf\Meting;
 use inis\music\Music;
 use app\admin\controller\{Tool, Index};
-use think\facade\{Cache, Config, Cookie, Session, Db};
-use inis\utils\{File, FileDB, helper, markdown, Db as inisDb, Env, Image};
+use think\facade\{Cache, Config, Cookie, Session, Db, Log};
+use inis\utils\{File, FileDB, helper, markdown, Db as inisDb, Env, Image, FileLog};
 use Firebase\JWT\{JWT, ExpiredException, BeforeValidException, SignatureInvalidException};
-use app\model\mysql\{Log, Tag, Users, Links, Placard, Article, Options, Comments, LinksSort, VerifyCode, ArticleSort, Music as MusicModel, Banner};
+use app\model\mysql\{mLog, Tag, Users, Links, Placard, Article, Options, Comments, LinksSort, VerifyCode, ArticleSort, Music as MusicModel, Banner};
 
-use app\model\sqlite\{Options as iOptions, Log as iLog};
+use app\model\sqlite\{Options as iOptions, Log as iLog, Search};
 
 use QL\QueryList;
 use Jaeger\GuzzleHttp;
@@ -28,9 +28,10 @@ class Test
     public function __construct()
     {
         header('Access-Control-Allow-Origin:*');
-        $this->File   = new File;
-        $this->helper = new helper;
-        $this->config = Config::get('inis');
+        $this->File    = new File;
+        $this->helper  = new helper;
+        $this->FileLog = new FileLog;
+        $this->config  = Config::get('inis');
         
         header("Access-Control-Allow-Origin: *");
 		header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -39,32 +40,81 @@ class Test
     
     public function index(Request $request)
     {
-        $data  = [];
+        $data = [];
         
+
+
+
+
+
+
+
+
+
+
+        // // 初始化
+        // $FileLog = new FileLog([
+        //     // 日志文件路径
+        //     'filePath' => app()->getRootPath() . 'runtime/storage/' . date('Y-m-d', time()) . '.log',
+        // ]);
+
+        // // 根据行查询
+        // $data = $FileLog->line(1);
+        // // 根据ID查询
+        // $data = $FileLog->find(20);
+        // // 查询单条并根据ID倒序排序
+        // $data = $FileLog->order('id desc')->find();
+        // // 查询多条并根据创建时间排序，限制10条且获取第二页数据
+        // $data = $FileLog->order(['create_time'=>'desc'])->limit(10)->page(2)->select();
+        // // where查询多条，获取ID不为空的数据
+        // $data = $FileLog->where([['id','<>',null]])->select();
+        // // 查询多条并排序
+        // $data = $FileLog->where([['b','>=',2],['a','=',1]])->where('c','>=','10')->select();
+        // // 更加复杂的高级查询
+        // $data = $FileLog->where([['b','>=',2]])->whereOr([['a','=',1]])->order(['id'=>'desc'])->find();
+        // // 难度逐渐升级
+        // $data = $FileLog->where('id','>',200)->whereOr(['ip'=>'101.206.110.245'])->withAttr('expand', function($value, $data){
+        //     return $data;
+        // })->page(2)->limit(10)->order('id desc')->select();
+        // // 插入一条数据，默认在文件末尾插入
+        // $data = $FileLog->insert(['a'=>1, 'b'=>2, 'c'=>3]);
+        // // 在文件开头插入数据
+        // $data = $FileLog->insert(['name'=>'test'], 'start');
+        // // 保存数据，单条 - 一维数组
+        // $data = $FileLog->save(['name'=>'test']);
+        // // 保存数据，多条 - 二维数组
+        // $data = $FileLog->save([['name'=>'test'], ['name'=>'test']]);
+
         
+
+
+
+
+
+
         
+        // $filePath = '../runtime/storage/202204/15.log';
+
+        // $log = $this->FileSystem->path($filePath)->limit(3)->page(1)->select();
         
+        // foreach ($log as $key => $val) {
+        //     $item  = json_decode($val, true);
+        //     $item['msg'] = json_decode($item['msg'], true);
+        //     $data[] = $item;
+        // }
+
         
+
+        // 读取根目录的emoji.json文件
+        // $data = $this->helper->get('https://api.inis.cn/emoji.json');
         
+        // foreach ($data as $key => $val) {
+        //     $this->File->downloadFile($val, './storage/random/emoji/qq');
+        // }
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        // Log::channel('api')->record(['test'=>'1','b'=>1], 'info');
+
+
         
         // 实例化客户端
         // $client = new Client();

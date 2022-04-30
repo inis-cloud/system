@@ -66,7 +66,7 @@ class Other extends Base
         $result = [];
         
         // 存在的方法
-        $method = ['ua','qq','icp','ping','hot','domain'];
+        $method = ['ua','qq','icp','ping','hot','domain','base64'];
         
         // 动态方法且方法存在
         if (in_array($IID, $method)) $result = $this->$IID($param);
@@ -436,5 +436,47 @@ class Other extends Base
         if (!empty($data['code'])) if ($data['code'] == 200) $result = $data['data'];
         
         return $result;
+    }
+
+    public function base64($param)
+    {
+        $data   = [];
+        $code   = 400;
+        $msg    = 'ok';
+
+        if (empty($param['url'])) $msg = '请提交图片地址，用参数 url 表示!';
+        else {
+            
+            $param['url'] = $this->helper->GetRedirectUrl($param['url']);
+
+            // 是否开启了缓存
+            $api_cache = $this->config['api_cache'];
+            // 是否获取缓存
+            $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+            
+            // 设置缓存名称
+            $cache_name = 'other/base64?url=' . $param['url'];
+            
+            // 检查是否存在请求的缓存数据
+            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+            else {
+                // 重定向后的地址
+                $image  = getimagesize($param['url']);
+                $base64 = "" . chunk_split(base64_encode(file_get_contents($param['url'])));
+                $data   = [
+                    'url'    => $param['url'],
+                    'base64' => 'data:' . $image['mime'] . ';base64,' . chunk_split(base64_encode(file_get_contents($param['url'])))
+                ];
+                Cache::tag(['other',$cache_name])->set($cache_name, json_encode($data));
+            }
+            
+            $code = 200;
+            $msg  = '无数据！';
+            // 逆向思维，节省代码行数
+            if (empty($data)) $code = 204;
+            else $msg = '数据请求成功！';
+        }
+
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
 }

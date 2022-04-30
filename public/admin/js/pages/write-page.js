@@ -58,7 +58,7 @@
                 this.contentEditor = new Vditor("vditor",{
                     height: 360,
                     minHeight: 500,
-                    cdn: '/admin/libs/vditor',
+                    cdn: 'https://cdn.inis.cc/comm/libs/vditor',
                     placeholder: '写点什么吧！',
                     icon: 'material',           // 图标风格
                     toolbarConfig: {

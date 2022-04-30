@@ -23,7 +23,7 @@ class Users extends Validate
         'password|密码'  =>  'require|min:6',
         'email|邮箱'     =>  'require|email|unique:users',
         'nickname|昵称'  =>  'require|chsDash',
-        'phone|电话'     =>  'mobile',
+        // 'phone|电话'     =>  'mobile',
     ];
     
     /**
@@ -44,10 +44,10 @@ class Users extends Validate
         // 读取
         'read'        => ['id'],
         // 注册
-        'register'    => ['account','password','email','nickname','phone'],
+        'register'    => ['account','password','email','nickname'],
         // 编辑
-        'admin_edit'  => ['nickname','phone'],
-        'api_edit'    => ['account','password','email','nickname','phone'],
+        'admin_edit'  => ['nickname'],
+        'api_edit'    => ['account','password','email','nickname'],
         // 删除
         'delete'      => ['id'],
     ];

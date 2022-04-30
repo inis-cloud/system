@@ -3,8 +3,9 @@
 namespace app\admin\controller;
 
 use app\Request;
-use inis\utils\{File, helper, Image};
+use app\model\sqlite\{Search};
 use PHPMailer\PHPMailer\PHPMailer;
+use inis\utils\{File, helper, Image};
 use think\facade\{Db, Cache, Config, Session};
 use app\model\mysql\{Tag, Page, Links, Users, Music, Options, Article, LinksSort, ArticleSort};
 
@@ -219,7 +220,7 @@ class Handle extends Base
             $article->save();
             
             // 清除缓存
-            Cache::tag('article')->clear();
+            Cache::tag(['article','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -254,7 +255,7 @@ class Handle extends Base
             $article->save();
             
             // 清除缓存
-            Cache::tag('article')->clear();
+            Cache::tag(['article','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -289,7 +290,7 @@ class Handle extends Base
             $page->save();
             
             // 清除缓存
-            Cache::tag('page')->clear();
+            Cache::tag(['page','group'])->clear();
             
             return $this->create($data, $msg, $code);
         }
@@ -814,6 +815,9 @@ class Handle extends Base
                 
                 $code = 200;
                 $msg  = '导入完成！';
+                
+                // 清除缓存
+                Cache::tag(['article','group'])->clear();
             }
             
             return $this->create($data, $msg, $code);
@@ -862,6 +866,9 @@ class Handle extends Base
                 
                 $code = 200;
                 $msg  = '导入完成！';
+                
+                // 清除缓存
+                Cache::tag(['page','group'])->clear();
             }
             
             return $this->create($data, $msg, $code);

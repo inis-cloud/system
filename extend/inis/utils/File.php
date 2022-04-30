@@ -42,7 +42,7 @@ class File
         $time  = empty($time) ? time() : $time;
         $visit_time = empty($visit_time) ? time() : $visit_time;
         
-        if(file_exists($path) && $cover) $this->unlinkFile($path);
+        if (file_exists($path) && $cover) $this->unlinkFile($path);
         
         $catalog = dirname($path);
         $this->createDir($catalog);
@@ -402,7 +402,7 @@ class File
 	    if (is_array($file_path))       $path_array   = $file_path;
 	    else if (is_string($file_path)) $path_array[] = $file_path;
 	    
-	    foreach ($path_array as $val) $result = array_merge($result,file($val));
+	    foreach ($path_array as $val) $result = array_merge($result, file($val));
 	    
 	    return $result;
 	}

@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace app\api\controller\inis;
 
+use Parsedown;
 use think\Request;
 use think\facade\{Cache};
 use inis\utils\{markdown};
@@ -103,6 +104,8 @@ class Comments extends Base
                     $comment->nickname = $this->user['data']['nickname'];
                     $comment->url      = $this->user['data']['address_url'];
                     
+                    if (empty($comment->opt)) $comment->opt = ['like'=>1];
+                    
                     // 不转换中文编码
                     $comment->opt = json_encode($comment->opt, JSON_UNESCAPED_UNICODE);
                     $comment->save();
@@ -169,6 +172,8 @@ class Comments extends Base
                         $comment->$key = $val;
                     }
                     
+                    if (empty($comment->opt)) $comment->opt = ['like'=>1];
+                    
                     // 不转换中文编码
                     $comment->opt = json_encode($comment->opt, JSON_UNESCAPED_UNICODE);
                     $comment->save();
@@ -186,7 +191,11 @@ class Comments extends Base
                 if (!empty($param['id']) and is_numeric($param['id'])) {
                     
                     $comment = CommentsModel::find((int)$param['id']);
-                    $comment->opt->great++;
+                    
+                    // great
+                    if (empty($comment->opt) or empty($comment->opt->like)) $comment->opt = ['like'=>1];
+                    else $comment->opt->like++;
+                    
                     // 不转换中文编码
                     $comment->opt = json_encode($comment->opt, JSON_UNESCAPED_UNICODE);
                     $comment->save();
@@ -335,7 +344,7 @@ class Comments extends Base
         $admin_url= $this->tool->domain();
         
         $tags     = ['{ip}','{nickname}','{text}','{email}','{site}','{admin_url}','{content}'];
-        $replace  = [$param['ip'],$param['nickname'],$param['content'],$param['email'],$site,$admin_url,$param['content']];
+        $replace  = [$param['ip'],$param['nickname'],$param['content'],$param['email'],$site,$admin_url,$this->markdownToHtml($param['content'])];
         
         if (!empty($param['article_id'])) {
             
@@ -363,7 +372,7 @@ class Comments extends Base
                 $email_cc = $email;
                 $email    = CommentsModel::field(['email','content'])->findOrEmpty($param['pid']);
                 if (!$email->isEmpty()) {
-                    $replace[2] = $email['content'];
+                    $replace[2] = $this->markdownToHtml($email['content']);
                     // 发送评论信息到邮箱
                     if (!empty($email['email'] and !in_array($email['email'], $email_cc))) {
                         // 模板变量替换
@@ -396,7 +405,7 @@ class Comments extends Base
                 $email_cc = $email;
                 $email    = CommentsModel::field(['email','content'])->findOrEmpty($param['pid']);
                 if (!$email->isEmpty()) {
-                    $replace[2] = $email['content'];
+                    $replace[2] = $this->markdownToHtml($email['content']);
                     // 发送评论信息到邮箱
                     if (!empty($email['email'] and !in_array($email['email'], $email_cc))) {
                         // 获取用户邮件模板
@@ -414,6 +423,11 @@ class Comments extends Base
                 }
             }
         }
+    }
+    
+    public function markdownToHtml($data)
+    {
+        return markdown::parse(Parsedown::instance()->setUrlsLinked(false)->text($data));
     }
     
     // typecho 迁移至 inis

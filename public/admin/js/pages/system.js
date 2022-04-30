@@ -390,7 +390,7 @@
             
             // 设置其他服务信息
             setOther(result){
-                this.serve.other = inisHelper.object.deep.merge(result.system_config.opt,this.serve.other)
+                this.serve.other = inisHelper.object.deep.merge(this.serve.other, result.system_config.opt)
             },
             
             // 测试邮件
@@ -466,12 +466,10 @@
             // 切换按钮
             saveOther(notice = false){
                 
-                const params = inisHelper.stringfy({
+                axios.post('/admin/method/SaveOptions', inisHelper.stringfy({
                     opt: this.serve.other,
                     key: 'config:system'
-                })
-                
-                axios.post('/admin/method/SaveOptions', params).then((res) => {
+                })).then((res) => {
                     if (res.data.code == 200) {
                         if (notice) $.NotificationApp.send(null, "保存成功！", "top-right", "rgba(0,0,0,0.2)", "success");
                     } else $.NotificationApp.send(null, res.data.msg, "top-right", "rgba(0,0,0,0.2)", "error");
@@ -520,7 +518,11 @@
                     const other = self.serve.other
                     
                     // 解决 , 变 \n 的问题
-                    self.serve.email.opt.email_cc = email.opt.email_cc.replaceAll('\n',',')
+                    try {
+                        self.serve.email.opt.email_cc = email.opt.email_cc.replaceAll('\n',',')
+                    } catch (e) {
+                        
+                    }
                     // 防止图片压缩比例超出范围
                     let ratio = parseInt(other.optimize.image.ratio)
                     if (inisHelper.is.empty(ratio) || ratio < 0) ratio = 0
