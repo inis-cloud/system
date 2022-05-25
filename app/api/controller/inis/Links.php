@@ -241,17 +241,13 @@ class Links extends Base
         else {
             
             $id = array_filter(explode(',', $id));
-            
-            // 存在该条数据
-            if (in_array($this->user['data']->level, ['admin'])) {
-                
+
+            // 权限判断
+            if (!in_array($this->user['data']->level, ['admin'])) $msg = '无权限';
+            else if ($this->user['data']->status != 1) $msg = '账号被禁用';
+            else {
                 $code = 200;
                 LinksModel::destroy($id);
-                
-            } else {
-                
-                $code = 403;
-                $msg  = '无权限';
             }
         }
         

@@ -4,7 +4,9 @@ declare (strict_types = 1);
 namespace app\api\controller\inis;
 
 use think\Request;
+use inis\utils\{Image};
 use think\facade\{Cache};
+use app\model\mysql\{Options};
 
 class File extends Base
 {
@@ -117,20 +119,51 @@ class File extends Base
     // 上传文件
     public function upload($param)
     {
-        $data = [];
-        $code = 400;
-        $msg  = 'ok';
+        $data  = [];
+        $code  = 400;
+        $msg   = 'ok';
         
-        $name = explode('.', $_FILES['file']['name']);
-        array_pop($name);
-        $name = implode('.',$name);
+        // 取原文件名
+        $name  = explode('.', $_FILES['file']['name']);
+        // 去除后缀
+        $pop   = array_pop($name);
+        // 过滤非法字符 - 数组转字符串
+        $name  = str_replace([
+            '.', '\\', '/', ':', '*', '`', '?', '<', '>', '%', '&', '$', '#', ' '
+        ], '', implode('.', $name));
         
-        $upload = $this->tool->upload(
-            'file', 
-            ['storage','users/files/uid-'.$this->user['data']->id.'/'.date("Y-m"), [$name]], 
-            'one', 
-            'file|fileExt:jpg,jpeg,png,gif,webp,svg,ico,zip,gz,mp3,mp4,avi|fileSize:20971520'
+        $time  = time();
+        $upload= $this->tool->upload(
+            'file',
+            ['storage', 'users/files/'.$this->user['data']->id.'/'.date("Y-m"), [$time]], 'one', 'file|fileExt:jpg,jpeg,png,gif,webp,svg,ico,zip,gz,mp3,mp4,avi|fileSize:20971520'
         );
+        
+        // 读取配置
+        $config = Options::where(['keys'=>'config:system'])->findOrEmpty();
+        if (!$config->isEmpty()) $config = json_decode(json_encode($config['opt']), true);
+        else $config = ['optimize'=>['image'=>['open'=>true,'ratio'=>50]]];
+        // 空配置处理
+        
+        // 读取配置
+        $config = Options::where(['keys'=>'config:system'])->findOrEmpty();
+        $config = !$config->isEmpty() ? json_decode(json_encode($config['opt']), true) : [];
+        // 深度合并
+        $config = $this->helper->array_merge_deep(['optimize'=>[
+            'image'=>['open'=>true,'ratio'=>50],
+        ]], $config);
+        
+        
+        // 开启了图片压缩
+        if (($config['optimize']['image']['open'] === 'true' or $config['optimize']['image']['open'] === true) ? true : false) {
+            // 图片后缀
+            $img_pop = ['jpg', 'jpeg', 'png', 'bmp', 'wbmp','gif'];
+            // 图片压缩
+            if (in_array($pop, $img_pop)) if ($upload['code'] == 200) {
+                // 得到本地资源路径
+                $url = str_replace($this->helper->domain() . '/', '', $upload['data']);
+                (new Image($url, 1 - ((int)$config['optimize']['image']['ratio'] / 100)))->compress($url);
+            }
+        }
         
         foreach ($upload as $key => $val) $$key = $val;
         
@@ -500,8 +533,9 @@ class File extends Base
         else if (empty($param['value'])) $data = explode(PHP_EOL, $text);
         else {
             
-            foreach (explode(PHP_EOL, $text) as $key => $val) {
-                if (strpos($param['value'], $val) !== false) $data[] = $val;
+            foreach (json_decode($text) as $key => $val) {
+                // 对$val进行URL编码
+                if (strpos($param['value'], $val) !== false) $data[] = urlencode($val);
             }
             // 去重去空处理
             $data = array_filter(array_unique($data));

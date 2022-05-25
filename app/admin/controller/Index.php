@@ -68,7 +68,7 @@ class Index extends Base
             
             return $this->create($data, $msg, $code);
         }
-        
+
         return View::fetch('/pages/home');
     }
     
@@ -1060,22 +1060,47 @@ class Index extends Base
         $used  = [];
         $useds = [];
         
+        $domain= $this->helper->domain();
+        
+        // MarkDowm资源规则
+        $markdowm_assets_url_rule = '/!\\[.*\\]\\((.+)\\)/';
+        // 字符串资源规则
+        $string_assets_url_rule   = '/<[img|IMG].*?src=[\'|\"](.*?(?:[\.gif|\.jpg|\.png|\.jpeg]))[\'|\"].*?[\/]?>/';
+        
+        // 文章已用资源计算
         $article  = Article::field(['img_src','content'])->select();
-        $url_rule = '/!\\[.*\\]\\((.+)\\)/';
         foreach ($article as $key => $val) {
-            preg_match_all($url_rule, $val['content'], $array);
             $useds = array_merge($useds, [str_replace(['https://','http://','//',$this->helper->domain() . '/'], '', $val['img_src'])]);
-            if (!empty($array[1])) foreach ($array[1] as $k => $v) $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $this->helper->domain()) . '/'], '', $v)]);
+            // 正规提取MarkDowm图片资源
+            preg_match_all($markdowm_assets_url_rule, $val['content'], $array);
+            if (!empty($array[1])) foreach ($array[1] as $k => $v)   $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $v)]);
+            // 正规提取字符串中的图片资源
+            preg_match_all($string_assets_url_rule, $val['content'], $images);
+            if (!empty($images[1])) foreach ($images[1] as $k => $v) $useds = array_merge($useds, [str_replace(['https://','http://','//', $domain . '/'], '', $v)]);
         }
         
-        $banner   = Banner::field(['img'])->select();
-        foreach ($banner as $key => $val) $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $this->helper->domain()) . '/'], '', $val['img'])]);
+        // 页面已用资源计算
+        $page  = Page::field(['content'])->select();
+        foreach ($page as $key => $val) {
+            // 正规提取MarkDowm图片资源
+            preg_match_all($markdowm_assets_url_rule, $val['content'], $array);
+            if (!empty($array[1])) foreach ($array[1] as $k => $v)   $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $v)]);
+            // 正规提取字符串中的图片资源
+            preg_match_all($string_assets_url_rule, $val['content'], $images);
+            if (!empty($images[1])) foreach ($images[1] as $k => $v) $useds = array_merge($useds, [str_replace(['https://','http://','//', $domain . '/'], '', $v)]);
+        }
         
-        $users = Users::field(['head_img'])->select();
-        foreach ($users as $key => $val) $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $this->helper->domain()) . '/'], '', $val['head_img'])]);
+        // 轮播已用资源计算
+        $banner     = Banner::field(['img'])->select();
+        foreach ($banner as $key => $val) $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $val['img'])]);
         
+        // 用户已用资源计算
+        $users      = Users::field(['head_img'])->select();
+        foreach ($users as $key => $val) $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $val['head_img'])]);
+        
+        // 站点已用资源计算
         $site_image = Options::where(['keys'=>'site'])->find();
-        $useds[] = str_replace(['https:','http:','//', str_replace(['https:','http:','//'], '', $this->helper->domain()) . '/'], '', $site_image->opt->image);
+        $useds[] = str_replace(['https:','http:','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $site_image->opt->image);
         
         // 统计出本地已用资源
         foreach ($useds as $key => $val) if (substr($val, 0, 7) == 'storage') $used[] = $val;

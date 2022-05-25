@@ -42,7 +42,14 @@ class Test
     {
         $data = [];
         
-
+        $path = 'storage/random/inWords/default.txt';
+        
+        $data = $this->File->readFile($path);
+        // $data = explode(PHP_EOL, $data);
+        // $data = json_encode($data);
+        $data = json_decode($data);
+        // $this->File->writeFile($path, $data);
+        
 
 
 

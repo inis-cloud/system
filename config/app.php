@@ -13,7 +13,7 @@ return [
     // 应用快速访问
     'app_express'      => true,
     // 默认应用
-    'default_app'      => 'admin',
+    'default_app'      => env('app.default_app', 'admin'),
     // 默认时区
     'default_timezone' => 'Asia/Shanghai',
 
@@ -31,5 +31,4 @@ return [
     'error_message'    => '页面错误！请稍后再试～',
     // 显示错误信息
     'show_error_msg'   => false,
-    // 'jwt_key' => 'inis-!@#$%*&'
 ];

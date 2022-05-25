@@ -62,7 +62,7 @@ class Users extends Base
         $result = [];
         
         // 存在的方法
-        $method = ['saves','remove','login','register','check'];
+        $method = ['saves','remove','login','register','check','vcl'];
         
         $mode   = (empty($param['mode'])) ? 'saves' : $param['mode'];
         
@@ -250,7 +250,7 @@ class Users extends Base
                 
                 $msg = "帐号或密码错误！";
                 
-            }else{
+            } else {
                 
                 if ($users->status == 0) {
                     
@@ -480,7 +480,7 @@ class Users extends Base
     }
     
     // 创建验证码
-    public function verifyCode($email)
+    public function verifyCode($email, $title = ['site'=>true,'value'=>'：邮箱换绑验证码'])
     {
         $time = time();
         
@@ -513,13 +513,13 @@ class Users extends Base
         
         $msg  = '验证码已发送至邮箱，'.$valid_time_str.'内有效！';
         
-        $this->sendEmail($email, $chars, $valid_time_str);
+        $this->sendEmail($email, $chars, $valid_time_str, $title);
         
         return $msg;
     }
     
     // 发送邮箱通知
-    public function sendEmail($email, $code, $valid_time)
+    public function sendEmail($email, $code, $valid_time, $title = ['site'=>true,'value'=>'：邮箱换绑验证码'])
     {
         // 获取邮箱服务配置信息
         $options  = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
@@ -540,9 +540,13 @@ class Users extends Base
         $template = str_replace('{time}'   , $time  , $template);
         $template = str_replace('{domain}' , $domain, $template);
         $template = str_replace('{valid_time}' , $valid_time, $template);
-        
+
         // 发送评论信息到邮箱
-        $this->tool->sendMail(['email'=>$email,'title'=>$site.'邮箱换绑验证码','content'=>$template]);
+        $this->tool->sendMail([
+            'email'=>$email,
+            'title'=>($title['site']) ? $site . $title['value'] : $title['value'],
+            'content'=>$template
+        ]);
     }
     
     // 校验合法登录 - 根据JWT
@@ -581,4 +585,94 @@ class Users extends Base
         
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
     }
+
+    // 通过验证码进行登录 - vcl(verification code login)
+    public function vcl($param)
+    {
+        $data   = [];
+        $code   = 400;
+        $msg    = 'ok';
+        $header = [];
+
+        if (empty($param['account'])) $msg = '帐号或邮箱不得为空！请用参数 account 表示';
+        // 提交了帐号或邮箱，但是没有提交验证码 - 自动创建验证码
+        else if (!empty($param['account']) and empty($param['code'])) {
+
+            $map1 = ['account', 'like', $param['account']];
+            $map2 = ['email'  , 'like', $param['account']];
+            
+            $users= UsersModel::whereOr([$map1,$map2])->findOrEmpty();
+
+            if ($users->isEmpty())         $msg = '帐号或邮箱不存在！';
+            else if (empty($users->email)) $msg = '该帐号没有绑定邮箱！';
+            else {
+                $code = 200;
+                $msg = $this->verifyCode($users->email, ['site'=>true,'value'=>'：验证码登录']);
+            }
+        
+        }
+        // 同时提交了帐号或邮箱和验证码 - 校验验证码是否正确
+        else if (!empty($param['account']) and !empty($param['code'])) {
+
+            $time = time();
+            $map1 = ['account', 'like', $param['account']];
+            $map2 = ['email'  , 'like', $param['account']];
+            
+            $users= UsersModel::whereOr([$map1,$map2])->withoutField(['remarks'])->findOrEmpty();
+
+            if ($users->isEmpty())         $msg = '帐号或邮箱不存在！';
+            else if (empty($users->email)) $msg = '该帐号没有绑定邮箱！';
+            else {
+
+                $verifyCode = VerifyCode::where(['content'=>$users->email,'code'=>$param['code']])->findOrEmpty();
+                
+                // 判断验证码是否存在数据库内
+                if (!$verifyCode->isEmpty()) {
+                    
+                    // 检查验证码是否过期
+                    if ($verifyCode->end_time >= $time) {
+                        
+                        $token = [
+                            "iss" => "inis",            // 签发者 可以为空
+                            "aud" => $users->account,   // 面象的用户，可以为空
+                            "iat" => $time,             // 签发时间
+                            "nbf" => $time,             // 在什么时候jwt开始生效  （这里表示生成100秒后才生效）
+                            "exp" => $time + 7200,      // 过期时间 - 单位秒
+                            "uid" => $users->id,        // 记录的userid的信息，这里是自已添加上去的，如果有其它信息，可以再添加数组的键值对
+                        ];
+                        
+                        $jwt    = JWT::encode($token, $this->config['jwt']['key'], $this->config['jwt']['encrypt']);
+                        $header = ['login-token'=>$jwt];
+                        
+                        // 单点登录字段
+                        $loginAuth = md5(md5('inis-'.$time));
+                        if (empty($users->opt)) $users->opt = json_encode(['login_auth'=>$loginAuth], JSON_UNESCAPED_UNICODE);
+                        else $users->opt->login_auth = $loginAuth;
+                        $users->last_login_time = $time;
+                        $users->save();
+                        
+                        unset($users['password']);
+                        
+                        Session::set('login_account', $users);
+                        Session::set('login_auth'   , $loginAuth);
+                        Cookie::set('login_account' , json_encode($users));
+                        
+                        // 登录成功
+                        $data   = ['login-token'=>$jwt,'user'=>$users];
+                        $code   = 200;
+                        $msg    = '登录成功！';
+                        $verifyCode->delete();
+                        
+                    } else $msg = '验证码已失效，请重新获取！';
+                    
+                } else $msg = '无效验证码！';
+            }
+        }
+
+        $result = ['data'=>$data,'code'=>$code,'msg' =>$msg,'header'=>$header];
+        
+        return $result;
+    }
+
+
 }

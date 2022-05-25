@@ -7,6 +7,8 @@ use Parsedown;
 use think\Request;
 use think\facade\{Cache};
 use inis\utils\{markdown};
+use app\validate\{Page as vPage};
+use think\exception\ValidateException;
 use app\model\mysql\{Visit, Page as PageModel};
 
 class Page extends Base
@@ -48,7 +50,28 @@ class Page extends Base
      */
     public function save(Request $request)
     {
-        //
+        // 获取请求参数
+        $param  = $request->param();
+        
+        $data   = [];
+        $code   = 400;
+        $msg    = '参数不存在！';
+        $result = [];
+        
+        // 存在的方法
+        $method = ['saves','remove'];
+        
+        $mode   = !empty($param['mode']) ? $param['mode']  : 'saves';
+        
+        // 动态方法且方法存在
+        if (in_array($mode, $method)) $result = $this->$mode($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        // 清除缓存
+        Cache::tag('page')->clear();
+        
+        return $this->create($data, $msg, $code);
     }
 
     /**
@@ -110,6 +133,7 @@ class Page extends Base
         
         $id    = (!empty($param['id']))    ? $param['id']    : '';
         $alias = (!empty($param['alias'])) ? $param['alias'] : '';
+        $parse = (!empty($param['mode']))  ? $param['mode']  : 'html';
         
         // 是否开启了缓存
         $api_cache = $this->config['api_cache'];
@@ -117,7 +141,7 @@ class Page extends Base
         $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         
         // 设置缓存名称
-        $cache_name = 'page?id='.$id.'&alias='.$alias;
+        $cache_name = 'page?id='.$id.'&alias='.$alias.'&parse='.$parse;
         
         // 检查是否存在请求的缓存数据
         if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
@@ -131,10 +155,10 @@ class Page extends Base
                 if (!empty($id)) $data = PageModel::ExpandAll($id);
                 else $data = PageModel::ExpandAll(null, ['where'=>['alias'=>$alias]])['data'][0];
                 
-                // 解析markdown语法
-                $data->content = Parsedown::instance()->setUrlsLinked(false)->text($data->content);
+                // setBreaksEnabled(true) 自动换行 setMarkupEscaped(true) 转义HTML setUrlsLinked(false) 防止自动链接
+                if ($parse == 'html' || $parse == 'htm') $data['content'] = Parsedown::instance()->setUrlsLinked(false)->text($data['content']);
                 // 解析自定义标签
-                $data->content = markdown::parse($data->content);
+                $data['content'] = markdown::parse($data['content']);
             }
             Cache::tag(['page',$cache_name])->set($cache_name, json_encode($data));
         }
@@ -291,5 +315,71 @@ class Page extends Base
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+
+    // 新增或者修改数据
+    public function saves($param)
+    {
+        $data   = [];
+        $code   = 400;
+        $msg    = 'ok';
+        
+        // 允许用户提交并存储的字段
+        $obtain = ['title','alias','content','is_show','opt','longtext'];
+        $item   = isset($param['id']) ? PageModel::findOrEmpty((int)$param['id']) : new PageModel;
+
+        try {
+                
+            validate(vPage::class)->check($param);
+
+            // 存储数据
+            foreach ($param as $key => $val) {
+                // 判断字段是否允许存储，防提权
+                if (in_array($key, $obtain)) {
+                    if ($key == 'opt') $item->opt = json_encode($val, JSON_UNESCAPED_UNICODE);
+                    else $item->$key = $val;
+                }
+            }
+
+            // 权限判断
+            if (!in_array($this->user['data']->level, ['admin'])) $msg = '无权限';
+            else if ($this->user['data']->status != 1) $msg = '账号被禁用';
+            else {
+                $code = 200;
+                $item->save();
+            }
+            
+        } catch (ValidateException $e) {
+            // 验证失败 输出错误信息
+            $msg  = $e->getError();
+        }
+        
+        return ['data'=>$data,'msg'=>$msg,'code'=>$code];
+    }
+
+    // 删除数据
+    public function remove($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = 'ok';
+        
+        $id = !empty($param['id']) ? $param['id']  : null;
+        
+        if (empty($id)) $msg = '请提交 id';
+        else {
+            
+            $id = array_filter(explode(',', $id));
+
+            // 权限判断
+            if (!in_array($this->user['data']->level, ['admin'])) $msg = '无权限';
+            else if ($this->user['data']->status != 1) $msg = '账号被禁用';
+            else {
+                $code = 200;
+                PageModel::destroy($id);
+            }
+        }
+        
+        return ['data'=>$data,'msg'=>$msg,'code'=>$code];
     }
 }

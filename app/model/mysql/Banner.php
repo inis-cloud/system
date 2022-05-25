@@ -51,7 +51,7 @@ class Banner extends Model
     public function getOptAttr($value)
     {
         $value = (!empty($value)) ? json_decode((is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value)) : $value;
-        return $value;
+        return !empty($value) ? $value : ['jump'=>'outside'];
     }
 
 }
