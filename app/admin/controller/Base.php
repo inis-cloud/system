@@ -3,10 +3,11 @@
 namespace app\admin\controller;
 
 use app\BaseController;
+use think\{Response, Request};
 use inis\utils\{helper, File};
-use think\facade\{Config, View, Session};
 use app\model\mysql\{Options};
 use app\admin\middleware\LoginCheck;
+use think\facade\{Config, View, Session};
 
 abstract class Base extends BaseController
 {
@@ -28,7 +29,7 @@ abstract class Base extends BaseController
         // 用户自己的CDN
         $u_cdn  = (!empty($system_config['opt']->optimize)) ? $system_config['opt']->optimize->cdn : '';
         // 处理后的CDN
-        $cdn = array_values(array_filter(explode('/',str_replace(['https','http',':'],'',$u_cdn))));
+        $cdn = array_values(array_filter(explode('/', str_replace(['https','http',':'], '', $u_cdn))));
         
         // 使用本地资源
         if (count($cdn) == 0) $cdn = '';
@@ -49,17 +50,50 @@ abstract class Base extends BaseController
             'copy'        => '备案号'
         ];
         
-        $this->user   = json_decode(Session::get('login_account'), true);
+        $this->user   = json_decode(!empty(Session::get('login_account')) ? Session::get('login_account') : '', true);
         
+        // 后台开启了 token 验证
+        $token = Options::where(['keys'=>'config:security'])->value('opt');
+        $token = json_decode($token ?? '[]', true);
+        $token = $token['token']['value'] ?? '';
+
+        // 开启了自动更新
+        $autoUpdate = Options::where(['keys'=>'config:system'])->value('opt');
+        $autoUpdate = json_decode($autoUpdate, true);
+        $autoUpdate = $autoUpdate['system']['autoUpdate'] ?? false;
+        $autoUpdate = $autoUpdate == 'true' or $autoUpdate === true ? true : false;
+
         View::assign([
-            'CONFIG'      => (object)[
-                'ROOT'    => '/admin/',
-                'CDN'     => empty($cdn) ? $in_cdn : $cdn . '/',
-                'VERSION' => $this->config['version'],
-                'SITE'    => $sites,
-                'USER'    => (object)$this->user
+            'CONFIG'         => (object)[
+                'ROOT'       => '/admin/',
+                'CDN'        => empty($cdn) ? $in_cdn : $cdn . '/',
+                'VERSION'    => $this->config['version'],
+                'SITE'       => $sites,
+                'TOKEN'      => $token,
+                'USER'       => (object)$this->user,
+                'API'        => Config::get('inis.official.api', 'https://inis.cc/api/'),
+                'AUTOUPDATE' => $autoUpdate
             ]
         ]);
+    }
+
+    // 生成标准API格式
+    public function json($data = [], string $msg = '', int $code = 200, array $config = [], string $type = 'json') : Response
+    {
+        // 标准API结构生成
+        $result = [
+            // 状态码
+            'code'  =>  $code,
+            // 消息
+            'msg'   =>  $msg,
+            // 数据
+            'data'  =>  $data
+        ];
+        
+        // 合并其他数据数据
+        $result = !empty($config) ? array_merge($result, $config) : $result;
+        
+        return Response::create($result, $type);
     }
     
     // 404 - 方法不存在的错误

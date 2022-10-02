@@ -35,7 +35,7 @@ class LoginCheck
         $list = $File->listDirInfo('./',true,'env');
         
         foreach ($list as $val) {
-            $item    = explode('/', $val);
+            $item    = explode('/', $val ?? '');
             $install = array_pop($item);
             if ($install == 'install.env') $install = true;
         }

@@ -1,5 +1,8 @@
 <?php
+
 namespace app\api\controller\inis;
+
+use think\facade\{Lang};
 
 /**
  * Class Error
@@ -13,6 +16,6 @@ class Error extends Base
      */
     public function index()
     {
-        return $this->create([], '不存在该API', 404);
+        return $this->json([], Lang::get('不存在该API'), 404);
     }
 }

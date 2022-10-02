@@ -88,8 +88,8 @@ class Tag extends Model
     {
         $add_tag_id = [];
         
-        if (is_string($tag_id))   $tag_id   = array_filter(explode(',', $tag_id));
-        if (is_string($tag_name)) $tag_name = array_filter(explode(',', $tag_name));
+        if (is_string($tag_id))   $tag_id   = array_filter(explode(',', $tag_id ?? ''));
+        if (is_string($tag_name)) $tag_name = array_filter(explode(',', $tag_name ?? ''));
         
         // 新增标签 - 并获取新增标签的ID
         foreach ($tag_name as $key => $val){
@@ -121,7 +121,7 @@ class Tag extends Model
         
         foreach ($data as $key => $val){
             
-            $tag_id = explode('|',$val['tag_id']);
+            $tag_id = explode('|', $val['tag_id'] ?? '');
             
             foreach ($tag_id as $k => $v) if($v == $id) unset($tag_id[$k]);
             

@@ -11,7 +11,7 @@ class LinksSort extends Validate
     ];
     
     protected $message  =   [
-        'name.require'  => '分类名称不能为空！',
-        'name.unique'   => '分类名称已存在！',
+        'name.require'  => '友链分组名称不能为空！',
+        'name.unique'   => '友链分组名称已存在！',
     ];
 }

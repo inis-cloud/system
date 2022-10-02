@@ -28,7 +28,7 @@ class FileSystem extends Base
             $path = (empty($param['path'])) ? './' : $param['path'];
             
             // 避免提权，强制定义当前目录 ./ - 防跨站
-            $path = explode('/', $path);
+            $path = explode('/', $path ?? './');
             // 过滤返回上一级操作
             foreach ($path as $key => $val) if ($val == '..') unset($path[$key]);
             // 过滤空数组并合并数组
@@ -91,7 +91,7 @@ class FileSystem extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -113,7 +113,7 @@ class FileSystem extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -149,7 +149,7 @@ class FileSystem extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -179,7 +179,7 @@ class FileSystem extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -210,7 +210,7 @@ class FileSystem extends Base
                 $code = 200;
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -219,7 +219,7 @@ class FileSystem extends Base
      */
     public function uploadFileOne(Request $request)
     {
-        $name = explode('.', $_FILES['file']['name']);
+        $name = explode('.', $_FILES['file']['name'] ?? '');
         array_pop($name);
         $name = implode('.',$name);
         // $tmp_name = $_FILES['file']['tmp_name'];
@@ -227,7 +227,7 @@ class FileSystem extends Base
         
         $param = $request->param();
         
-        $path = explode('/',$param['path']);
+        $path = explode('/', $param['path'] ?? './');
         foreach ($path as $key => $val) {
             if ($val == '.' or $val == '..') unset($path[$key]);
         }
@@ -264,7 +264,7 @@ class FileSystem extends Base
             else {
                 
                 // 重新定义路径，防止提权
-                $path_array = array_filter(explode('/', $file_path));
+                $path_array = array_filter(explode('/', $file_path ?? ''));
                 $path_file  = implode('/', $path_array);
                 
                 $code = 200;
@@ -272,7 +272,7 @@ class FileSystem extends Base
                 $data['info'] = $this->File->listInfo($path_file);
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -296,7 +296,7 @@ class FileSystem extends Base
             else {
                 
                 // 重新定义路径，防止提权
-                $path_array = array_filter(explode('/', $file_path));
+                $path_array = array_filter(explode('/', $file_path ?? ''));
                 $path_file  = implode('/', $path_array);
                 
                 $this->File->writeFile($path_file, $text);
@@ -304,7 +304,7 @@ class FileSystem extends Base
                 $code = 200;
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     

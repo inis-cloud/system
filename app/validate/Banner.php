@@ -11,7 +11,7 @@ class Banner extends Validate
     ];
     
     protected $message  =   [
-        'img.require'   => '图片地址必须填写！',
-        'img.url'       => '图片地址格式错误！',
+        'img.require'   => '请提交图片地址！',
+        'img.url'       => '图片地址格式不正确！',
     ];
 }

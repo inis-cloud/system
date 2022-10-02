@@ -4,10 +4,12 @@ declare (strict_types = 1);
 namespace app\api\controller\inis;
 
 use think\Request;
-use think\facade\{Cache};
+use think\facade\{Cache, Lang};
 
 class Proxy extends Base
 {
+    protected $middleware = [];
+
     /**
      * 显示资源列表
      *
@@ -21,21 +23,16 @@ class Proxy extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         $config = [];
         
-        // 存在的方法
-        $method = ['get'];
-        
-        $mode   = (empty($param['mode'])) ? 'get' : $param['mode'];
-        
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = ($mode == 'get') ? $this->curl($param, 'get') : $this->$mode($param);
+        $result = $this->curl($param, 'get');
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code, $config);
+        return $this->json($data, $msg, $code, $config);
     }
 
     /**
@@ -44,28 +41,28 @@ class Proxy extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         $config = [];
+
+        if ($IID == 'def') $IID = 'get';
         
         // 存在的方法
         $method = ['post'];
         
-        $mode   = (empty($param['mode'])) ? 'post' : $param['mode'];
-        
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = ($mode == 'post') ? $this->curl($param, 'post') : $this->$mode($param);
+        if (in_array($IID, $method)) $result = $this->curl($param, $IID);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code, $config);
+        return $this->json($data, $msg, $code, $config);
     }
 
     /**
@@ -74,30 +71,28 @@ class Proxy extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
-        if ($IID == 'delete') $IID = 'del';
-        
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         $config = [];
-        
+
+        if ($IID == 'def') $IID = 'get';
+
         // 存在的方法
-        $curl = ['get','post','put','del','patch'];
-        $method = [];
+        $method = ['get','post','put','del','patch'];
         
         // 动态方法且方法存在
-        if (in_array($IID, $curl)) $result = $this->curl($param, $IID);
-        else if (in_array($IID, $method)) $result = $this->$IID($param);
+        if (in_array($IID, $method)) $result = $this->curl($param, $IID);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code, $config);
+        return $this->json($data, $msg, $code, $config);
     }
 
     /**
@@ -106,28 +101,28 @@ class Proxy extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function update(Request $request)
+    public function IPUT(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         $config = [];
+
+        if ($IID == 'def') $IID = 'put';
         
         // 存在的方法
         $method = ['put'];
         
-        $mode   = (empty($param['mode'])) ? 'put' : $param['mode'];
-        
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = ($mode == 'put') ? $this->curl($param, 'put') : $this->$mode($param);
+        if (in_array($IID, $method)) $result = $this->curl($param, $IID);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code, $config);
+        return $this->json($data, $msg, $code, $config);
     }
 
     /**
@@ -136,28 +131,28 @@ class Proxy extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function delete(Request $request)
+    public function IDELETE(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         $config = [];
+
+        if ($IID == 'def') $IID = 'del';
         
         // 存在的方法
         $method = ['del'];
         
-        $mode   = (empty($param['mode'])) ? 'del' : $param['mode'];
-        
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = ($mode == 'del') ? $this->curl($param, 'del') : $this->$mode($param);
+        if (in_array($IID, $method)) $result = $this->curl($param, $IID);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code, $config);
+        return $this->json($data, $msg, $code, $config);
     }
     
     /**
@@ -166,35 +161,35 @@ class Proxy extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function patch(Request $request)
+    public function IPATCH(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         $config = [];
+
+        if ($IID == 'def') $IID = 'patch';
         
         // 存在的方法
         $method = ['patch'];
         
-        $mode   = (empty($param['mode'])) ? 'patch' : $param['mode'];
-        
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = ($mode == 'patch') ? $this->curl($param, 'patch') : $this->$mode($param);
+        if (in_array($IID, $method)) $result = $this->curl($param, $IID);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code, $config);
+        return $this->json($data, $msg, $code, $config);
     }
     
     public function curl($param, $method = 'get')
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = Lang::get('数据请求成功！');
         
         $url         = !empty($param['p_url'])     ? $param['p_url']     : null;
         $headers     = !empty($param['p_headers']) ? $param['p_headers'] : [];
@@ -208,7 +203,7 @@ class Proxy extends Base
             unset($param['p_name']);
         } else unset($param['name']);
         
-        if (empty($url)) $msg = '参数p_url（需要代理请求的URL地址）不得为空！';
+        if (empty($url)) $msg = Lang::get('参数p_url（需要代理请求的URL地址）不得为空！');
         else {
             
             $code = 200;

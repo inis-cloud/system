@@ -4,7 +4,7 @@ declare (strict_types = 1);
 namespace app\api\controller\inis;
 
 use think\Request;
-use think\facade\{Cache};
+use think\facade\{Cache, Lang};
 use app\model\mysql\{Options as OptionsModel};
 
 class Options extends Base
@@ -21,7 +21,7 @@ class Options extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 存在的方法
@@ -34,7 +34,7 @@ class Options extends Base
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -43,30 +43,28 @@ class Options extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
-        $mode   = empty($param['mode']) ? 'saves' : $param['mode'];
-        
         // 存在的方法
-        $method = ['saves','remove'];
+        $method = ['save','remove'];
         
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param);
+        if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         // 清除缓存
         Cache::tag('options')->clear();
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -75,25 +73,25 @@ class Options extends Base
      * @param  string  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 存在的方法
-        $method = ['list'];
+        $method = ['one','all','list'];
         
         // 动态方法且方法存在
         if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -103,9 +101,28 @@ class Options extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
-        //
+        // 获取请求参数
+        $param  = $request->param();
+        
+        $data   = [];
+        $code   = 400;
+        $msg    = lang('参数不存在！');
+        $result = [];
+        
+        // 存在的方法
+        $method = ['save'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        // 清除缓存
+        Cache::tag('options')->clear();
+        
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -114,9 +131,28 @@ class Options extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
-        //
+        // 获取请求参数
+        $param  = $request->param();
+        
+        $data   = [];
+        $code   = 400;
+        $msg    = lang('参数不存在！');
+        $result = [];
+        
+        // 存在的方法
+        $method = ['remove'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        // 清除缓存
+        Cache::tag('options')->clear();
+        
+        return $this->json($data, $msg, $code);
     }
     
     // 获取一条数据
@@ -124,14 +160,9 @@ class Options extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据';
+        $msg  = lang('无数据！');
         
         $key = (!empty($param['key'])) ? $param['key'] : '';
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         
         // 禁止访问字段
         $prohibit = ['config:security','config:email-serve'];
@@ -145,21 +176,21 @@ class Options extends Base
         } else {
             
             // 设置缓存名称
-            $cache_name = 'options?key='.$key;
+            $cache_name = json_encode(array_merge(['IAPI'=>'options'], $param));
             
             // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache == 'true') $data = json_decode(Cache::get($cache_name));
+            if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
             else {
                 // 获取数据库数据
                 $data = OptionsModel::where('keys', $key)->find();
-                Cache::tag(['options',$cache_name])->set($cache_name, json_encode($data));
+                if ($this->ApiCache) Cache::tag(['options',$cache_name])->set($cache_name, json_encode($data));
             }
             
             $code = 200;
-            $msg  = '无数据！';
+            $msg  = lang('无数据！');
             // 逆向思维，节省代码行数
             if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
+            else $msg = lang('成功！');
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
@@ -170,18 +201,13 @@ class Options extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据';
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        $msg  = lang('无数据！');
         
         // 设置缓存名称
-        $cache_name = 'options';
+        $cache_name = json_encode(array_merge(['IAPI'=>'options'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache == 'true') $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             // 站点信息 和 作者信息
@@ -197,24 +223,24 @@ class Options extends Base
                 } else $data[$val] = [];
             }
             
-            Cache::tag(['options'])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['options'])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
     
     // 新增或者修改数据
-    public function saves($param)
+    public function save($param)
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = lang('成功！');
         
         $opt   = !empty($param['opt'])   ? $param['opt']   : null;
         $keys  = !empty($param['keys'])  ? $param['keys']  : null;
@@ -223,7 +249,7 @@ class Options extends Base
         // 是否覆盖
         $cover = !empty($param['cover']) ? (($param['cover'] == 'true') ? true : false) : false;
         
-        if (empty($keys)) $msg = '请提交 keys';
+        if (empty($keys)) $msg = lang('请提交 keys！');
         else {
             
             $options = OptionsModel::where(['keys'=>$keys])->findOrEmpty();
@@ -232,21 +258,21 @@ class Options extends Base
             if ($options->isEmpty()) $options = new OptionsModel;
             
             // 字符串格式对象转数组
-            if (is_string($opt)) {
-                $opt  = json_decode(str_replace(["'"], ["\""], $opt));
-                if (empty($opt)) $msg = '参数 opt 字符串格式的对象格式有错误，请检查。正确格式如："{"test":"测试","other":"其他"}" <--长得像对象的字符串';
+            // if (is_string($opt)) {
+            //     $opt  = json_decode(str_replace(["'"], ["\""], $opt));
+            //     if (empty($opt)) $msg = lang('参数 opt 字符串格式的对象格式有错误，请检查。正确格式如："{"test":"测试","other":"其他"}" <--长得像对象的字符串！');
+            // }
+
+            // 字符对象
+            if (!empty($opt)) {
+                // 校验字符串对象合法性
+                $opt = is_string($opt) ? $this->helper->stringJson($opt) : $opt;
+                // 不编码中文
+                $opt = json_decode(json_encode($opt, JSON_UNESCAPED_UNICODE), true);
             }
             
             // 最终的JSON数据
-            $json = [];
-            
-            // 修改 且 JSON 数据不为空
-            if (!$options->isEmpty() and !empty($opt)) {
-                
-                $json = $options->opt;
-                foreach ($opt as $key => $val) $json->$key = $val;
-                
-            } else $json = $opt;
+            $json = array_merge(json_decode(json_encode($options->opt, JSON_UNESCAPED_UNICODE), true) ?? [], $opt);
             
             // 覆盖
             if ($cover) $json = $opt;
@@ -259,12 +285,12 @@ class Options extends Base
             $options->value = $value;
             
             // 是否拥有权限
-            if (in_array($this->user['data']->level, ['admin'])) {
+            if (in_array(request()->user->level, ['admin'])) {
                 $code = 200;
                 $options->save();
             } else {
                 $code = 403;
-                $msg  = '无权限';
+                $msg  = lang('无权限！');
             }
         }
         
@@ -276,27 +302,27 @@ class Options extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = lang('成功！');
         
         $keys = !empty($param['keys']) ? $param['keys']  : null;
         
-        if (empty($keys)) $msg = '请提交 keys';
+        if (empty($keys)) $msg = lang('请提交 keys！');
         else {
             
             $options = OptionsModel::where(['keys'=>$keys])->findOrEmpty();
             
             // 存在该条数据
-            if (!$options->isEmpty() and in_array($this->user['data']->level, ['admin'])) {
+            if (!$options->isEmpty() and in_array(request()->user->level, ['admin'])) {
                 
                 $code = 200;
                 $options->delete();
                 
             } else if ($options->isEmpty()) {
                 $code = 204;
-                $msg  = '无数据';
+                $msg  = lang('无数据！');
             } else {
                 $code = 403;
-                $msg  = '无权限';
+                $msg  = lang('无权限！');
             }
         }
         
@@ -308,29 +334,24 @@ class Options extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据';
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        $msg  = lang('无数据！');
         
         // 设置缓存名称
-        $cache_name = 'options/list';
+        $cache_name = json_encode(array_merge(['IAPI'=>'options/list'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache == 'true') $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             // 获取数据库数据
             $data = OptionsModel::column('keys');
-            Cache::tag(['options',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['options',$cache_name])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }

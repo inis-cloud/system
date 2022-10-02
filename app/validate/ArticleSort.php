@@ -11,7 +11,7 @@ class ArticleSort extends Validate
     ];
     
     protected $message  =   [
-        'name.require'  => '分类名称不能为空！',
-        'name.unique'   => '分类名称已存在！',
+        'name.require'  => '文章分类名称不能为空！',
+        'name.unique'   => '文章分类名称已存在！',
     ];
 }

@@ -3,43 +3,43 @@
 use think\facade\Route;
 
 Route::group('comm', function (){
-    Route::rule(':name', 'Comm/:name');
+    Route::rule(':NAME', 'Comm/:NAME');
 });
 
 Route::group('test', function (){
-    Route::rule(':name', 'Test/:name')->allowCrossDomain([
+    Route::rule(':NAME', 'Test/:NAME')->allowCrossDomain([
         'Access-Control-Allow-Origin'        => '*',
         'Access-Control-Allow-Credentials'   => 'true'
     ]);;
 });
 
 Route::group('api', function (){
-    Route::rule(':name', 'Api/:name');
+    Route::rule(':NAME', 'Api/:NAME');
 });
 
 Route::group('method', function (){
-   Route::rule(':name', 'Method/:name');
+   Route::rule(':NAME', 'Method/:NAME');
 });
 
 Route::group('handle', function (){
-    Route::rule(':name', 'Handle/:name');
+    Route::rule(':NAME', 'Handle/:NAME');
 });
 
 Route::group('chart', function (){
-    Route::rule(':name', 'Chart/:name');
+    Route::rule(':NAME', 'Chart/:NAME');
 });
 
 Route::group('file', function (){
-    Route::rule(':name', 'FileSystem/:name');
+    Route::rule(':NAME', 'FileSystem/:NAME');
 });
 
 Route::group('update', function (){
-   Route::rule(':name', 'Update/:name');
+   Route::rule(':NAME', 'Update/:NAME');
 });
 
 Route::group(function (){
     Route::any('/', 'Index/home');
-    Route::rule(':name1-:name2-:name3', 'Index/:name1:name2:name3');
-    Route::rule(':name1-:name2', 'Index/:name1:name2');
-    Route::rule(':name', 'Index/:name');
+    Route::rule(':NAME1-:NAME2-:NAME3', 'Index/:NAME1:NAME2:NAME3');
+    Route::rule(':NAME1-:NAME2', 'Index/:NAME1:NAME2');
+    Route::rule(':NAME', 'Index/:NAME');
 });

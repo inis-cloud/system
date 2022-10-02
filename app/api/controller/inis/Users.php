@@ -6,7 +6,7 @@ namespace app\api\controller\inis;
 use think\Request;
 use think\exception\ValidateException;
 use app\validate\Users as UsersValidate;
-use think\facade\{Cache, Cookie, Session, Validate};
+use think\facade\{Cache, Cookie, Session, Validate, Lang};
 use app\model\mysql\{Log, Options, VerifyCode, Users as UsersModel};
 
 use Firebase\JWT\{JWT, ExpiredException, BeforeValidException, SignatureInvalidException};
@@ -29,7 +29,7 @@ class Users extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         
         // 存在的方法
@@ -42,7 +42,7 @@ class Users extends Base
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -51,30 +51,28 @@ class Users extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         
         // 存在的方法
-        $method = ['saves','remove','login','register','check','vcl'];
-        
-        $mode   = (empty($param['mode'])) ? 'saves' : $param['mode'];
+        $method = ['save','remove','login','register','check','vcl'];
         
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param);
+        if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         // 清除缓存
         Cache::tag('users')->clear();
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -83,9 +81,25 @@ class Users extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
+        // 获取请求参数
+        $param  = $request->param();
         
+        $data   = [];
+        $code   = 400;
+        $msg    = Lang::get('参数不存在！');
+        $result = [];
+        
+        // 存在的方法
+        $method = ['one','all','sql'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -95,9 +109,28 @@ class Users extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
+        // 获取请求参数
+        $param  = $request->param();
         
+        $data   = [];
+        $code   = 400;
+        $msg    = Lang::get('参数不存在！');
+        $result = [];
+
+        // 存在的方法
+        $method = ['save'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        // 清除缓存
+        Cache::tag('users')->clear();
+        
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -106,9 +139,28 @@ class Users extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
+        // 获取请求参数
+        $param  = $request->param();
         
+        $data   = [];
+        $code   = 400;
+        $msg    = Lang::get('参数不存在！');
+        $result = [];
+        
+        // 存在的方法
+        $method = ['remove'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        // 清除缓存
+        Cache::tag('users')->clear();
+        
+        return $this->json($data, $msg, $code);
     }
     
     // 获取一条数据
@@ -116,36 +168,33 @@ class Users extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据';
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        $msg  = Lang::get('无数据！');
+
+        if (empty($param['id'])) return ['data'=>[],'code'=>400,'msg'=>Lang::get('id 不能为空！')];
         
         $opt = [
             'withoutField'=>['account','password','phone','email','level','remarks'],
         ];
         
         // 设置缓存名称
-        $cache_name = 'users?id='.$param['id'];
+        $cache_name = json_encode(array_merge(['IAPI'=>'users'], $param));
         
         // 显示隐藏字段
-        if (isset($this->user['data']) and in_array($this->user['data']->level, ['admin'])) $opt['withoutField'] = ['password'];
+        if (isset(request()->user) and in_array(request()->user->level, ['admin'])) $opt['withoutField'] = ['password'];
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             // 获取数据库数据
             $data = UsersModel::ExpandAll($param['id'], $opt);
-            Cache::tag(['users',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['users',$cache_name])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = Lang::get('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = Lang::get('数据请求成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -155,16 +204,11 @@ class Users extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据';
+        $msg  = Lang::get('无数据！');
         
         if (empty($param['page']))  $param['page']  = 1;
         if (empty($param['limit'])) $param['limit'] = 5;
         if (empty($param['order'])) $param['order'] = 'create_time asc';
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         
         $opt = [
             'page'   =>  (int)$param['page'], 
@@ -174,25 +218,25 @@ class Users extends Base
         ];
         
         // 显示隐藏字段
-        if (isset($this->user['data']) and in_array($this->user['data']->level, ['admin'])) $opt['withoutField'] = ['password'];
+        if (isset(request()->user) and in_array(request()->user->level, ['admin'])) $opt['withoutField'] = ['password'];
         
         // 设置缓存名称
-        $cache_name = 'users?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
+        $cache_name = json_encode(array_merge(['IAPI'=>'users'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             // 获取数据库数据
             $data = UsersModel::ExpandAll(null, $opt);
-            Cache::tag(['users'])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['users'])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = Lang::get('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = Lang::get('数据请求成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -202,7 +246,7 @@ class Users extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'error';
+        $msg  = Lang::get('错误！');
         $header = [];
         
         $ip   = $this->helper->GetClientIP();
@@ -222,7 +266,7 @@ class Users extends Base
             $second_to_time = $this->helper->NaturalSecond($this->config['login']['error_time']);
             
             $code = 403;
-            $msg  = '您的错误次数达到'.$this->config['login']['error_count'].'次，该设备已被禁止'.$second_to_time.'内登陆此系统！';
+            $msg  = Lang::get('登录错误上限', [$this->config['login']['error_count'], $second_to_time]);
             
         } else {
             
@@ -248,14 +292,14 @@ class Users extends Base
                     'content'=>$param['account'],
                 ]);
                 
-                $msg = "帐号或密码错误！";
+                $msg = Lang::get("帐号或密码错误！");
                 
             } else {
                 
                 if ($users->status == 0) {
                     
                     $code   = 403;
-                    $msg    = '该账号已被禁用！';
+                    $msg    = Lang::get('该账号已被禁用！');
                     
                 } else {
                     
@@ -264,7 +308,7 @@ class Users extends Base
                         "aud" => $users->account,   // 面象的用户，可以为空
                         "iat" => time(),            // 签发时间
                         "nbf" => time(),            // 在什么时候jwt开始生效  （这里表示生成100秒后才生效）
-                        "exp" => time() + 7200,     // 过期时间 - 单位秒
+                        "exp" => time() + $this->config['login']['expired'],     // 过期时间 - 单位秒
                         "uid" => $users->id,        // 记录的userid的信息，这里是自已添加上去的，如果有其它信息，可以再添加数组的键值对
                     ];
                     
@@ -287,7 +331,7 @@ class Users extends Base
                     // 登录成功
                     $data   = ['login-token'=>$jwt,'user'=>$users];
                     $code   = 200;
-                    $msg    = '登录成功！';
+                    $msg    = Lang::get('登录成功！');
                 }
                 
             }
@@ -303,148 +347,137 @@ class Users extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = Lang::get('数据请求成功！');
+
+        if (empty($param['email']))    return ['data'=>[],'code'=>400,'msg'=>Lang::get('邮箱不能为空！')];
+        if (empty($param['password'])) return ['data'=>[],'code'=>400,'msg'=>Lang::get('密码不能为空！')];
+        if (empty($param['nickname'])) return ['data'=>[],'code'=>400,'msg'=>Lang::get('昵称不能为空！')];
         
-        // 允许用户提交并存储的字段
-        $obtain = ['email','nickname','password'];
+        $cache_name  = 'email-register-' . $param['email'];
+        $verify_code = !empty($param['code']) ? strtoupper($param['code']) : null;
+
+        // 验证码为空 - 自动发送验证码
+        if (empty($verify_code)) {
         
-        $time = time();
-        $code_data = (empty($param['code'])) ? '' : strtoupper($param['code']);
-        
-        if (empty($code_data)) $msg = '验证码不得为空！';
+            $valid     = $this->config['valid_time'];
+            $chars     = $this->helper->VerifyCode(6, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+            // 秒转人性化时间
+            $time      = $this->helper->NaturalSecond($valid);
+            
+            $code = 200;
+            $msg  = lang('验证码已发送至邮箱，%s 内有效！', [$time]);
+            
+            // 缓存验证码
+            Cache::set($cache_name, $chars, $valid);
+            $this->sendEmail($param['email'], $chars, $time, ['site'=>true,'value'=>'：邮箱换绑验证码！']);
+        }
+        // 开始注册
         else {
+
+            if (!Cache::has($cache_name))                return ['data'=>[],'code'=>412,'msg'=>Lang::get('验证码已失效！')];
+            if ($verify_code != Cache::get($cache_name)) return ['data'=>[],'code'=>400,'msg'=>Lang::get('验证码错误！')];
+            $check = UsersModel::where('email', $param['email'])->findOrEmpty();
+            if (!$check->isEmpty())                      return ['data'=>[],'code'=>400,'msg'=>Lang::get('该邮箱已被注册！')];
+
+            $users = new UsersModel;
+            // 允许用户提交并存储的字段
+            $obtain = ['email','nickname','password'];
             
-            // 记录验证码 - 用于校验
-            $verify_code = VerifyCode::where(['types'=>'email','content'=>$param['email'],'code'=>$code_data])->findOrEmpty();
+            // 判断字段是否允许存储，防提权
+            foreach ($param as $key => $val) if (in_array($key, $obtain)) {
+                if ($key == 'password') $users->password = $this->create_password($val);
+                else $users->$key = $val;
+            }
             
-            if (!$verify_code->isEmpty()) {
-                
-                if ($verify_code->end_time < $time) {
-                    
-                    $code = 412;
-                    $msg  = '验证码已失效！';
-                    
-                } else {
-                    
-                    $users = new UsersModel;
-                    
-                    // 判断字段是否允许存储，防提权
-                    foreach ($param as $key => $val) if (in_array($key, $obtain)) {
-                        if ($key == 'password') $users->password = password_hash(md5($val), PASSWORD_BCRYPT);
-                        else $users->$key = $val;
-                    }
-                    
-                    // 随机默认头像
-                    $users->head_img = $this->helper->RandomImg("local", "admin/images/anime/");
-                    
-                    $users->save();
-                    $verify_code->delete();
-                    
-                    $data = ['email'=>$param['email'],'password'=>$param['password'], 'users'=>$users];
-                    $code = 200;
-                    $msg  = 'ok';
-                }
-                
-            } else $msg = '验证码错误！';
+            // 随机默认头像
+            $users->head_img = $this->helper->RandomImg("local", "admin/images/anime/");
+            
+            $users->save();
+            Cache::delete($cache_name);
+            
+            $code = 200;
+            // $data = ['email'=>$param['email'], 'password'=>$param['password']];
+            $msg  = Lang::get('注册成功！');
         }
         
-        $result = ['data'=>$data,'code'=>$code,'msg'=>$msg];
-        
-        return $result;
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
     
     // 新增或者修改数据
-    public function saves($param)
+    public function save($param)
     {
         $data   = [];
         $code   = 400;
-        $msg    = 'ok';
-        $time   = time();
-        
+        $msg    = Lang::get('保存成功！');
+
         // 允许用户提交并存储的字段
         $obtain = ['account','password','nickname','sex','email','phone','head_img','description','address_url','longtext'];
-        if (in_array($this->user['data']->level, ['admin'])) array_push($obtain, 'level', 'status', 'remarks');
+        if (in_array(request()->user->level, ['admin'])) array_push($obtain, 'level', 'status', 'remarks');
         
         if (empty($param['id'])) $users = new UsersModel;
         else $users = UsersModel::find((int)$param['id']);
         
         // 判断字段是否允许存储，防提权
         foreach ($param as $key => $val) if (in_array($key, $obtain)) {
-            if ($key == 'password') $users->password = password_hash(md5($val), PASSWORD_BCRYPT);
+            if ($key == 'password') $users->password = $this->create_password($val);
             else $users->$key = $val;
         }
         
         // 权限判断
-        if ($this->user['data']->status != 1) $msg = '账号被禁用';
-        else {
-            
-            $code = 200;
-            
-            $param['email'] = empty($param['email']) ? $this->user['data']->email : $param['email'];
-            
-            $email   = UsersModel::where(['email'=>$param['email']])->findOrEmpty();
-            $account = UsersModel::where(['account'=>$param['account']])->findOrEmpty();
-            
-            // 修改了自己的信息
-            if ($this->user['data']->id == (int)$param['id']) {
-                
-                // 修改了邮箱信息 - 任何人都有权限
-                if ($this->user['data']->email   != $param['email']) {
-                    
-                    $code = 400;
-                    
-                    if (!$email->isEmpty()) $msg  = '邮箱已存在！';
-                    else if (empty($param['code'])) {
-                        
-                        $code = 201;
-                        $msg  = $this->verifyCode($param['email']);
-                        
-                    } else if (!empty($param['code'])) {
-                        
-                        $verify = VerifyCode::where(['content'=>$param['email'],'code'=>$param['code']])->findOrEmpty();
-                        
-                        if (!$verify->isEmpty()) {
-                            
-                            if ($verify->end_time >= $time) {
-                                
-                                $code = 200;
-                                $msg  = '保存成功！';
-                                $verify->delete();
-                                
-                            } else $msg = '验证码已失效，请重新获取！';
-                            
-                        } else $msg = '无效验证码！';
-                    }
-                    
-                }
-                // 修改了帐号信息
-                if ($this->user['data']->account != $param['account'] and !$account->isEmpty()) {
-                    $code = 400;
-                    $msg  = '帐号已存在！';
-                }
-                
-                if ($code == 200) $users->save();
-                
-            } else {
-                
-                // 邮箱信息
-                if (!$email->isEmpty()) {
-                    $code = 400;
-                    $msg  = '邮箱已存在！';
-                }
-                // 帐号信息
-                if (!$account->isEmpty()) {
-                    $code = 400;
-                    $msg  = '帐号已存在！';
-                }
-                
-                if (in_array($this->user['data']->level, ['admin']) and $code == 200) $users->save();
-                else $msg = '无权限';
-            }
-        }
+        if (request()->user->status != 1) return ['data'=>[],'msg'=>Lang::get('账号被禁用！'),'code'=>400];
+         
+        $code = 200;
         
-        // 删除已失效的验证码
-        VerifyCode::where('end_time','<',$time)->delete();
+        $param['email']   = empty($param['email'])   ? request()->user->email   : $param['email'];
+        $param['account'] = empty($param['account']) ? request()->user->account : $param['account'];
+        
+        $email   = UsersModel::where(['email'  =>$param['email']])->findOrEmpty();
+        $account = UsersModel::where(['account'=>$param['account']])->findOrEmpty();
+        
+        // 修改了自己的信息
+        if (request()->user->id == (int)$param['id']) {
+            
+            // 修改了邮箱信息 - 任何人都有权限
+            if (request()->user->email != $param['email']) {
+                
+                if (!$email->isEmpty()) return ['data'=>[],'msg'=>Lang::get('邮箱已存在！'),'code'=>400];
+
+                // 验证码为空 - 自动发送验证码
+                if (empty($param['code'])) {
+                    
+                    $code = 201;
+                    $msg  = $this->verifyCode($param['email']);
+                }
+                // 修改信息
+                else {
+                    
+                    $cache_name = 'verify-code-' . $param['email'];
+                    
+                    if (!Cache::has($cache_name))                  return ['data'=>[],'msg'=>Lang::get('验证码已失效，请重新获取！'),'code'=>400];
+                    if ($param['code'] != Cache::get($cache_name)) return ['data'=>[],'msg'=>Lang::get('验证码错误！'),'code'=>400];
+
+                    $code = 200;
+                    $msg  = Lang::get('保存成功！');
+                    Cache::delete($cache_name);
+                }
+                
+            }
+            // 修改了帐号信息
+            if (request()->user->account != $param['account'] and !$account->isEmpty()) {
+                $code = 400;
+                $msg  = Lang::get('帐号已存在！');
+            }
+            
+            if ($code == 200) $users->save();
+            
+        } else {
+            
+            if (!$email->isEmpty())   return ['data'=>[],'msg'=>Lang::get('邮箱已存在！'),'code'=>400];
+            if (!$account->isEmpty()) return ['data'=>[],'msg'=>Lang::get('帐号已存在！'),'code'=>400];
+            
+            if (in_array(request()->user->level, ['admin'])) $users->save();
+            else $msg = Lang::get('无权限！');
+        }
         
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
     }
@@ -454,17 +487,17 @@ class Users extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = Lang::get('删除成功！');
         
         $id = !empty($param['id']) ? $param['id']  : null;
         
-        if (empty($id)) $msg = '请提交 id';
+        if (empty($id)) $msg = Lang::get('请提交 id！');
         else {
             
             $id = array_filter(explode(',', $id));
             
             // 存在该条数据
-            if (in_array($this->user['data']->level, ['admin'])) {
+            if (in_array(request()->user->level, ['admin'])) {
                 
                 $code = 200;
                 UsersModel::destroy($id);
@@ -472,7 +505,7 @@ class Users extends Base
             } else {
                 
                 $code = 403;
-                $msg  = '无权限';
+                $msg  = Lang::get('无权限！');
             }
         }
         
@@ -480,46 +513,23 @@ class Users extends Base
     }
     
     // 创建验证码
-    public function verifyCode($email, $title = ['site'=>true,'value'=>'：邮箱换绑验证码'])
+    public function verifyCode($email, $title = ['site'=>true,'value'=>'：邮箱换绑验证码！'])
     {
-        $time = time();
-        
         // 验证码有效时间
-        $valid_time  = $this->config['valid_time'];
-        $verify_code = VerifyCode::where(['types'=>'email','content'=>$email])->findOrEmpty();
-        $chars       = $this->helper->VerifyCode(6, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+        $valid  = $this->config['valid_time'];
+        $chars  = $this->helper->VerifyCode(6, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
         // 秒转人性化时间
-        $valid_time_str = $this->helper->NaturalSecond($valid_time);
+        $time   = $this->helper->NaturalSecond($valid);
         
-        if (!$verify_code->isEmpty()) {
-            
-            // 验证码已经存在，避免重复记录
-            $verify_code->code     = $chars;
-            $verify_code->end_time = $time + $valid_time;
-            $verify_code->save();
-            
-        } else {
-            
-            // 验证码不存在，则新建验证码
-            $verify_code  = new VerifyCode;
-            $end_time     = $time + $valid_time;
-            $verify_code->save([
-                'code'    => $chars,
-                'types'   => 'email',
-                'content' => $email,
-                'end_time'=> $end_time
-            ]);
-        }
+        // 缓存验证码
+        Cache::set('verify-code-' . $email, $chars, $valid);
+        $this->sendEmail($email, $chars, $time, $title);
         
-        $msg  = '验证码已发送至邮箱，'.$valid_time_str.'内有效！';
-        
-        $this->sendEmail($email, $chars, $valid_time_str, $title);
-        
-        return $msg;
+        return Lang::get('验证码已发送至邮箱，%s 内有效！', [$time]);
     }
     
     // 发送邮箱通知
-    public function sendEmail($email, $code, $valid_time, $title = ['site'=>true,'value'=>'：邮箱换绑验证码'])
+    public function sendEmail($email, $code, $valid_time, $title = ['site'=>true,'value'=>'：邮箱换绑验证码！'])
     {
         // 获取邮箱服务配置信息
         $options  = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
@@ -543,9 +553,9 @@ class Users extends Base
 
         // 发送评论信息到邮箱
         $this->tool->sendMail([
-            'email'=>$email,
-            'title'=>($title['site']) ? $site . $title['value'] : $title['value'],
-            'content'=>$template
+            'email'  => $email,
+            'title'  => $title['site'] ? $site . $title['value'] : Lang::get($title['value']),
+            'content'=> $template
         ]);
     }
     
@@ -554,35 +564,45 @@ class Users extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = Lang::get('数据请求成功！');
+
+        $token= isset($this->header['authorization']) ? $this->header['authorization'] : $param['login-token'];
+        if (empty($token)) return ['data'=>[],'msg'=>Lang::get('Authorization 不得为空！'),'code'=>400];
+
+        // 校验token，避免前端传递错误的token
+        foreach (explode('.', $token) as $key => $val) {
+            if (in_array($key, [0,1]) and empty(json_decode(base64_decode($val), true))) {
+                return ['data'=>[],'msg'=>Lang::get('签名有误！'),'code'=>400];
+            }
+        }
         
-        if (isset($param['login-token']) or isset($header['login-token'])) {
+        try {
             
-            $token = (isset($header['login-token'])) ? $header['login-token'] : $param['login-token'];
+            JWT::$leeway = 60;
+            $decoded = JWT::decode($token, $this->config['jwt']['key'], [$this->config['jwt']['encrypt']]);
+            $array   = (array) $decoded;
             
-            try {
-                
-                JWT::$leeway = 60;
-                $decoded = JWT::decode($token, $this->config['jwt']['key'], [$this->config['jwt']['encrypt']]);
-                $array   = (array) $decoded;
-                
-                $data = UsersModel::withoutField(['password'])->find($array['uid']);
-                $code = 200;
-                $msg  = '合法登录！';
-                
-            } catch (SignatureInvalidException $e){
-                // $e->getMessage()
-                $msg = '签名不正确！';
-            } catch (BeforeValidException $e){
-                $msg = 'login-token失效！';
-            } catch (ExpiredException $e){
-                $msg = 'login-token失效！';
-            } catch (Exception $e){
-                $msg = '未知错误！';
-            };
+            $data = UsersModel::withoutField(['password'])->find($array['uid']);
+            $code = 200;
+            $msg  = Lang::get('合法登录！');
             
-        } else $msg = '请通过 params or headers 的方式提交参数为 login-token 的JWT密钥';
-        
+        } catch (SignatureInvalidException $e){
+
+            $msg = Lang::get('签名不正确！');
+
+        } catch (BeforeValidException $e){
+
+            $msg = Lang::get('login-token失效！');
+
+        } catch (ExpiredException $e){
+
+            $msg = Lang::get('login-token失效！');
+
+        } catch (Exception $e){
+
+            $msg = Lang::get('未知错误！');
+        };
+            
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
     }
 
@@ -591,10 +611,10 @@ class Users extends Base
     {
         $data   = [];
         $code   = 400;
-        $msg    = 'ok';
+        $msg    = Lang::get('数据请求成功！');
         $header = [];
 
-        if (empty($param['account'])) $msg = '帐号或邮箱不得为空！请用参数 account 表示';
+        if (empty($param['account'])) $msg = Lang::get('帐号或邮箱不得为空！请用参数 account 表示！');
         // 提交了帐号或邮箱，但是没有提交验证码 - 自动创建验证码
         else if (!empty($param['account']) and empty($param['code'])) {
 
@@ -603,11 +623,11 @@ class Users extends Base
             
             $users= UsersModel::whereOr([$map1,$map2])->findOrEmpty();
 
-            if ($users->isEmpty())         $msg = '帐号或邮箱不存在！';
-            else if (empty($users->email)) $msg = '该帐号没有绑定邮箱！';
+            if ($users->isEmpty())         $msg = Lang::get('帐号或邮箱不存在！');
+            else if (empty($users->email)) $msg = Lang::get('该帐号没有绑定邮箱！');
             else {
                 $code = 200;
-                $msg = $this->verifyCode($users->email, ['site'=>true,'value'=>'：验证码登录']);
+                $msg = $this->verifyCode($users->email, ['site'=>true,'value'=>'：验证码登录！']);
             }
         
         }
@@ -620,24 +640,25 @@ class Users extends Base
             
             $users= UsersModel::whereOr([$map1,$map2])->withoutField(['remarks'])->findOrEmpty();
 
-            if ($users->isEmpty())         $msg = '帐号或邮箱不存在！';
-            else if (empty($users->email)) $msg = '该帐号没有绑定邮箱！';
+            if ($users->isEmpty())         $msg = Lang::get('帐号或邮箱不存在！');
+            else if (empty($users->email)) $msg = Lang::get('该帐号没有绑定邮箱！');
             else {
 
-                $verifyCode = VerifyCode::where(['content'=>$users->email,'code'=>$param['code']])->findOrEmpty();
+                $cache_name = 'verify-code-' . $users->email;
+                $verify = Cache::get('verify-code-' . $users->email);
                 
                 // 判断验证码是否存在数据库内
-                if (!$verifyCode->isEmpty()) {
-                    
+                if (Cache::has($cache_name)) {
+
                     // 检查验证码是否过期
-                    if ($verifyCode->end_time >= $time) {
-                        
+                    if (Cache::get($cache_name) == $param['code']) {
+
                         $token = [
                             "iss" => "inis",            // 签发者 可以为空
                             "aud" => $users->account,   // 面象的用户，可以为空
                             "iat" => $time,             // 签发时间
                             "nbf" => $time,             // 在什么时候jwt开始生效  （这里表示生成100秒后才生效）
-                            "exp" => $time + 7200,      // 过期时间 - 单位秒
+                            "exp" => $time + $this->config['login']['expired'],      // 过期时间 - 单位秒
                             "uid" => $users->id,        // 记录的userid的信息，这里是自已添加上去的，如果有其它信息，可以再添加数组的键值对
                         ];
                         
@@ -660,12 +681,12 @@ class Users extends Base
                         // 登录成功
                         $data   = ['login-token'=>$jwt,'user'=>$users];
                         $code   = 200;
-                        $msg    = '登录成功！';
-                        $verifyCode->delete();
+                        $msg    = Lang::get('登录成功！');
+                        Cache::delete($cache_name);
                         
-                    } else $msg = '验证码已失效，请重新获取！';
+                    } else $msg = Lang::get('验证码错误！');
                     
-                } else $msg = '无效验证码！';
+                } else $msg = Lang::get('验证码已失效，请重新获取！');
             }
         }
 
@@ -674,5 +695,38 @@ class Users extends Base
         return $result;
     }
 
-
+    // SQL接口
+    public function sql($param)
+    {
+        $where   = (empty($param['where']))   ? [] : $param['where'];
+        $whereOr = (empty($param['whereOr'])) ? [] : $param['whereOr'];
+        $page    = (!empty($param['page']))   ? $param['page']  : 1;
+        $limit   = (!empty($param['limit']))  ? $param['limit'] : 5;
+        $order   = (!empty($param['order']))  ? $param['order'] : 'create_time desc';
+        
+        $data = [];
+        $code = 200;
+        $msg  = Lang::get('数据请求成功！');
+        
+        $opt  = [
+            'page' => $page,
+            'limit'=> $limit,
+            'order'=> $order,
+            'where'=> $where,
+            'whereOr'=> $whereOr,
+            'withoutField'=>['account','password','phone','email','level','remarks'],
+        ];
+        
+        // 设置缓存名称
+        $cache_name = json_encode(array_merge(['IAPI'=>'users/sql'], $param));
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
+        else {
+            $data = UsersModel::ExpandAll(null, $opt);
+            if ($this->ApiCache) Cache::tag(['users',$cache_name])->set($cache_name, json_encode($data));
+        }
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
 }

@@ -138,19 +138,15 @@ abstract class Oauth
     /**
      * 请求code
      */
-    public function getRequestCodeURL($paramArr = null)
+    public function getRequestCodeURL()
     {
         $this->config();
-        
-        // 添加额外参数
-        if(is_array($paramArr)) $this->Callback .= '?'.http_build_query($paramArr);
-        
         //Oauth 标准参数
-        $params = [
+        $params = array(
             'client_id' => $this->AppKey,
             'redirect_uri' => $this->Callback,
             'response_type' => $this->ResponseType,
-        ];
+        );
 
         //获取额外参数
         if ($this->Authorize) {

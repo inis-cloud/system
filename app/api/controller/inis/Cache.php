@@ -4,10 +4,13 @@ declare (strict_types = 1);
 namespace app\api\controller\inis;
 
 use think\Request;
-use think\facade\{Cache as tCache};
+use think\facade\{Cache as tCache, Lang};
 
 class Cache extends Base
 {
+    
+    protected $middleware = [];
+
     /**
      * 显示资源列表
      *
@@ -21,7 +24,7 @@ class Cache extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '方法不存在！';
+        $msg    = lang('方法不存在！');
         $result = [];
         
         // 存在的方法
@@ -34,7 +37,7 @@ class Cache extends Base
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -43,27 +46,25 @@ class Cache extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
-        
+
         // 存在的方法
         $method = ['set'];
         
-        $mode   = !empty($param['mode']) ? $param['mode']  : 'set';
-        
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param);
+        if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -72,14 +73,14 @@ class Cache extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '方法不存在！';
+        $msg    = lang('方法不存在！');
         $result = [];
         
         // 存在的方法
@@ -90,7 +91,7 @@ class Cache extends Base
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -100,7 +101,7 @@ class Cache extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
         //
     }
@@ -111,9 +112,25 @@ class Cache extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
-        //
+        // 获取请求参数
+        $param  = $request->param();
+        
+        $data   = [];
+        $code   = 400;
+        $msg    = lang('方法不存在！');
+        $result = [];
+        
+        // 存在的方法
+        $method = ['clear','delete'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        return $this->json($data, $msg, $code);
     }
     
     // 判断缓存是否存在
@@ -121,9 +138,9 @@ class Cache extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
-        if (empty($param['name'])) $msg = '请提交需要查询的缓存名称，用参数 name 表示';
+        if (empty($param['name'])) $msg = lang('请提交需要查询的缓存名称，用参数 name 表示！');
         else {
             
             $code = 200;
@@ -138,15 +155,15 @@ class Cache extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
-        if (empty($param['name'])) $msg = '请提交需要获取的缓存名称，用参数 name 表示';
+        if (empty($param['name'])) $msg = lang('请提交需要获取的缓存名称，用参数 name 表示！');
         else {
             
             if (!tCache::has($param['name'])) {
                 
                 $code = 204;
-                $msg  = '缓存不存在或已过期';
+                $msg  = lang('缓存不存在或已过期！');
                 
             } else {
                 
@@ -163,17 +180,46 @@ class Cache extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = lang('缓存设置成功！');
         
-        if (empty($param['name']))      $msg = '请提交需要获取的缓存名称，用参数 name 表示';
-        else if (empty($param['data'])) $msg = '请提交需要缓存的数据，用参数 data 表示';
+        if (empty($param['name']))      $msg = lang('请提交需要获取的缓存名称，用参数 name 表示！');
+        else if (empty($param['data'])) $msg = lang('请提交需要缓存的数据，用参数 data 表示！');
         else {
             
-            $second = !empty($param['second']) ? (int)$param['second'] : 7200;
+            $second = !empty($param['second']) ? $param['second'] : 7200;
             
             $code = 200;
-            $data = tCache::set($param['name'], json_encode($param['data'], JSON_UNESCAPED_UNICODE), $second);
+            $data = tCache::set($param['name'], json_encode($param['data'], JSON_UNESCAPED_UNICODE), (int)$second);
         }
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+
+    // 清除所有缓存
+    public function clear($param)
+    {
+        $data = [];
+        $code = 200;
+        $msg  = lang('缓存清理成功！');
+
+        if (!in_array(request()->user->level, ['admin'])) return ['data'=>[],'code'=>403,'msg'=>lang('无权限！')];
+
+        tCache::clear();
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+
+    // 删除指定缓存
+    public function delete($param)
+    {
+        $data = [];
+        $code = 200;
+        $msg  = lang('缓存删除成功！');
+
+        if (!in_array(request()->user->level, ['admin'])) return ['data'=>[],'code'=>403,'msg'=>lang('无权限！')];
+
+        if (empty($param['name'])) return ['data'=>[],'code'=>400,'msg'=>lang('请提交需要获取的缓存名称，用参数 name 表示！')];
+        else Cache::delete($param['name']);
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }

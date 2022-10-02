@@ -3,7 +3,6 @@
     const app = Vue.createApp({
         data() {
             return {
-                api: 'https://inis.cc/api/',
                 info: {                  // 信息
                     php:  {check:false}, // PHP
                     mysql:{check:false}, // 数据库
@@ -12,9 +11,12 @@
                 database: {},            // 数据库信息
                 account:{},              // 帐号信息
                 is_instal: false,        // 是否显示安装过程
-                tables:{mysql:[],sqlite:[]},
                 notes:[],                // 记录
-                fulfill: false,          // 安装完成
+                fulfill: {               // 安装完成
+                    mysql: false,        // 数据库
+                    sqlite: false,       // sqlite
+                    account: false,      // 帐号
+                },
             }
         },
         mounted() {
@@ -27,10 +29,10 @@
             // 初始化数据
             initState(){
                 // 设置禁止项缓存
-                inisHelper.set.storage('check',{database:false,finish:false})
+                utils.set.storage('check',{database:false,finish:false})
                 // 设置数据库信息缓存
-                if (!inisHelper.get.storage('database')) {
-                    inisHelper.set.storage('database',{
+                if (!utils.get.storage('database')) {
+                    utils.set.storage('database',{
                         HOSTNAME: 'localhost',
                         HOSTPORT: 3306,
                         DATABASE: null,
@@ -43,13 +45,10 @@
             // 初始化
             initData() {
                 
-                this.database = inisHelper.get.storage('database')
+                this.database = utils.get.storage('database')
                 
-                axios.post('/install').then(res=>{
-                    if (res.data.code == 200) {
-                        const result = res.data.data
-                        this.info    = result
-                    }
+                POST('/install').then(res=>{
+                    if (res.code == 200) this.info = res.data
                 })
             },
             
@@ -57,283 +56,108 @@
             testConn(){
                 
                 // 更新缓存
-                inisHelper.set.storage('database', this.database)
+                utils.set.storage('database', this.database)
                 
-                const params = inisHelper.stringfy({
-                    ...this.database
-                })
-                
-                axios.post('/install/handle/testConn', params).then(res=>{
-                    
-                    if (res.data.code == 200) {
+                POST('/install/handle/testConn', { ...this.database }).then(res=>{
+                    if (res.code == 200) {
                         
-                        const result = res.data.data
-                        inisHelper.set.storage('check',{database:true})
+                        utils.set.storage('check', { database: true })
                         this.initData()
                         this.next('setting')
-                        
-                    } else if (res.data.code == 400) t.NotificationApp.send("错误！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
-                    else t.NotificationApp.send("错误！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "error");
+                    }
+                    else if (res.code == 400) Tool.Notyf(res.msg, 'warning')
+                    else Tool.Notyf(res.msg, 'error')
                 })
             },
             
             // 开始安装
             install(){
                 
-                inisHelper.set.storage('check',{finish:false})
+                utils.set.storage('check',{finish:false})
                 
-                if (inisHelper.is.empty(this.account.nickname))      t.NotificationApp.send("提示！", "昵称不得为空！", "top-right", "rgba(0,0,0,0.2)", "warning");
-                else if (inisHelper.is.empty(this.account.account))  t.NotificationApp.send("提示！", "帐号不得为空！", "top-right", "rgba(0,0,0,0.2)", "warning");
-                else if (inisHelper.is.empty(this.account.password)) t.NotificationApp.send("提示！", "密码不得为空！", "top-right", "rgba(0,0,0,0.2)", "warning");
-                else if (inisHelper.is.empty(this.account.email))    t.NotificationApp.send("提示！", "邮箱不得为空！", "top-right", "rgba(0,0,0,0.2)", "warning");
+                if (utils.is.empty(this.account.nickname))      Tool.Notyf('昵称不得为空！', 'warning')
+                else if (utils.is.empty(this.account.account))  Tool.Notyf('帐号不得为空！', 'warning')
+                else if (utils.is.empty(this.account.password)) Tool.Notyf('密码不得为空！', 'warning')
+                else if (utils.is.empty(this.account.email))    Tool.Notyf('邮箱不得为空！', 'warning')
                 else {
                     
-                    const params = inisHelper.stringfy({
-                        ...this.account
-                    })
-                    
-                    axios.post('/install/handle/setCache', params).then(res=>{
-                        if (res.data.code == 200) {
+                    POST('/install/handle/setCache', { ...this.account }).then(res=>{
+                        if (res.code == 200) {
                             this.is_instal = true
                             this.next('instal')
-                            this.getDbTables()
-                            this.existSqlite()
+                            this.startInstall()
                         }
                     })
                 }
             },
-            
-            // 检查数据库文件是否存在
-            existSqlite(){
-                
+
+            // 开始安装
+            async startInstall(){
+
+                const check = await this.copyright()
+
+                if (check) {
+                    await this.createTables()
+                    await this.createTables('sqlite')
+                }
+            },
+
+            // 正版查询
+            async copyright(){
+
+                const result = await GET(inis.api + 'check')
+                if (result.code == 200) {
+                    if (result.data.status) return true
+                    else {
+                        const text = '您非正版用户，很抱歉我不能为您安装，如有能力，请点我支持正版！'
+                        const notif= Tool.Notyf(text, 'error', { duration: 10 * 1000 })
+                        const blank= () => window.open('https://inis.cc', '_blank')
+                        notif.on('click',   () => blank())
+                        notif.on('dismiss', () => blank())
+                        return false
+                    }
+                } else Tool.Notyf('服务器正忙，请稍候重试！', 'warning')
+            },
+
+            // 创建表
+            async createTables(db = 'mysql'){
+
+                const id = `create-tables-${db}`
+
                 this.notes.push({
-                    id   : 'existSqlite',
-                    name : '检查sqlite数据库',
-                    des  : '本地检查',
+                    id,
+                    name : `创建 <span class='text-info'>${db == 'mysql' ? '主库' : '备库'}</span> 表`,
+                    des  : '正在创建',
                     state: null,
                 })
-                
-                axios.post('/install/handle/existSqlite').then(res=>{
-                    if (res.data.code == 200) {
-                        this.setNotes('existSqlite',{
-                            state: 'success',
-                        })
-                        this.diffSqliteTables()
-                    } else if (res.data.code == 204) {
-                        this.setNotes('existSqlite',{
-                            state: 'success',
-                        })
-                        this.getSqlite()
-                    } else {
-                        this.setNotes('existSqlite',{
-                            state: 'error',
-                        })
-                    }
-                }).catch(err=>{
-                     this.setNotes('existSqlite',{
-                        state: 'error',
-                    })
+                POST('/install/handle/createTables', { db }).then(res=>{
+                    if (res.code == 200) {
+                        this.setNotes(id, { state: 'success', des: '创建完成' })
+                        this.insertAll(db)
+                    } else this.setNotes(id, { state: 'error', des: '创建失败' })
                 })
             },
-            
-            // 获取sqlite文件地址
-            getSqlite(){
-                
+
+            // 插入数据
+            async insertAll(db = 'mysql'){
+
+                const id = `insert-all-${db}`
                 this.notes.push({
-                    id   : 'downloadSqlite',
-                    name : '下载sqlite数据库文件',
-                    des  : '最近节点获取',
-                    reset: true,
+                    id,
+                    name : `导入 <span class='text-info'>${db == 'mysql' ? '主库' : '备库'}</span> 表默认数据`,
+                    des  : '正在导入',
                     state: null,
                 })
-                
-                axios.get(this.api + 'download/sqlite').then(res=>{
-                    if (res.data.code == 200) {
-                        
-                        const result = res.data.data
-                        
-                        this.setNotes('downloadSqlite',{
-                            state: 'cache',
-                        })
-                        
-                        this.downloadSqlite(result.file)
-                        
-                    } else {
-                        
-                        this.setNotes('downloadSqlite',{
-                            state: 'error',
-                        })
+                POST('/install/handle/insertAll', { db }).then(async res=>{
+                    if (res.code == 200 || res.code == 204) {
+                        this.fulfill[db] = true
+                        this.setNotes(id, { state: 'success', des: '导入完成' })
+                        if (this.fulfill.mysql && this.fulfill.sqlite) await this.createAdmin()
                     }
-                    
-                }).catch(err=>{
-                    this.setNotes('downloadSqlite',{
-                        state: 'error',
-                    })
+                    else this.setNotes(id, { state: 'error', des: '导入失败' })
                 })
             },
-            
-            // 下载sqlite数据库文件
-            downloadSqlite(path){
-                const params = inisHelper.stringfy({
-                    path
-                })
-                axios.post('/install/handle/downloadFile', params).then(res=>{
-                    if (res.data.code == 200) {
-                        this.setNotes('downloadSqlite',{
-                            state: 'success',
-                        })
-                        this.notes.push({
-                            id   : 'diffSqliteTables',
-                            name : '比较sqlite表差异',
-                            des  : '本地比较',
-                            state: null,
-                        })
-                        this.diffSqliteTables()
-                    } else {
-                        this.setNotes('downloadSqlite',{
-                            state: 'error',
-                        })
-                    }
-                }).catch(err=>{
-                    this.setNotes('downloadSqlite',{
-                        state: 'error',
-                    })
-                })
-            },
-            
-            // 比较sqlite表差异
-            async diffSqliteTables(){
-                
-                // 获取sqlite最新表
-                const all = await axios.get(this.api + 'db/table', {
-                    params: {'db':'sqlite'}
-                }).then(res=>{
-                    let result = []
-                    if (res.data.code == 200) result = res.data.data
-                    return result
-                })
-                // 获取sqlite本地表
-                const self= await axios.post('/install/handle/sqliteTables').then(res=>{
-                    let result = []
-                    if (res.data.code == 200) result = res.data.data
-                    return result
-                })
-                
-                // 两个数组求差
-                Array.prototype.diff = function(a) {
-                    return this.filter((i)=>{return a.indexOf(i) < 0;});
-                };
-                let diff = all.diff(self);
-                
-                this.setNotes('diffSqliteTables',{
-                    state: 'success',
-                })
-                
-                // 数据不为空
-                if (!inisHelper.is.empty(diff)) diff.forEach(item=>{
-                    this.createSqliteTable(item)
-                })
-            },
-            
-            // 创建sqlite表
-            async createSqliteTable(item = null){
-                
-                this.notes.push({
-                    id   : 'createSqliteTable-' + item,
-                    name : '创建 sqlite ' + item + ' 表',
-                    des  : '最近节点获取',
-                    state: null,
-                })
-                
-                // 获取表信息
-                const table  = await axios.get(this.api + 'db/table', {
-                    params:{'db':'sqlite','name':item}
-                }).then(res=>{
-                    
-                    let result = []
-                    
-                    if (res.data.code == 200) {
-                        
-                        const item = res.data.data
-                        result     = item.sql
-                        this.setNotes('createSqliteTable-' + item,{
-                            state: 'success',
-                        })
-                        
-                    } else {
-                        
-                        this.setNotes('createSqliteTable-' + item,{
-                            state: 'error',
-                        })
-                    }
-                    
-                    return result
-                })
-                
-                // 创建表
-                const create = await axios.post('/install/handle/createSqliteTable', inisHelper.stringfy({
-                    table:item, query: table
-                })).then(res=>{
-                    let result = false
-                    if (res.data.code == 200) {
-                        
-                        this.setNotes('createSqliteTable-' + item,{
-                            state: 'success',
-                        })
-                        
-                        result = true
-                        
-                    } else {
-                        this.setNotes('createSqliteTable-' + item,{
-                            state: 'error',
-                        })
-                        $.NotificationApp.send("表创建失败，请重试！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
-                    }
-                    return result
-                }).catch(err=>{
-                    this.setNotes('createSqliteTable-' + item,{
-                        state: 'error',
-                    })
-                })
-                
-                if (inisHelper.is.true(create)) this.importSqliteData()
-            },
-            
-            // 导入sqlite数据
-            importSqliteData(){
-                
-            },
-            
-            // 获取数据库表
-            getDbTables(){
-                
-                this.notes.push({
-                    id   : 'tables',
-                    name : '获取数据库表',
-                    des  : '最近节点获取',
-                    state: null,
-                })
-                
-                axios.get(this.api + 'db').then(res=>{
-                    if (res.data.code == 200) {
-                        
-                        const result       = res.data.data
-                        this.tables.mysql  = result.mysql
-                        this.setNotes('tables',{
-                            state: 'success',
-                        })
-                        
-                        this.getTables()
-                        
-                    } else {
-                        
-                        this.setNotes('tables',{
-                            state: 'error',
-                        })
-                    }
-                })
-            },
-            
+
             // 设置记录
             setNotes(id, obj = {}){
                 this.notes.forEach((item, index)=>{
@@ -342,169 +166,32 @@
                 })
             },
             
-            getTables(name = null){
-                
-                // 批量导入
-                if (inisHelper.is.empty(name)) {
-                    
-                    this.tables.mysql.forEach(item=>{
-                        
-                        this.notes.push({
-                            id   : item,
-                            name : '创建 ' + item + ' 表',
-                            des  : '最近节点获取',
-                            state: null,
-                            reset: true,
-                        })
-                        
-                        this.getTable(item)
-                    })
-                    
-                } else this.getTable(name)
-            },
-            
-            getTable(name = null){
-                
-                if (name == 'createAdmin')           this.createAdmin()
-                else if (name == 'importData')       this.getDbData()
-                else if (name == 'downloadSqlite')   this.getSqlite()
-                else {
-                    
-                    axios.get(this.api + 'db/table', {
-                        params: {name}
-                    }).then(res=>{
-                        
-                        if (res.data.code == 200) {
-                            
-                            const result = res.data.data
-                            
-                            this.setNotes(name,{
-                                state: 'cache',
-                            })
-                            
-                            this.createTable(name, result['Create Table'])
-                            
-                        } else {
-                            
-                            this.setNotes(name,{
-                                state: 'error',
-                            })
-                        }
-                        
-                    }).catch(err=>{
-                        this.setNotes(name,{
-                            state: 'error',
-                        })
-                    })
-                }
-            },
-            
-            createTable(name, query){
-                
-                const params = inisHelper.stringfy({
-                    table:name, query
-                })
-                
-                axios.post('/install/handle/createTable', params).then(res=>{
-                    if (res.data.code == 200) {
-                        
-                        this.setNotes(name,{
-                            state: 'success',
-                        })
-                        // 开始创建帐号
-                        if (name == 'inis_users') this.createAdmin()
-                        
-                    } else {
-                        this.setNotes(name,{
-                            state: 'error',
-                        })
-                        $.NotificationApp.send("表创建失败，请重试！", res.data.msg, "top-right", "rgba(0,0,0,0.2)", "warning");
-                    }
-                }).catch(err=>{
-                    this.setNotes(name,{
-                        state: 'error',
-                    })
-                })
-            },
-            
-            getDbData(){
-                this.notes.push({
-                    id   : 'importData',
-                    name : '初始化表数据',
-                    des  : '最近节点获取',
-                    state: null,
-                    reset: true,
-                })
-                axios.get(this.api + 'db/data').then(res=>{
-                    if (res.data.code == 200) {
-                        const result = res.data.data
-                        this.setNotes('importData',{
-                            state:'cache'
-                        })
-                        this.importData(result.mysql)
-                    } else {
-                        this.setNotes('importData',{
-                            state:'error'
-                        })
-                    }
-                }).catch(err=>{
-                    this.setNotes('importData',{
-                        state:'error'
-                    })
-                })  
-            },
-            
-            importData(data){
-                const params = inisHelper.stringfy({
-                    ...data
-                })
-                axios.post('/install/handle/importData', params).then(res=>{
-                    if (res.data.code == 200) {
-                        this.setNotes('importData',{
-                            state:'success'
-                        })
-                        this.fulfill = true
-                        // 清除缓存
-                        localStorage.removeItem('database')
-                        t.NotificationApp.send("提示！", "系统安装完成，感谢您的支持！", "top-right", "rgba(0,0,0,0.2)", "info");
-                    } else {
-                        this.setNotes('importData',{
-                            state:'error'
-                        })
-                        this.fulfill = false
-                    }
-                }).catch(err=>{
-                    this.setNotes('importData',{
-                        state:'error'
-                    })
-                })
-            },
-            
-            createAdmin(){
+            async createAdmin(){
+
+                const id = `create-admin`
                 
                 this.notes.push({
-                    id   : 'createAdmin',
+                    id,
                     name : '创建帐号',
                     des  : '管理员帐号',
                     state: null,
                     reset: true,
                 })
                         
-                axios.post('/install/handle/createAdmin').then(res=>{
-                    if (res.data.code == 200) {
-                        this.setNotes('createAdmin',{
-                            state: 'success',
-                        })
-                    } else {
-                        this.setNotes('createAdmin',{
-                            state: 'error',
-                        })
+                POST('/install/handle/createAdmin').then(res=>{
+                    if (res.code == 200) {
+                        this.fulfill.account = true
+                        this.setNotes(id, { state: 'success' })
+                        Tool.Notyf('安装完成！')
+                        setTimeout(()=>{
+                            Tool.Notyf('3秒 后自动为您跳转到登录页面！')
+                        }, 1000)
+                        setTimeout(()=>{
+                            window.location.href = '/'
+                        }, 3000)
                     }
-                }).catch(err=>{
-                    this.setNotes('createAdmin',{
-                        state: 'error',
-                    })
-                })
+                    else this.setNotes(id, { state: 'error' })
+                }).catch(err=>this.setNotes(id, { state: 'error' }))
             },
             
             // 下一步
@@ -526,7 +213,7 @@
                 nav.forEach(item=>{
                     
                     if (item.getAttribute('href') == '#' + value) {
-                        if (!inisHelper.in.array('active', item.classList)) item.classList.add('active')
+                        if (!utils.in.array('active', item.classList)) item.classList.add('active')
                     } else item.classList.remove('active')
                     
                 })
@@ -534,7 +221,7 @@
                 tab.forEach(item=>{
                     
                     if (item.getAttribute('id') == value) {
-                        if (!inisHelper.in.array('active', item.classList)) item.classList.add('active')
+                        if (!utils.in.array('active', item.classList)) item.classList.add('active')
                     } else item.classList.remove('active')
                 })
                 
@@ -543,21 +230,21 @@
             // 判断数据库校验是否通过
             isDatabase(){
                 // 数据库校验未通过
-                if (!inisHelper.get.storage('check','database')) {
-                    t.NotificationApp.send("提示！", "请先完成数据库配置！", "top-right", "rgba(0,0,0,0.2)", "warning");
+                if (!utils.get.storage('check','database')) {
+                    Tool.Notyf('请先完成数据库配置！', 'warning')
                 } else this.next('setting')
             },
             
             // 判断环境是否通过
             isSetting(){
-                if (!this.info.php.check) t.NotificationApp.send("提示！", "PHP版本要求未通过！", "top-right", "rgba(0,0,0,0.2)", "warning");
-                else if (!this.info.mysql.check) t.NotificationApp.send("提示！", "数据库版本要求未通过！", "top-right", "rgba(0,0,0,0.2)", "warning");
+                if (!this.info.php.check) Tool.Notyf('PHP版本要求未通过！', 'warning')
+                else if (!this.info.mysql.check) Tool.Notyf('数据库版本要求未通过！', 'warning')
                 else this.next('account')
             },
             
             // 判断为空
             empty(value = null){
-                return inisHelper.is.empty(value) ? true : false;
+                return utils.is.empty(value) ? true : false;
             },
         },
         computed: {
@@ -568,8 +255,8 @@
                 // 需要校验的拓展
                 const need = ['zip','PDO','curl','hash','json','mysqli','sqlite3','openssl','session','mysqlnd','cgi-fcgi','pdo_mysql','pdo_sqlite']
                 
-                if (!inisHelper.is.empty(this.info.exten)) need.forEach(item=>{
-                    (inisHelper.in.array(item, this.info.exten)) ? result.push({name:item + ' 扩展',check:true}) : result.push({name:item,check:false})
+                if (!utils.is.empty(this.info.exten)) need.forEach(item=>{
+                    (utils.in.array(item, this.info.exten)) ? result.push({name:item + ' 扩展',check:true}) : result.push({name:item,check:false})
                 })
                 
                 return result
@@ -581,22 +268,6 @@
                 handler(newValue,oldValue){
                     
                     const self = this
-                    let array  = []
-                    
-                    self.notes.forEach(item=>{
-                        if (inisHelper.in.array(item.id, self.tables.mysql)) {
-                            array.push(item.state)
-                        }
-                    })
-                    
-                    
-                    if (!inisHelper.get.storage('check','finish')) {
-                        if (!inisHelper.is.empty(array)) if (array.every(item => item == 'success')) {
-                            // 数据库表导入完成
-                            inisHelper.set.storage('check',{finish:true})
-                            self.getDbData()
-                        }
-                    }
                 },
                 deep: true,
             },

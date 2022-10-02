@@ -5,8 +5,18 @@
 {block name="content"}
 <div id="api-store" class="container-xxl">
     
-    <div class="row mt-md-4 mt-2">
+    <div class="row mt-md-3 mt-2">
         <div class="col-12">
+
+            <div class="alert alert-success font-14 text-success px-2 py-1" role="alert">
+                <i class="mdi mdi-checkbox-blank-circle me-2 vertical-middle"></i>
+                更多 API 请关注
+                <a href="https://inis-api.apifox.cn" target="_blank">inis-api.apifox.cn [推荐]</a>
+                <span class="mx-2">或</span>
+                <a href="https://docs.inis.cc" target="_blank">docs.inis.cc [非最新]</a>
+                <span class="float-end me-md-2 me-0">API 是开始下一个时代的钥匙，请灵活使用它！</span>
+            </div>
+
             <div class="card">
                 <div class="card-body">
                     <div class="dropdown float-end">
@@ -50,7 +60,7 @@
                             </div>
                             
                             <div v-show="!page.internal.is_load" class="table-responsive-sm mb-3">
-                                <table class="table customize-table table-centered mb-0">
+                                <table class="table custom customize-table table-centered mb-0">
                                     <thead>
                                         <tr>
                                             <th width="165">API 名称</th>
@@ -114,7 +124,7 @@
                                 <div v-show="plugin.count == 0" class="alert alert-light bg-light text-dark border-0" role="alert">
                                     <strong>提示 - </strong> 当前系统内未安装任何API，如有需求，请前往第三方API安装！
                                 </div>
-                                <table v-show="plugin.count > 0" class="table customize-table table-centered mb-0">
+                                <table v-show="plugin.count > 0" class="table custom customize-table table-centered mb-0">
                                     <thead>
                                         <tr>
                                             <th width="165">API 名称</th>
@@ -178,7 +188,7 @@
                                     <strong>提示 - </strong> 还未有人上传API，您愿意做第一个吃螃蟹的人吗？
                                     <a href="//inis.cc/admin/comm/login?url=/admin/api" target="_blank" class="text-dark float-right float-end">我愿意</a>
                                 </div>
-                                <table v-show="apis.count > 0" class="table customize-table table-centered mb-0">
+                                <table v-show="apis.count > 0" class="table custom customize-table table-centered mb-0">
                                     <thead>
                                         <tr>
                                             <th width="165">API 名称</th>
@@ -250,7 +260,7 @@
                 
                     <div class="customize-scroll" style="max-height:450px">
                         <div class="table-responsive-sm p-2">
-                            <table class="table customize-table table-centered mb-0">
+                            <table class="table custom customize-table table-centered mb-0">
                                 <thead>
                                     <tr>
                                         <th>名称</th>

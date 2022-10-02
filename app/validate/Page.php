@@ -12,10 +12,10 @@ class Page extends Validate
     ];
     
     protected $message  =   [
-        'title.require'    => '标题必须',
-        'title.max'        => '标题最多不能超过25个字符',
-        'alias.unique'     => '别名已存在',
-        'alias.alphaNum'   => '别名只能是字母和数字',
-        'alias.require'    => '别名不能为空',
+        'title.require'    => '页面标题不能是空的！',
+        'title.max'        => '页面标题最多不能超过25个字符！',
+        'alias.unique'     => '页面别名已经存在了！',
+        'alias.alphaNum'   => '页面别名只能是字母和数字！',
+        'alias.require'    => '别名不能为空！',
     ];
 }

@@ -44,14 +44,14 @@
                     </div>
                     
                     <!-- 加载动画 开始 -->
-                    <div v-if="is_load" class="table-responsive is_load mb-2 flex-center">
+                    <div v-show="is_load" class="table-responsive is_load mb-2 flex-center">
                         <div class="spinner-border text-primary m-1" role="status"></div>
                         <div>加载中...</div>
                     </div>
                     <!-- 加载动画 结束 -->
                     
-                    <div v-else-if="!is_load" class="table-responsive-sm">
-                        <table class="table table-centered mb-0">
+                    <div v-show="!is_load" class="table-responsive-sm">
+                        <table class="table custom table-centered mb-0">
                             <thead>
                                 <tr>
                                     <th>
@@ -60,14 +60,15 @@
                                             <label class="custom-control-label" for="select-all"></label>
                                         </div>
                                     </th>
-                                    <th>昵称</th>
-                                    <th>内容</th>
+                                    <th class="min-w-175px">昵称</th>
+                                    <th class="min-w-175px">来源</th>
+                                    <th class="max-w-250px">内容</th>
                                     <th>邮箱</th>
                                     <th>IP</th>
-                                    <th>浏览器</th>
-                                    <th>系统</th>
-                                    <th>时间</th>
-                                    <th width="140">操作</th>
+                                    <th class="min-w-200px">浏览器</th>
+                                    <th class="min-w-200px">系统</th>
+                                    <th class="min-w-125px">时间</th>
+                                    <th class="min-w-125px">操作</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -81,6 +82,9 @@
                                     <td v-on:click="initData(data.id)" data-toggle="modal" data-target="#fill-edit-modal" class="table-user pointer">
                                         <img :src="data.expand.head_img || ''" class="mr-1 rounded-circle">
                                         {{data.nickname}}
+                                    </td>
+                                    <td>
+                                        {{data.type == 'article' ? '《' + data.expand?.article?.title + '》' : (!empty(data.type) ? data.type : '未知')}}
                                     </td>
                                     <td>{{data.content}}</td>
                                     <td>{{data.email}}</td>

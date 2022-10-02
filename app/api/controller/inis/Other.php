@@ -5,7 +5,7 @@ namespace app\api\controller\inis;
 
 use QL\QueryList;
 use think\Request;
-use think\facade\{Cache};
+use think\facade\{Cache, Lang};
 
 class Other extends Base
 {
@@ -22,20 +22,9 @@ class Other extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
-        // $result = [];
+        $msg    = Lang::get('参数不存在！');
         
-        // $mode   = !empty($param['mode']) ? $param['mode'] : 'location';
-        
-        // // 存在的方法
-        // $method = ['location'];
-        
-        // // 动态方法且方法存在
-        // if (in_array($mode, $method)) $result = $this->$mode($request);
-        // // 动态返回结果
-        // if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
-        
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -44,7 +33,7 @@ class Other extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
         
     }
@@ -55,25 +44,25 @@ class Other extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         
         // 存在的方法
-        $method = ['ua','qq','icp','ping','hot','domain','base64'];
+        $method = ['ua','qq','icp','ping','hot','domain','base64','baiduRecord'];
         
         // 动态方法且方法存在
         if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -83,7 +72,7 @@ class Other extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
         //
     }
@@ -94,7 +83,7 @@ class Other extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
         //
     }
@@ -104,20 +93,15 @@ class Other extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据！';
+        $msg  = Lang::get('无数据！');
         
         $ua   = !empty($param['ua']) ? $param['ua'] : (!empty($this->header['user-agent']) ? $this->header['user-agent'] : null);
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
         // 设置缓存名称
-        $cache_name = 'other?ua='.$ua;
+        $cache_name = json_encode(array_merge(['IAPI'=>'other/ua'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             if (!empty($ua)) {
@@ -127,14 +111,14 @@ class Other extends Base
                     'browser' => $this->helper->GetClientBrowser($ua),
                 ];
                 $code = 200;
-            } else $msg = 'header缺少user-agent信息';
+            } else $msg = Lang::get('header缺少user-agent信息！');
             
-            Cache::tag(['other',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['other',$cache_name])->set($cache_name, json_encode($data));
         }
         
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = Lang::get('数据请求成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -144,9 +128,9 @@ class Other extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = Lang::get('数据请求成功！');
         
-        if (empty($param['qq'])) $msg = '请提交QQ号，用参数qq表示！';
+        if (empty($param['qq'])) $msg = Lang::get('请提交QQ号，用参数qq表示！');
         else {
             
             $html   = file_get_contents("https://r.qzone.qq.com/fcg-bin/cgi_get_score.fcg?mask=7&uins=" . $param['qq']);
@@ -177,7 +161,7 @@ class Other extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = Lang::get('数据请求成功！');
         
         // 允许的类型
         $allow= ['chinaz','yudinet'];
@@ -195,27 +179,21 @@ class Other extends Base
             // 获取顶级域名
             $domain = $this->helper->GetTopDomain($param['domain']);
             
-            // 是否开启了缓存
-            $api_cache = $this->config['api_cache'];
-            // 是否获取缓存
-            $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-            
             // 设置缓存名称
-            $cache_name = 'other/icp?domain='.$domain;
+            $cache_name = json_encode(array_merge(['IAPI'=>'other/icp','domain'=>$domain], $param));
             
             // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+            if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
             else {
                 
                 $data = $type == 'chinaz' ? $this->chinaz($domain) : $this->yudinet($domain);
-                
                 // 缓存两天
-                Cache::tag(['other',$cache_name])->set($cache_name, json_encode($data), 172800);
+                if ($this->ApiCache) Cache::tag(['other',$cache_name])->set($cache_name, json_encode($data), 172800);
             }
             
             // 逆向思维，节省代码行数
             if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
+            else $msg = Lang::get('数据请求成功！');
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
@@ -293,7 +271,7 @@ class Other extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = Lang::get('数据请求成功！');
         
         $domain = null;
         $port   = !empty($param['port'])    ? $param['port']    : 80;
@@ -325,8 +303,8 @@ class Other extends Base
         try {
             
             $timeStart = microtime(true);
-            $FSO       = fSockOpen($ip, $port, $errno, $errstr, $timeout);
-            if (!$FSO) $msg = "Ping 请求找不到主机 " . $ip . "。请检查该名称，然后重试。";
+            $FSO       = fSockOpen($ip, (int)$port, $errno, $errstr, (float)$timeout);
+            if (!$FSO) $msg = Lang::get('Ping 请求找不到主机', [$ip]);
             else {
                 $timeEnd = microtime(true);
                 $code = 200;
@@ -339,7 +317,7 @@ class Other extends Base
             }
             
         } catch (Exception $e) {
-            $msg = '请求超时！';
+            $msg = Lang::get('请求超时！');
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
@@ -350,7 +328,7 @@ class Other extends Base
     {
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         
         $mode = !empty($param['mode']) ? $param['mode'] : 'search';
@@ -371,7 +349,7 @@ class Other extends Base
     {
         $data   = [];
         $code   = 200;
-        $msg    = 'ok';
+        $msg    = Lang::get('数据请求成功！');
         
         // 需要获取的热搜数据
         $list   = ['baidu'];
@@ -381,23 +359,18 @@ class Other extends Base
             else if (is_array($param['list'])) $list = $param['list'];
         }
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
         // 设置缓存名称
-        $cache_name = 'other/hot?mode=search&list='.implode(',',$list);
+        $cache_name = json_encode(array_merge(['IAPI'=>'other/search'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             $method = ['baidu','csdn'];
             
             foreach ($list as $val) if (in_array($val, $method)) $data[$val] = $this->$val();
             
-            Cache::tag(['other',$cache_name])->set($cache_name, json_encode($data), 1800);
+            if ($this->ApiCache) Cache::tag(['other',$cache_name])->set($cache_name, json_encode($data), 1800);
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
@@ -442,23 +415,18 @@ class Other extends Base
     {
         $data   = [];
         $code   = 400;
-        $msg    = 'ok';
+        $msg    = Lang::get('数据请求成功！');
 
-        if (empty($param['url'])) $msg = '请提交图片地址，用参数 url 表示!';
+        if (empty($param['url'])) $msg = Lang::get('请提交图片地址，用参数 url 表示！');
         else {
             
             $param['url'] = $this->helper->GetRedirectUrl($param['url']);
-
-            // 是否开启了缓存
-            $api_cache = $this->config['api_cache'];
-            // 是否获取缓存
-            $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
             
             // 设置缓存名称
-            $cache_name = 'other/base64?url=' . $param['url'];
+            $cache_name = json_encode(array_merge(['IAPI'=>'other/base64'], $param));
             
             // 检查是否存在请求的缓存数据
-            if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+            if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
             else {
                 // 重定向后的地址
                 $image  = getimagesize($param['url']);
@@ -467,14 +435,46 @@ class Other extends Base
                     'url'    => $param['url'],
                     'base64' => 'data:' . $image['mime'] . ';base64,' . chunk_split(base64_encode(file_get_contents($param['url'])))
                 ];
-                Cache::tag(['other',$cache_name])->set($cache_name, json_encode($data));
+                if ($this->ApiCache) Cache::tag(['other',$cache_name])->set($cache_name, json_encode($data));
             }
             
             $code = 200;
-            $msg  = '无数据！';
+            $msg  = Lang::get('无数据！');
             // 逆向思维，节省代码行数
             if (empty($data)) $code = 204;
-            else $msg = '数据请求成功！';
+            else $msg = Lang::get('数据请求成功！');
+        }
+
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+
+    public function baiduRecord($param)
+    {
+
+        $data   = [];
+        $code   = 400;
+        $msg    = Lang::get('数据请求成功！');
+
+        if (empty($param['domain'])) $msg = Lang::get('请提交域名，用参数 domain 表示！');
+        else {
+
+            // 过滤掉域名中的 http:// 和 https://
+            $domain = str_replace(['https','http','://'], '', $param['domain']);
+            $url    = 'https://www.baidu.com/s?ie=UTF-8&wd=site%3A' . $domain;
+
+            // // 切片选择器
+            // $range = '#content_left';
+            
+            // $result  = QueryList::get($url, null, [
+            //     'headers' => [
+            //         'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
+            //         'Accept-Encoding' => 'gzip, deflate, br',
+            //     ]
+            // ]);
+            // // ->range($range)->queryData();
+            // // 获取搜索结果标题列表
+            // $text = $result->find('#content_left')->texts();
+            // $data = $text->all();
         }
 
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];

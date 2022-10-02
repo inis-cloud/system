@@ -236,6 +236,10 @@ class helper
             $browser = '微信浏览器';
             $browser_ver = $regs[1];
         }
+        if (preg_match('/CriOS\/([^\s]+)/i', $agent, $regs)) {
+            $browser = 'CriOS';
+            $browser_ver = $regs[1];
+        }
 
         if ($browser != '') $res = ['kernel'=>$browser, 'version'=>$browser_ver];
         else $res = ['kernel'=>'未知','version'=> ''];
@@ -814,6 +818,21 @@ class helper
     		}
     	}
     	return $result;
+    }
+
+    /**
+    * 判断字符串是否为 Json 格式
+    * 
+    * @param string $data Json 字符串
+    * @param bool $assoc 是否返回关联数组。默认返回对象
+    * 
+    * @return array|bool|object 成功返回转换后的对象或数组，失败返回 false
+    */
+    public function stringJson($value = '', $assoc = false)
+    {
+        $value = json_decode($value, $assoc);
+        if (($value && is_object($value)) || (is_array($value) && !empty($value))) return $value;
+        return [];
     }
     
     // END

@@ -53,5 +53,4 @@ class Links extends Model
         $value = (!empty($value)) ? json_decode((is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value)) : $value;
         return $value;
     }
-
 }

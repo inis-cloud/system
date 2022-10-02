@@ -4,7 +4,7 @@ declare (strict_types = 1);
 namespace app\api\controller\inis;
 
 use think\Request;
-use think\facade\{Cache};
+use think\facade\{Cache, Lang};
 use inis\music\Music as iMusic;
 use think\exception\ValidateException;
 use app\validate\{Music as vMusic};
@@ -25,7 +25,7 @@ class Music extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 存在的方法
@@ -38,7 +38,7 @@ class Music extends Base
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -47,30 +47,30 @@ class Music extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 存在的方法
-        $method = ['saves','remove'];
+        $method = ['save','remove'];
         
-        $mode   = !empty($param['mode']) ? $param['mode']  : 'saves';
+        if (!empty($param['mode'])) $IID = $param['mode'];
         
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param);
+        if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         // 清除缓存
         Cache::tag('music')->clear();
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -79,9 +79,27 @@ class Music extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
-        //
+        // 获取请求参数
+        $param  = $request->param();
+        
+        $data   = [];
+        $code   = 400;
+        $msg    = lang('参数不存在！');
+        $result = [];
+        
+        // 存在的方法
+        $method = ['one','all','list','song'];
+        
+        if (!empty($param['mode'])) $IID = $param['mode'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -91,9 +109,30 @@ class Music extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
-        //
+        // 获取请求参数
+        $param  = $request->param();
+        
+        $data   = [];
+        $code   = 400;
+        $msg    = lang('参数不存在！');
+        $result = [];
+        
+        // 存在的方法
+        $method = ['save'];
+        
+        if (!empty($param['mode'])) $IID = $param['mode'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+
+        // 清除缓存
+        Cache::tag('music')->clear();
+        
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -102,9 +141,30 @@ class Music extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
-        //
+        // 获取请求参数
+        $param  = $request->param();
+        
+        $data   = [];
+        $code   = 400;
+        $msg    = lang('参数不存在！');
+        $result = [];
+        
+        // 存在的方法
+        $method = ['remove'];
+
+        if (!empty($param['mode'])) $IID = $param['mode'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+
+        // 清除缓存
+        Cache::tag('music')->clear();
+        
+        return $this->json($data, $msg, $code);
     }
     
     // 获取单条数据
@@ -112,28 +172,23 @@ class Music extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据';
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        $msg  = lang('无数据！');
         
         // 设置缓存名称
-        $cache_name = 'music?id='.$param['id'];
+        $cache_name = json_encode(array_merge(['IAPI'=>'music'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             $data = MusicModel::ExpandAll($param['id']);
-            Cache::tag(['music',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['music',$cache_name])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -143,16 +198,11 @@ class Music extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据';
+        $msg  = lang('无数据！');
         
         if (empty($param['page']))  $param['page']  = 1;
         if (empty($param['limit'])) $param['limit'] = 5;
         if (empty($param['order'])) $param['order'] = 'create_time asc';
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         
         $opt = [
             'page'   =>  (int)$param['page'], 
@@ -161,22 +211,22 @@ class Music extends Base
         ];
         
         // 设置缓存名称
-        $cache_name = 'music?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
+        $cache_name = json_encode(array_merge(['IAPI'=>'music'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             // 获取数据库数据
             $data = MusicModel::ExpandAll(null, $opt);
-            Cache::tag(['music'])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['music'])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -186,24 +236,18 @@ class Music extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据';
+        $msg  = lang('无数据！');
         
         $music  = new iMusic;
         
         if (empty($param['shuffle'])) $param['shuffle'] = 'false';
         $shuffle = (empty($param['shuffle']) or $param['shuffle'] == 'false') ? false : true;
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
-        
         // 设置缓存名称
-        $cache_name = 'music?id='.$param['id'];
+        $cache_name = json_encode(array_merge(['IAPI'=>'music'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             $data['info'] = MusicModel::ExpandAll($param['id']);
@@ -225,14 +269,14 @@ class Music extends Base
             // 获取歌单
             $data['songs'] = $music->GetInfo($music_id, $data['info']['expand']['type'], 'collect', $shuffle);
             
-            Cache::tag(['music',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['music',$cache_name])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -242,46 +286,46 @@ class Music extends Base
     {
         $data  = [];
         $code  = 400;
-        $msg   = '无数据';
+        $msg   = lang('无数据！');
         
         $music = new iMusic;
         
         $who   = (empty($param['who'])) ? 'tencent' : $param['who'];
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
         // 设置缓存名称
-        $cache_name = 'music?id='.$param['id'].'&who='.$who;
+        $cache_name = json_encode(array_merge(['IAPI'=>'music'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             $data = $music->GetInfo($param['id'], $who, 'song');
-            Cache::tag(['music',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['music',$cache_name])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
 
     // 新增或者修改数据
-    public function saves($param)
+    public function save($param)
     {
         $data   = [];
         $code   = 400;
-        $msg    = 'ok';
+        $msg    = lang('成功！');
         
         // 允许用户提交并存储的字段
         $obtain = ['title','description','url','head_img','is_show','opt','longtext'];
-        $item   = isset($param['id']) ? MusicModel::findOrEmpty((int)$param['id']) : new MusicModel;
+
+        if (empty($param['id'])) $item = new MusicModel;
+        else {
+            $item = MusicModel::findOrEmpty((int)$param['id']);
+            if ($item->isEmpty()) return ['data'=>[],'code'=>204,'msg'=>lang('无数据！')];
+        }
 
         try {
 
@@ -295,21 +339,29 @@ class Music extends Base
                 
             validate(vMusic::class)->check($param);
 
+            // 字符对象
+            if (!empty($param['opt'])) {
+                // 校验字符串对象合法性
+                $param['opt'] = is_string($param['opt']) ? $this->helper->stringJson($param['opt']) : $param['opt'];
+                // 不编码中文
+                $param['opt'] = json_encode($param['opt'], JSON_UNESCAPED_UNICODE);
+            }
+
             // 存储数据
             foreach ($param as $key => $val) {
                 // 判断字段是否允许存储，防提权
-                if (in_array($key, $obtain)) {
-                    if ($key == 'opt') $item->opt = json_encode($val, JSON_UNESCAPED_UNICODE);
-                    else $item->$key = $val;
-                }
+                if (in_array($key, $obtain)) $item->$key = $val;
             }
 
             // 权限判断
-            if (!in_array($this->user['data']->level, ['admin'])) $msg = '无权限';
-            else if ($this->user['data']->status != 1) $msg = '账号被禁用';
+            if (!in_array(request()->user->level, ['admin'])) $msg = lang('无权限！');
+            else if (request()->user->status != 1) $msg = lang('账号被禁用！');
             else {
-                $code = 200;
+
                 $item->save();
+                
+                $code = 200;
+                $data = (int)$item->id;
             }
             
         } catch (ValidateException $e) {
@@ -325,18 +377,18 @@ class Music extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = lang('成功！');
         
         $id = !empty($param['id']) ? $param['id']  : null;
         
-        if (empty($id)) $msg = '请提交 id';
+        if (empty($id)) $msg = lang('请提交 id！');
         else {
             
             $id = array_filter(explode(',', $id));
 
             // 权限判断
-            if (!in_array($this->user['data']->level, ['admin'])) $msg = '无权限';
-            else if ($this->user['data']->status != 1) $msg = '账号被禁用';
+            if (!in_array(request()->user->level, ['admin'])) $msg = lang('无权限！');
+            else if (request()->user->status != 1) $msg = lang('账号被禁用！');
             else {
                 $code = 200;
                 MusicModel::destroy($id);

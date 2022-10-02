@@ -17,267 +17,278 @@
     <script src="/admin/libs/axios.min.js"></script>
     <script src="/admin/libs/lottie/lottie.min.js"></script>
     <script src="/admin/utils/helper.js"></script>
+    <script src="/admin/libs/notyf/notyf.min.js"></script>
+    <script src="/admin/js/layouts/base.js"></script>
     <!-- 依赖 - 结束 -->
 
     <!-- APP CSS - 开始 -->
+    <link href="/admin/libs/notyf/notyf.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/admin/css/icons.min.css">
     <link rel="stylesheet" href="/admin/css/app.min.css" id="light-style">
     <link rel="stylesheet" href="/admin/css/app-dark.min.css" id="dark-style">
     <link rel="stylesheet" href="/admin/css/style.css">
     <!-- APP CSS - 结束 -->
-    </head>
 
-    <body class="authentication-bg">
-        
-        <div id="install" class="account-pages mt-4 pt-1">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-md-10 col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                
-                                <h3 class="text-center mb-2">系统安装</h3>
-                                
-                                <div id="progressbarwizard">
-                                    <ul class="nav nav-tabs nav-justified nav-bordered mb-0">
-                                        <li class="nav-item">
-                                            <a v-on:click="next('database')" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
-                                                <i class="mdi mdi-yin-yang mr-1"></i>
-                                                <span class="d-none d-sm-inline">数据库配置</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a v-on:click="isDatabase()" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
-                                                <i class="mdi mdi-checkbox-marked-circle-outline mr-1"></i>
-                                                <span class="d-none d-sm-inline">环境检查</span>
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a v-on:click="isSetting()" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
-                                                <i class="mdi mdi-account-circle mr-1"></i>
-                                                <span class="d-none d-sm-inline">帐号设置</span>
-                                            </a>
-                                        </li>
-                                        <li v-if="is_instal" class="nav-item">
-                                            <a v-on:click="next('instal')" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
-                                                <i class="mdi mdi-spin mdi-star mr-1"></i>
-                                                <span class="d-none d-sm-inline">安装过程</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                    <div class="tab-content b-0 mb-0">
-                                        
-                                        <div id="bar" class="progress mb-3" style="height: 7px;">
-                                            <div class="bar progress-bar progress-bar-striped progress-bar-animated bg-success"></div>
-                                        </div>
-                                        
-                                        <div class="tab-pane" id="database">
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">数据库地址：</label>
-                                                        <div class="col-md-9">
-                                                            <input v-model="database.HOSTNAME" type="text" class="form-control" placeholder="如：localhost 或 127.0.0.1">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">数据库端口：</label>
-                                                        <div class="col-md-9">
-                                                            <input v-model="database.HOSTPORT" type="text" class="form-control" placeholder="默认端口：3306">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">数据库名称：</label>
-                                                        <div class="col-md-9">
-                                                            <input v-model="database.DATABASE" type="text" class="form-control" placeholder>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">数据库用户名：</label>
-                                                        <div class="col-md-9">
-                                                            <input v-model="database.USERNAME" type="text" class="form-control" placeholder>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">数据库密码：</label>
-                                                        <div class="col-md-9">
-                                                            <input v-model="database.PASSWORD" type="text" class="form-control" placeholder>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <ul class="list-inline mb-0 wizard flex-center">
-                                                <li class="list-inline-item float-right">
-                                                    <a href="https://docs.inis.cc/#/start/install-inis-system" class="btn btn-info" target="_blank">帮助</a>
-                                                </li>
-                                                <li class="list-inline-item float-right">
-                                                    <button v-on:click="testConn()" type="button" class="btn btn-info">下一步</button>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        
-                                        <div class="tab-pane" id="setting">
-                                            <div class="table-responsive-sm mb-3">
-                                                <table class="table customize-table table-centered mb-0">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>依赖</th>
-                                                            <th>-</th>
-                                                            <th>说明</th>
-                                                            <th>状态</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>PHP 版本</td>
-                                                            <td>{{info.php.version || '-'}}</td>
-                                                            <td>要求 >= 7.4</td>
-                                                            <td>
-                                                                <span v-if="info.php.check"><i class="mdi mdi-circle text-success"></i> 通过</span>
-                                                                <span v-else-if="empty(info.php.check)"><i class="mdi mdi-circle text-warning"></i> 校验中</span>
-                                                                <span v-else><i class="mdi mdi-circle text-danger"></i> 未通过</span>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td>数据库版本</td>
-                                                            <td>{{info.mysql.version || '-'}}</td>
-                                                            <td>要求 >= 5.5</td>
-                                                            <td>
-                                                                <span v-if="info.mysql.check"><i class="mdi mdi-circle text-success"></i> 通过</span>
-                                                                <span v-else-if="empty(info.mysql.check)"><i class="mdi mdi-circle text-warning"></i> 校验中</span>
-                                                                <span v-else><i class="mdi mdi-circle text-danger"></i> 未通过</span>
-                                                            </td>
-                                                        </tr>
-                                                        <tr v-for="(item, index) in extens" :key="index">
-                                                            <td>{{item.name || ''}}</td>
-                                                            <td>
-                                                                <svg v-if="item.check" t="1642523210900" class="icon" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1760" width="12" height="12"><path d="M483.84768 867.808C466.37568 885.792 441.73568 896 415.87968 896 390.05568 896 365.41568 885.792 347.94368 867.808L27.46368 547.552C-9.17632 508.864-9.17632 450.336 27.46368 411.648 44.26368 394.944 67.30368 385.088 91.68768 384.256 118.72768 383.008 144.93568 393.024 163.46368 411.648L415.87968 664 860.61568 219.552C878.31168 201.952 902.88768 192 928.58368 192 954.24768 192 978.82368 201.952 996.51968 219.552 1033.15968 258.208 1033.15968 316.704 996.51968 355.36L483.84768 867.808Z" p-id="1761" fill="#707070"></path></svg>
-                                                                <svg v-else t="1642523169246" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1469" width="12" height="12"><path d="M834.976 888.736C799.712 902.56 759.648 894.4 732.608 867.872L512.288 647.808 292.064 867.872C254.528 905.376 193.696 905.376 156.16 867.872 118.624 830.4 118.624 769.568 156.16 732.096L376.448 512 156.16 291.936C118.624 254.432 118.624 193.632 156.16 156.128 193.696 118.624 254.528 118.624 292.064 156.128L512.288 376.288 732.608 156.128C770.304 119.776 830.24 120.288 867.296 157.344 904.352 194.4 904.864 254.272 868.416 291.936L648.192 512 868.416 732.096C887.296 751.072 897.28 777.152 895.872 803.904 894.08 841.696 870.24 874.912 834.976 888.736" p-id="1470" fill="#707070"></path></svg>
-                                                            </td>
-                                                            <td>建议开启</td>
-                                                            <td>
-                                                                <span v-if="item.check"><i class="mdi mdi-circle text-success"></i> 通过</span>
-                                                                <span v-else-if="empty(item.check)"><i class="mdi mdi-circle text-warning"></i> 校验中</span>
-                                                                <span v-else><i class="mdi mdi-circle text-danger"></i> 未通过</span>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <ul class="list-inline mb-0 wizard flex-center">
-                                                <li v-on:click="next('database')" class="list-inline-item">
-                                                    <button type="button" class="btn btn-info">上一步</button>
-                                                </li>
-                                                <li class="list-inline-item float-right">
-                                                    <button v-on:click="isSetting()" type="button" class="btn btn-info">下一步</button>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        
-                                        <div class="tab-pane" id="account">
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">昵称</label>
-                                                        <div class="col-md-9">
-                                                            <input v-model="account.nickname" type="text" class="form-control" placeholder="希望别人怎么称呼您">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">帐号：</label>
-                                                        <div class="col-md-9">
-                                                            <input v-model="account.account" type="text" class="form-control" placeholder="用于登录">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">密码：</label>
-                                                        <div class="col-md-9">
-                                                            <input v-model="account.password" type="text" class="form-control" placeholder="建议大于8位">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row mb-3">
-                                                        <label class="col-md-3 col-form-label">邮箱：</label>
-                                                        <div class="col-md-9">
-                                                            <input v-model="account.email" type="text" class="form-control" placeholder="用于密码找回等">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <ul class="list-inline mb-0 wizard flex-center">
-                                                <li class="list-inline-item">
-                                                    <button v-on:click="next('setting')" type="button" class="btn btn-info">上一步</button>
-                                                </li>
-                                                <li class="list-inline-item float-right">
-                                                    <button v-on:click="install()" type="button" class="btn btn-info">开始安装</button>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        
-                                        <div v-show="is_instal" class="tab-pane" id="instal">
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <div v-if="fulfill" class="alert alert-success" role="alert">
-                                                        <i class="dripicons-checkmark mr-2"></i> 安装 <strong>已完成</strong> ，感谢您的支持！
-                                                    </div>
-                                                    <div v-else class="alert alert-info" role="alert">
-                                                        <i class="dripicons-information mr-2"></i> 安装完成之前，请 <strong>不要刷新</strong> 或 <strong>关闭</strong> 当前窗口
-                                                    </div>
-                                                    <div class="customize-scroll" style="max-height:450px">
-                                                        <div class="table-responsive-sm p-2">
-                                                            <table class="table customize-table table-centered mb-0">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>名称</th>
-                                                                        <th>-</th>
-                                                                        <th>说明</th>
-                                                                        <th>状态</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <tr v-for="(item, index) in notes" :key="index">
-                                                                        <td>{{item.name || ''}}</td>
-                                                                        <td>
-                                                                            <svg v-if="item.state == 'success'" t="1642523210900" class="icon" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1760" width="12" height="12"><path d="M483.84768 867.808C466.37568 885.792 441.73568 896 415.87968 896 390.05568 896 365.41568 885.792 347.94368 867.808L27.46368 547.552C-9.17632 508.864-9.17632 450.336 27.46368 411.648 44.26368 394.944 67.30368 385.088 91.68768 384.256 118.72768 383.008 144.93568 393.024 163.46368 411.648L415.87968 664 860.61568 219.552C878.31168 201.952 902.88768 192 928.58368 192 954.24768 192 978.82368 201.952 996.51968 219.552 1033.15968 258.208 1033.15968 316.704 996.51968 355.36L483.84768 867.808Z" p-id="1761" fill="#707070"></path></svg>
-                                                                            <span v-else-if="empty(item.state)">-</span>
-                                                                            <svg v-else-if="item.state == 'cache'" t="1642599159698" class="icon" style="margin-left: -2px;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11220" width="16" height="16"><path d="M512.66280359 912.83100045c-227.88660496 0-413.26540601-185.37880105-413.26540601-413.265406s185.37880105-413.29486395 413.26540601-413.29486393c75.79527335 0 149.94090218 20.7089301 214.40959852 59.87325807 19.97248167 12.15139925 26.30593824 38.17748707 14.18399693 58.13523979-12.15139925 19.94302372-38.14802914 26.2764803-58.13523977 14.18399694-51.19789547-31.15176897-110.17268647-47.58929812-170.45835568-47.58929814-181.22523186 0-328.66220933 147.46643541-328.66220933 328.69166727s147.43697747 328.66220933 328.66220933 328.66220934 328.69166727-147.43697747 328.69166728-328.66220934c0-56.79490361-14.71423981-112.750256-42.52253285-161.84190894-11.53278256-20.32597692-4.37450373-46.16058815 15.92201524-57.67864175 20.3848928-11.53278256 46.13113022-4.37450373 57.67864174 15.92201525 35.04021673 61.80275299 53.5398015 132.20722375 53.5398015 203.58380647-0.01472898 227.90133391-185.42298797 413.28013498-413.30959291 413.28013497z" fill="#707070" p-id="11221"></path><path d="M679.54201986 596.51166697h-160.54575968c-51.75759629 0-93.83826009-42.0806638-93.83826011-93.8382601v-160.54575969c0-23.36014448 18.95618282-42.30159835 42.30159834-42.30159833s42.30159835 18.95618282 42.30159834 42.30159833v160.54575969c0 5.0962232 4.12411126 9.22033445 9.22033445 9.22033446h160.5457597c23.36014448 0 42.30159835 18.95618282 42.30159833 42.30159832 0.01472898 23.37487345-18.9267249 42.31632729-42.28686937 42.31632732z" fill="#707070" p-id="11222"></path></svg>
-                                                                            <span v-else-if="item.state == 'error' && item.reset" v-on:click="getTable(item.id)" class="pointer">
-                                                                                <svg t="1642599497768" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="13439" width="16" height="16"><path d="M684.032 403.456q-17.408-8.192-15.872-22.016t11.776-22.016q3.072-2.048 19.968-15.872t41.472-33.28q-43.008-49.152-102.4-77.312t-129.024-28.16q-64.512 0-120.832 24.064t-98.304 66.048-66.048 98.304-24.064 120.832q0 63.488 24.064 119.808t66.048 98.304 98.304 66.048 120.832 24.064q53.248 0 100.864-16.896t87.04-47.616 67.584-72.192 41.472-90.624q7.168-23.552 26.624-38.912t46.08-15.36q31.744 0 53.76 22.528t22.016 53.248q0 14.336-5.12 27.648-21.504 71.68-63.488 132.096t-99.84 103.936-128.512 68.096-148.48 24.576q-95.232 0-179.2-35.84t-145.92-98.304-98.304-145.92-36.352-178.688 36.352-179.2 98.304-145.92 145.92-98.304 179.2-36.352q105.472 0 195.584 43.52t153.6 118.272q23.552-17.408 39.424-30.208t19.968-15.872q6.144-5.12 13.312-7.68t13.312 0 10.752 10.752 6.656 24.576q1.024 9.216 2.048 31.232t2.048 51.2 1.024 60.416-1.024 58.88q-1.024 34.816-16.384 50.176-8.192 8.192-24.576 9.216t-34.816-3.072q-27.648-6.144-60.928-13.312t-63.488-14.848-53.248-14.336-29.184-9.728z" p-id="13440" fill="#707070"></path></svg>
-                                                                                刷新
-                                                                            </span>
-                                                                        </td>
-                                                                        <td>{{item.des || ''}}</td>
-                                                                        <td>
-                                                                            <span v-if="item.state == 'success'"><i class="mdi mdi-circle text-success"></i> 完成</span>
-                                                                            <span v-if="item.state == 'cache'"><i class="mdi mdi-circle text-info"></i> 等待中</span>
-                                                                            <span v-else-if="empty(item.state)"><i class="mdi mdi-circle text-warning"></i> 获取中</span>
-                                                                            <span v-else-if="item.state == 'error'"><i class="mdi mdi-circle text-danger"></i> 失败</span>
-                                                                        </td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <ul v-if="fulfill" class="list-inline mb-0 wizard flex-center mt-2">
-                                                <li class="list-inline-item float-right">
-                                                    <a href="/" class="btn btn-info">回到首页</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        
+    {php}
+        $config = [];
+        // key 转小写
+        foreach ($CONFIG as $key => $val) $config[strtolower($key)] = $val;
+        // 输出配置
+        echo '<script>window.inis = ' . json_encode($config) . ';</script>';
+    {/php}
+</head>
+
+<body class="authentication-bg">
+    
+    <div id="install" class="account-pages mt-4 pt-1">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-10 col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            
+                            <h3 class="text-center mb-2">系统安装</h3>
+                            
+                            <div id="progressbarwizard">
+                                <ul class="nav nav-tabs nav-justified nav-bordered mb-0">
+                                    <li class="nav-item">
+                                        <a v-on:click="next('database')" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
+                                            <i class="mdi mdi-yin-yang mr-1"></i>
+                                            <span class="d-none d-sm-inline">数据库配置</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a v-on:click="isDatabase()" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
+                                            <i class="mdi mdi-checkbox-marked-circle-outline mr-1"></i>
+                                            <span class="d-none d-sm-inline">环境检查</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a v-on:click="isSetting()" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
+                                            <i class="mdi mdi-account-circle mr-1"></i>
+                                            <span class="d-none d-sm-inline">帐号设置</span>
+                                        </a>
+                                    </li>
+                                    <li v-if="is_instal" class="nav-item">
+                                        <a v-on:click="next('instal')" href="javascript:;" data-bs-toggle="tab" aria-expanded="false" class="nav-link rounded-0 pt-2 pb-2">
+                                            <i class="mdi mdi-spin mdi-star mr-1"></i>
+                                            <span class="d-none d-sm-inline">安装过程</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content b-0 mb-0">
+                                    
+                                    <div id="bar" class="progress mb-3" style="height: 7px;">
+                                        <div class="bar progress-bar progress-bar-striped progress-bar-animated bg-success"></div>
                                     </div>
+                                    
+                                    <div class="tab-pane" id="database">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="form-group row mb-3">
+                                                    <label class="col-md-3 col-form-label">数据库地址：</label>
+                                                    <div class="col-md-9">
+                                                        <input v-model="database.HOSTNAME" type="text" class="form-control" placeholder="如：localhost 或 127.0.0.1">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-3">
+                                                    <label class="col-md-3 col-form-label">数据库端口：</label>
+                                                    <div class="col-md-9">
+                                                        <input v-model="database.HOSTPORT" type="text" class="form-control" placeholder="默认端口：3306">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-3">
+                                                    <label class="col-md-3 col-form-label">数据库名称：</label>
+                                                    <div class="col-md-9">
+                                                        <input v-model="database.DATABASE" v-on:keyup.enter="testConn()" type="text" class="form-control" placeholder>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-3">
+                                                    <label class="col-md-3 col-form-label">数据库用户名：</label>
+                                                    <div class="col-md-9">
+                                                        <input v-model="database.USERNAME" v-on:keyup.enter="testConn()" type="text" class="form-control" placeholder>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-3">
+                                                    <label class="col-md-3 col-form-label">数据库密码：</label>
+                                                    <div class="col-md-9">
+                                                        <input v-model="database.PASSWORD" v-on:keyup.enter="testConn()" type="text" class="form-control" placeholder>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <ul class="list-inline mb-0 wizard flex-center">
+                                            <li class="list-inline-item float-right">
+                                                <a href="https://docs.inis.cc/#/start/install-inis-system" class="btn btn-info" target="_blank">帮助</a>
+                                            </li>
+                                            <li class="list-inline-item float-right">
+                                                <button v-on:click="testConn()" type="button" class="btn btn-info">下一步</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="tab-pane" id="setting">
+                                        <div class="table-responsive-sm mb-3">
+                                            <table class="table customize-table table-centered mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>依赖</th>
+                                                        <th>-</th>
+                                                        <th>说明</th>
+                                                        <th>状态</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>PHP 版本</td>
+                                                        <td>{{info.php.version || '-'}}</td>
+                                                        <td>要求 >= 7.4</td>
+                                                        <td>
+                                                            <span v-if="info.php.check"><i class="mdi mdi-circle text-success"></i> 通过</span>
+                                                            <span v-else-if="empty(info.php.check)"><i class="mdi mdi-circle text-warning"></i> 校验中</span>
+                                                            <span v-else><i class="mdi mdi-circle text-danger"></i> 未通过</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>数据库版本</td>
+                                                        <td>{{info.mysql.version || '-'}}</td>
+                                                        <td>要求 >= 5.5</td>
+                                                        <td>
+                                                            <span v-if="info.mysql.check"><i class="mdi mdi-circle text-success"></i> 通过</span>
+                                                            <span v-else-if="empty(info.mysql.check)"><i class="mdi mdi-circle text-warning"></i> 校验中</span>
+                                                            <span v-else><i class="mdi mdi-circle text-danger"></i> 未通过</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-for="(item, index) in extens" :key="index">
+                                                        <td>{{item.name || ''}}</td>
+                                                        <td>
+                                                            <svg v-if="item.check" t="1642523210900" class="icon" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1760" width="12" height="12"><path d="M483.84768 867.808C466.37568 885.792 441.73568 896 415.87968 896 390.05568 896 365.41568 885.792 347.94368 867.808L27.46368 547.552C-9.17632 508.864-9.17632 450.336 27.46368 411.648 44.26368 394.944 67.30368 385.088 91.68768 384.256 118.72768 383.008 144.93568 393.024 163.46368 411.648L415.87968 664 860.61568 219.552C878.31168 201.952 902.88768 192 928.58368 192 954.24768 192 978.82368 201.952 996.51968 219.552 1033.15968 258.208 1033.15968 316.704 996.51968 355.36L483.84768 867.808Z" p-id="1761" fill="#707070"></path></svg>
+                                                            <svg v-else t="1642523169246" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1469" width="12" height="12"><path d="M834.976 888.736C799.712 902.56 759.648 894.4 732.608 867.872L512.288 647.808 292.064 867.872C254.528 905.376 193.696 905.376 156.16 867.872 118.624 830.4 118.624 769.568 156.16 732.096L376.448 512 156.16 291.936C118.624 254.432 118.624 193.632 156.16 156.128 193.696 118.624 254.528 118.624 292.064 156.128L512.288 376.288 732.608 156.128C770.304 119.776 830.24 120.288 867.296 157.344 904.352 194.4 904.864 254.272 868.416 291.936L648.192 512 868.416 732.096C887.296 751.072 897.28 777.152 895.872 803.904 894.08 841.696 870.24 874.912 834.976 888.736" p-id="1470" fill="#707070"></path></svg>
+                                                        </td>
+                                                        <td>建议开启</td>
+                                                        <td>
+                                                            <span v-if="item.check"><i class="mdi mdi-circle text-success"></i> 通过</span>
+                                                            <span v-else-if="empty(item.check)"><i class="mdi mdi-circle text-warning"></i> 校验中</span>
+                                                            <span v-else><i class="mdi mdi-circle text-danger"></i> 未通过</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <ul class="list-inline mb-0 wizard flex-center">
+                                            <li v-on:click="next('database')" class="list-inline-item">
+                                                <button type="button" class="btn btn-info">上一步</button>
+                                            </li>
+                                            <li class="list-inline-item float-right">
+                                                <button v-on:click="isSetting()" type="button" class="btn btn-info">下一步</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="tab-pane" id="account">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="form-group row mb-3">
+                                                    <label class="col-md-3 col-form-label">昵称</label>
+                                                    <div class="col-md-9">
+                                                        <input v-model="account.nickname" type="text" class="form-control" placeholder="希望别人怎么称呼您">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-3">
+                                                    <label class="col-md-3 col-form-label">帐号：</label>
+                                                    <div class="col-md-9">
+                                                        <input v-model="account.account" type="text" class="form-control" placeholder="用于登录">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-3">
+                                                    <label class="col-md-3 col-form-label">密码：</label>
+                                                    <div class="col-md-9">
+                                                        <input v-model="account.password" type="text" class="form-control" placeholder="建议大于8位">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row mb-3">
+                                                    <label class="col-md-3 col-form-label">邮箱：</label>
+                                                    <div class="col-md-9">
+                                                        <input v-model="account.email" v-on:keyup.enter="install()" type="text" class="form-control" placeholder="用于密码找回等">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <ul class="list-inline mb-0 wizard flex-center">
+                                            <li class="list-inline-item">
+                                                <button v-on:click="next('setting')" type="button" class="btn btn-info">上一步</button>
+                                            </li>
+                                            <li class="list-inline-item float-right">
+                                                <button v-on:click="install()" type="button" class="btn btn-info">开始安装</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div v-show="is_instal" class="tab-pane" id="instal">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div v-if="fulfill" class="alert alert-success" role="alert">
+                                                    <i class="dripicons-checkmark mr-2"></i> 安装 <strong>已完成</strong> ，感谢您的支持！
+                                                </div>
+                                                <div v-else class="alert alert-info" role="alert">
+                                                    <i class="dripicons-information mr-2"></i> 安装完成之前，请 <strong>不要刷新</strong> 或 <strong>关闭</strong> 当前窗口
+                                                </div>
+                                                <div class="customize-scroll" style="max-height:450px">
+                                                    <div class="table-responsive-sm p-2">
+                                                        <table class="table customize-table table-centered mb-0">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>名称</th>
+                                                                    <th>-</th>
+                                                                    <th>说明</th>
+                                                                    <th>状态</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr v-for="(item, index) in notes" :key="index">
+                                                                    <td v-html="item.name"></td>
+                                                                    <td>
+                                                                        <svg v-if="item.state == 'success'" t="1642523210900" class="icon" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1760" width="12" height="12"><path d="M483.84768 867.808C466.37568 885.792 441.73568 896 415.87968 896 390.05568 896 365.41568 885.792 347.94368 867.808L27.46368 547.552C-9.17632 508.864-9.17632 450.336 27.46368 411.648 44.26368 394.944 67.30368 385.088 91.68768 384.256 118.72768 383.008 144.93568 393.024 163.46368 411.648L415.87968 664 860.61568 219.552C878.31168 201.952 902.88768 192 928.58368 192 954.24768 192 978.82368 201.952 996.51968 219.552 1033.15968 258.208 1033.15968 316.704 996.51968 355.36L483.84768 867.808Z" p-id="1761" fill="#707070"></path></svg>
+                                                                        <span v-else-if="empty(item.state)">-</span>
+                                                                        <svg v-else-if="item.state == 'cache'" t="1642599159698" class="icon" style="margin-left: -2px;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11220" width="16" height="16"><path d="M512.66280359 912.83100045c-227.88660496 0-413.26540601-185.37880105-413.26540601-413.265406s185.37880105-413.29486395 413.26540601-413.29486393c75.79527335 0 149.94090218 20.7089301 214.40959852 59.87325807 19.97248167 12.15139925 26.30593824 38.17748707 14.18399693 58.13523979-12.15139925 19.94302372-38.14802914 26.2764803-58.13523977 14.18399694-51.19789547-31.15176897-110.17268647-47.58929812-170.45835568-47.58929814-181.22523186 0-328.66220933 147.46643541-328.66220933 328.69166727s147.43697747 328.66220933 328.66220933 328.66220934 328.69166727-147.43697747 328.69166728-328.66220934c0-56.79490361-14.71423981-112.750256-42.52253285-161.84190894-11.53278256-20.32597692-4.37450373-46.16058815 15.92201524-57.67864175 20.3848928-11.53278256 46.13113022-4.37450373 57.67864174 15.92201525 35.04021673 61.80275299 53.5398015 132.20722375 53.5398015 203.58380647-0.01472898 227.90133391-185.42298797 413.28013498-413.30959291 413.28013497z" fill="#707070" p-id="11221"></path><path d="M679.54201986 596.51166697h-160.54575968c-51.75759629 0-93.83826009-42.0806638-93.83826011-93.8382601v-160.54575969c0-23.36014448 18.95618282-42.30159835 42.30159834-42.30159833s42.30159835 18.95618282 42.30159834 42.30159833v160.54575969c0 5.0962232 4.12411126 9.22033445 9.22033445 9.22033446h160.5457597c23.36014448 0 42.30159835 18.95618282 42.30159833 42.30159832 0.01472898 23.37487345-18.9267249 42.31632729-42.28686937 42.31632732z" fill="#707070" p-id="11222"></path></svg>
+                                                                        <!-- <span v-else-if="item.state == 'error' && item.reset" v-on:click="getTable(item.id)" class="pointer">
+                                                                            <svg t="1642599497768" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="13439" width="16" height="16"><path d="M684.032 403.456q-17.408-8.192-15.872-22.016t11.776-22.016q3.072-2.048 19.968-15.872t41.472-33.28q-43.008-49.152-102.4-77.312t-129.024-28.16q-64.512 0-120.832 24.064t-98.304 66.048-66.048 98.304-24.064 120.832q0 63.488 24.064 119.808t66.048 98.304 98.304 66.048 120.832 24.064q53.248 0 100.864-16.896t87.04-47.616 67.584-72.192 41.472-90.624q7.168-23.552 26.624-38.912t46.08-15.36q31.744 0 53.76 22.528t22.016 53.248q0 14.336-5.12 27.648-21.504 71.68-63.488 132.096t-99.84 103.936-128.512 68.096-148.48 24.576q-95.232 0-179.2-35.84t-145.92-98.304-98.304-145.92-36.352-178.688 36.352-179.2 98.304-145.92 145.92-98.304 179.2-36.352q105.472 0 195.584 43.52t153.6 118.272q23.552-17.408 39.424-30.208t19.968-15.872q6.144-5.12 13.312-7.68t13.312 0 10.752 10.752 6.656 24.576q1.024 9.216 2.048 31.232t2.048 51.2 1.024 60.416-1.024 58.88q-1.024 34.816-16.384 50.176-8.192 8.192-24.576 9.216t-34.816-3.072q-27.648-6.144-60.928-13.312t-63.488-14.848-53.248-14.336-29.184-9.728z" p-id="13440" fill="#707070"></path></svg>
+                                                                            刷新
+                                                                        </span> -->
+                                                                    </td>
+                                                                    <td v-html="item.des"></td>
+                                                                    <td>
+                                                                        <span v-if="item.state == 'success'"><i class="mdi mdi-circle text-success"></i> 完成</span>
+                                                                        <span v-if="item.state == 'cache'"><i class="mdi mdi-circle text-info"></i> 等待中</span>
+                                                                        <span v-else-if="empty(item.state)"><i class="mdi mdi-circle text-warning"></i> 获取中</span>
+                                                                        <span v-else-if="item.state == 'error'"><i class="mdi mdi-circle text-danger"></i> 失败</span>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <ul v-if="fulfill" class="list-inline mb-0 wizard flex-center mt-2">
+                                            <li class="list-inline-item float-right">
+                                                <a href="/" class="btn btn-info">回到首页</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
                                 </div>
-                                
                             </div>
+                            
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <script src="/admin/js/vendor.min.js"></script>
-        <script src="/admin/js/app.min.js"></script>
-        <script src="/admin/js/install/index.js"></script>
-    </body>
+    </div>
+    
+    <script src="/admin/js/vendor.min.js"></script>
+    <script src="/admin/js/app.min.js"></script>
+    <script src="/admin/js/install/index.js"></script>
+</body>
 </html>

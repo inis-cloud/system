@@ -7,7 +7,7 @@ use app\BaseController;
 use think\{Request, Response};
 use app\admin\controller\Tool;
 use inis\utils\{File, helper};
-use think\facade\{Config, Validate};
+use think\facade\{Config, Validate, Lang};
 use think\exception\ValidateException;
 use app\validate\Users as UsersValidate;
 use app\model\mysql\{Log, Users, Options, VerifyCode};
@@ -49,7 +49,7 @@ class Comm extends BaseController
         
         $data  = [];
         $code  = 400;
-        $msg   = '帐号和密码不能为空！';
+        $msg   = Lang::get('帐号和密码不能为空！');
         $header= [];
         
         if (isset($param['account']) and isset($param['password'])) {
@@ -71,7 +71,7 @@ class Comm extends BaseController
                 $second_to_time = $this->helper->NaturalSecond($this->config['login_errot_time']);
                 
                 $code = 403;
-                $msg  = '您的错误次数达到'.$this->config['login_error_count'].'次，该设备已被禁止'.$second_to_time.'内登陆此系统！';
+                $msg  = Lang::get('登录错误上限',[$this->config['login_error_count'],$second_to_time]);
                 
             } else {
                 
@@ -90,7 +90,7 @@ class Comm extends BaseController
                 // 收集错误信息
                 if (!$users or !$this->verify_password($param['password'], $users['password'])){
                     
-                    $msg    = '用户名或密码不正确！';
+                    $msg    = Lang::get('用户名或密码不正确！');
                     
                     $log    = new Log;
                     $log->save([
@@ -117,12 +117,12 @@ class Comm extends BaseController
                     // 登录成功
                     $data   = ['login-token'=>$jwt];
                     $code   = 200;
-                    $msg    = '登录成功！';
+                    $msg    = Lang::get('登录成功！');
                 }
             }
         }
         
-        return $this->create($data, $msg, $code)->header($header);
+        return $this->json($data, $msg, $code)->header($header);
     }
     
     // 校验登录
@@ -134,7 +134,7 @@ class Comm extends BaseController
         
         $data = [];
         $code = 400;
-        $msg  = '非法访问！';
+        $msg  = Lang::get('非法访问！');
         
         if (isset($param['login-token']) or isset($header['login-token'])) {
             
@@ -148,21 +148,21 @@ class Comm extends BaseController
                 
                 $data = Users::withoutField(['password'])->find($arr['uid']);
                 $code = 200;
-                $msg  = '合法登录！';
+                $msg  = Lang::get('合法登录！');
                 
             } catch (SignatureInvalidException $e){
                 // $e->getMessage()
-                $msg = '签名不正确！';
+                $msg = Lang::get('签名不正确！');
             } catch (BeforeValidException $e){
-                $msg = 'login-token失效！';
+                $msg = Lang::get('login-token失效！');
             } catch (ExpiredException $e){
-                $msg = 'login-token失效！';
+                $msg = Lang::get('login-token失效！');
             } catch (Exception $e){
-                $msg = '未知错误！';
+                $msg = Lang::get('未知错误！');
             };
         }
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
     
     // 注册
@@ -181,7 +181,7 @@ class Comm extends BaseController
         $time = time();
         $code_data = (empty($param['code'])) ? '' : strtoupper($param['code']);
         
-        if (empty($code_data)) $msg = '验证码不得为空！';
+        if (empty($code_data)) $msg = Lang::get('验证码不得为空！');
         else {
             
             $verify_code = VerifyCode::where(['types'=>'email','content'=>$param['email'],'code'=>$code_data])->findOrEmpty();
@@ -191,7 +191,7 @@ class Comm extends BaseController
                 if ($verify_code->end_time < $time) {
                     
                     $code = 412;
-                    $msg  = '验证码已失效！';
+                    $msg  = Lang::get('验证码已失效！');
                     
                 } else {
                     
@@ -217,10 +217,10 @@ class Comm extends BaseController
                     $msg  = 'ok';
                 }
                 
-            } else $msg = '验证码错误！';
+            } else $msg = Lang::get('验证码错误！');
         }
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     // 获取 Token 接口
@@ -230,18 +230,37 @@ class Comm extends BaseController
         
         if($options->opt->token->status == 0){
             $data = [];
-            $msg  = '未开启 Token 验证';
+            $msg  = Lang::get('未开启 Token 验证！');
             $code = 204;
         }elseif ($options->opt->token->open == 0){
-            $data = ['想什么呢，Token这么重要的东西，能给你吗？'];
-            $msg  = '未经授权！';
+            $data = [Lang::get('想什么呢，Token这么重要的东西，能给你吗？')];
+            $msg  = Lang::get('未经授权！');
             $code = 403;
         }else{
             $data = $options->opt->token->value;
-            $msg  = '请求成功！';
+            $msg  = Lang::get('请求成功！');
             $code = 200;
         }
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
+    }
+
+    // 返回API的JSON标准结构
+    protected function json($data = [], string $msg = '', int $code = 200, array $config = [], string $type = 'json') : Response
+    {
+        // 标准API结构生成
+        $result = [
+            // 状态码
+            'code'  =>  $code,
+            // 消息
+            'msg'   =>  $msg,
+            // 数据
+            'data'  =>  $data
+        ];
+        
+        // 合并其他数据数据
+        $result = !empty($config) ? array_merge($result, $config) : $result;
+        
+        return Response::create($result, $type);
     }
 }

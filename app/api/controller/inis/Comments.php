@@ -5,7 +5,7 @@ namespace app\api\controller\inis;
 
 use Parsedown;
 use think\Request;
-use think\facade\{Cache};
+use think\facade\{Cache, Lang};
 use inis\utils\{markdown};
 use app\model\mysql\{Users, Options, Article, Comments as CommentsModel};
 
@@ -28,13 +28,13 @@ class Comments extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 存在的方法
-        $method = ['one','all','comments','group','type','sql'];
+        $method = ['one','all','article','group','type','sql'];
         
-        if (!empty($param['article_id'])) $mode = 'comments';
+        if (!empty($param['article_id'])) $mode = 'article';
         else if (!empty($param['id'])) $mode = 'one';
         else $mode = (empty($param['mode'])) ? 'all' : $param['mode'];
         
@@ -43,7 +43,7 @@ class Comments extends Base
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -52,7 +52,7 @@ class Comments extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
         // 获取数据
         $param  = $request->param();
@@ -61,154 +61,81 @@ class Comments extends Base
         
         $data = [];
         $code = 400;
-        $msg  = 'ok';
-        
-        $mode = (!empty($param['mode'])) ? $param['mode'] : null;
+        $msg  = '成功！';
+
+        $IID  = $IID == 'def' ? 'add' : $IID;
         
         // 登录时的 Token
-        $login_token  = !empty($header['login-token']) ? $header['login-token'] : (!empty($param['login-token']) ? $param['login-token'] : []);
+        $loginToken  = !empty($header['authorization']) ? $header['authorization'] : (!empty($param['login-token']) ? $param['login-token'] : []);
         
         $param['agent'] = $header['user-agent'];
         $param['ip']    = $this->helper->GetClientIP();
         
-        // 允许用户提交并存储的字段
-        $obtain = ['pid','content','nickname','email','url','ip','type','agent','users_id','article_id','opt'];
-        
         // 判断是否登录后评论
-        if (!empty($login_token)) {
+        if (!empty($loginToken)) {
             
             // 存在的方法
             $method = ['move','edit','remove'];
             
             // 动态方法且方法存在
-            if (in_array($mode, $method)) {
+            if (in_array($IID, $method)) {
                 
-                $result = $this->$mode($param);
+                $result = $this->$IID($param);
                 // 动态返回结果
                 if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
                 
-            } else {
-                
-                $comment = new CommentsModel;
-                
-                // 登录有效
-                if ($this->user['code'] == 200) {
-                    
-                    // 判断字段是否允许存储，防提权
-                    foreach ($param as $key => $val) if (in_array($key, $obtain)) {
-                        $comment->$key = $val;
-                    }
-                    
-                    $comment->users_id = $this->user['data']['id'];
-                    $comment->email    = $this->user['data']['email'];
-                    $comment->nickname = $this->user['data']['nickname'];
-                    $comment->url      = $this->user['data']['address_url'];
-                    
-                    if (empty($comment->opt)) $comment->opt = ['like'=>1];
-                    
-                    // 不转换中文编码
-                    $comment->opt = json_encode($comment->opt, JSON_UNESCAPED_UNICODE);
-                    $comment->save();
-                    
-                    $code    = 200;
-                    $msg     = 'ok';
-                    
-                    $param['email']    = $this->user['data']['email'];
-                    $param['nickname'] = $this->user['data']['nickname'];
-                    $param['url']      = $this->user['data']['address_url'];
-                    
-                    // 评论通知
-                    self::notice($param);
-                    
-                } else $msg = $this->user['msg'];    // 登录无效
             }
-            
-        } else {    // 未登录提交的评论
-            
-            if (empty($mode)) {
-                
-                // 判断PID是否存在 - 非必传字段
-                if (empty($param['pid'])) $param['pid'] = 0;
-                // 判断选传字段是否存在 - 非必传字段
-                if (empty($param['url'])) $param['url'] = null;
-                
-                // 邮箱验证规则
-                $pattern = "/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/";
-                
-                if (empty($param['content']) or empty($param['nickname']) or empty($param['email'])) {
+            // 登录后评论
+            else {
+
+                $item = new CommentsModel;
+
+                // 允许用户提交并存储的字段
+                $obtain = ['pid','content','nickname','email','url','ip','type','agent','users_id','article_id','opt'];
                     
-                    $msg  = '必传字段 { content、nickname、email } 不得为空！';
-                    
-                } else if (!is_numeric($param['pid'])){
-                    
-                    $msg  = 'pid不是合法的ID，必须是数字！';
-                    
-                } else if (!preg_match($pattern, $param['email'])){
-                    
-                    $msg  = '邮箱格式不合法，评论失败！';
-                    
-                } else {
-                    
-                    $comment = new CommentsModel;
-                    
-                    // 自动插入users_id
-                    if (!empty($param['email']) or !empty($param['nickname'])) {
-                        
-                        $user = Users::where(['email'=>$param['email']])->field(['id'])->findOrEmpty();
-                        
-                        if (!$user->isEmpty()) $param['users_id'] = $user->id;
-                        else {
-                            
-                            $map1 = ['address_url','=',$param['url']];
-                            $map2 = ['nickname', 'like', '%'.$param['nickname'].'%'];
-                            
-                            $user = Users::where([$map1,$map2])->field(['id'])->findOrEmpty();
-                            if (!$user->isEmpty()) $param['users_id'] = $user->id;
-                        }
-                    }
-                    
-                    // 判断字段是否允许存储，防提权
-                    foreach ($param as $key => $val) if (in_array($key, $obtain)) {
-                        $comment->$key = $val;
-                    }
-                    
-                    if (empty($comment->opt)) $comment->opt = ['like'=>1];
-                    
-                    // 不转换中文编码
-                    $comment->opt = json_encode($comment->opt, JSON_UNESCAPED_UNICODE);
-                    $comment->save();
-                    
-                    // 评论通知
-                    self::notice($param);
-                    
-                    $data = $comment;
-                    
-                    $code = 200;
+                // 判断字段是否允许存储，防提权
+                foreach ($param as $key => $val) if (in_array($key, $obtain)) {
+                    $item->$key = $val;
                 }
                 
-            } else if ($mode == 'like') {   // 点赞
+                $item->users_id = request()->user->id;
+                $item->email    = request()->user->email;
+                $item->nickname = request()->user->nickname;
+                $item->url      = request()->user->address_url;
                 
-                if (!empty($param['id']) and is_numeric($param['id'])) {
-                    
-                    $comment = CommentsModel::find((int)$param['id']);
-                    
-                    // great
-                    if (empty($comment->opt) or empty($comment->opt->like)) $comment->opt = ['like'=>1];
-                    else $comment->opt->like++;
-                    
-                    // 不转换中文编码
-                    $comment->opt = json_encode($comment->opt, JSON_UNESCAPED_UNICODE);
-                    $comment->save();
-                    
-                    $code = 200;
-                }
+                if (empty($item->opt)) $item->opt = ['like'=>1];
+                
+                // 不转换中文编码
+                $item->opt = json_encode($item->opt, JSON_UNESCAPED_UNICODE);
+                $item->save();
+                
+                $code    = 200;
+                $msg     = '成功！';
+                
+                $param['email']    = request()->user->email;
+                $param['nickname'] = request()->user->nickname;
+                $param['url']      = request()->user->address_url;
+                
+                // 评论通知
+                self::notice($param);
             }
+        }
+        // 未登录提交的评论
+        else {
+            
+            // 存在的方法
+            $method = ['add','like'];
+            
+            // 动态方法且方法存在
+            if (in_array($IID, $method)) $result = $this->$IID($param);
+            // 动态返回结果
+            if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         }
         
         // 清除缓存
         Cache::tag('comments')->clear();
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -217,25 +144,25 @@ class Comments extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 获取请求参数
         $param = $request->param();
         
         // 存在的方法
-        $method = ['sql','type'];
+        $method = ['one','all','sql','type','article','group'];
         
         // 动态方法且方法存在
         if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
     
     /**
@@ -245,9 +172,25 @@ class Comments extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
-        //
+        $data   = [];
+        $code   = 400;
+        $msg    = lang('参数不存在！');
+        $result = [];
+        
+        // 获取请求参数
+        $param = $request->param();
+        
+        // 存在的方法
+        $method = ['edit'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -256,73 +199,144 @@ class Comments extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
-        //
+        $data   = [];
+        $code   = 400;
+        $msg    = lang('参数不存在！');
+        $result = [];
+        
+        // 获取请求参数
+        $param = $request->param();
+        
+        // 存在的方法
+        $method = ['remove'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        return $this->json($data, $msg, $code);
+    }
+
+    // 添加评论
+    public function add($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = lang('成功！');
+
+        // 判断PID是否存在 - 非必传字段
+        if (empty($param['pid'])) $param['pid'] = 0;
+        // 判断选传字段是否存在 - 非必传字段
+        if (empty($param['url'])) $param['url'] = null;
+        
+        // 邮箱验证规则
+        $pattern = "/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/";
+
+        if (empty($param['content']))  return ['data'=>[], 'code'=>400, 'msg'=>lang('评论内容不能为空！')];
+        if (empty($param['nickname'])) return ['data'=>[], 'code'=>400, 'msg'=>lang('昵称不能为空！')];
+        if (empty($param['email']))    return ['data'=>[], 'code'=>400, 'msg'=>lang('邮箱不能为空！')];
+        if (!preg_match($pattern, $param['email'])) return ['data'=>[], 'code'=>400, 'msg'=>lang('邮箱格式不合法，评论失败！')];
+        
+        $param['pid'] = !empty($param['pid']) ? (int)$param['pid'] : 0;
+
+        // 允许用户提交并存储的字段
+        $obtain  = ['pid','content','nickname','email','url','ip','type','agent','users_id','article_id','opt'];
+
+        $comment = new CommentsModel;
+        
+        // 自动插入users_id
+        if (!empty($param['email']) or !empty($param['nickname'])) {
+            
+            $user = Users::where(['email'=>$param['email']])->field(['id'])->findOrEmpty();
+            
+            if (!$user->isEmpty()) $param['users_id'] = $user->id;
+            else {
+                
+                $map1 = ['address_url','=',$param['url']];
+                $map2 = ['nickname', 'like', '%'.$param['nickname'].'%'];
+                
+                $user = Users::where([$map1,$map2])->field(['id'])->findOrEmpty();
+                if (!$user->isEmpty()) $param['users_id'] = $user->id;
+            }
+        }
+        
+        // 判断字段是否允许存储，防提权
+        foreach ($param as $key => $val) if (in_array($key, $obtain)) {
+            $comment->$key = $val;
+        }
+        
+        if (empty($comment->opt)) $comment->opt = ['like'=>1];
+        
+        // 不转换中文编码
+        $comment->opt = json_encode($comment->opt, JSON_UNESCAPED_UNICODE);
+        $comment->save();
+        
+        // 评论通知
+        self::notice($param);
+        
+        $code = 200;
+        $data = $comment;
+
+        return ['data'=>$data, 'code'=>$code, 'msg'=>$msg];
+    }
+
+    // 给评论点赞
+    public function like($param)
+    {
+        $data = [];
+        $code = 400;
+        $msg  = lang('成功！');
+
+        if (empty($param['id'])) return ['data'=>[], 'code'=>400, 'msg'=>lang('ID不能为空！')];
+                    
+        $item = CommentsModel::findOrEmpty((int)$param['id']);
+
+        if ($item->isEmpty()) return ['data'=>[], 'code'=>400, 'msg'=>lang('评论不存在！')];
+        
+        if (empty($item->opt) or empty($item->opt->like)) $item->opt = ['like'=>1];
+        else $item->opt->like++;
+        
+        // 不转换中文编码
+        $item->opt = json_encode($item->opt, JSON_UNESCAPED_UNICODE);
+        $item->save();
+        
+        $code = 200;
+
+        return ['data'=>$data, 'code'=>$code, 'msg'=>$msg];
     }
     
     // SQL接口
     public function sql($param)
     {
-        $where   = (empty($param['where']))   ? '' : $param['where'];
-        $whereOr = (empty($param['whereOr'])) ? '' : $param['whereOr'];
+        $where   = (empty($param['where']))   ? [] : $param['where'];
+        $whereOr = (empty($param['whereOr'])) ? [] : $param['whereOr'];
         $page    = (!empty($param['page']))   ? $param['page']  : 1;
         $limit   = (!empty($param['limit']))  ? $param['limit'] : 5;
         $order   = (!empty($param['order']))  ? $param['order'] : 'create_time desc';
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = '成功！';
         
         $opt  = [
             'page' => $page,
             'limit'=> $limit,
             'order'=> $order,
-            'where'=> [],
-            'whereOr'=> [],
+            'where'=> $where,
+            'whereOr'=> $whereOr,
         ];
         
         // 设置缓存名称
-        $cache_name = 'comments/sql?page='.$page.'&limit='.$limit.'&order='.$order.'&where='.$where.'&whereOr='.$whereOr;
-        
-        if (!empty($where)) {
-            
-            if (strstr($where, ';')) {      // 以 ; 号隔开参数
-                
-                $where = array_filter(explode(';', $where));
-                
-                foreach ($where as $val) {
-                    
-                    if (strstr($val, ',')) {
-                        $item = explode(',',$val);
-                        array_push($opt['where'],[$item[0],$item[1],$item[2]]);
-                    } else {
-                        $item = explode('=',$val);
-                        array_push($opt['where'],[$item[0],'=',$item[1]]);
-                    }
-                }
-                
-            } else $opt['where'] = $where;  // 原生写法，以 and 隔开参数
-        }
-        
-        if (!empty($whereOr)) {
-            $whereOr = array_filter(explode(';', $whereOr));
-            foreach ($whereOr as $val) {
-                $item = explode(',',$val);
-                $opt['whereOr'][] = [$item[0],$item[1],$item[2]];
-            }
-        }
+        $cache_name = json_encode(array_merge(['IAPI'=>'comments/sql','where'=>$where,'whereOr'=>$whereOr], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             $data = CommentsModel::ExpandAll(null, $opt);
-            Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
@@ -348,13 +362,13 @@ class Comments extends Base
         
         if (!empty($param['article_id'])) {
             
-            $article  = '文章不存在！';
+            $article  = lang('文章不存在！');
             $article  = Article::field(['title','users_id'])->findOrEmpty($param['article_id']);
             if (!empty($article)) {
                 $users_id = $article['users_id'];
                 $article  = $article['title'];
                 $author   = Users::field(['nickname'])->findOrEmpty($users_id);
-                $author   = (!empty($author)) ? $author['nickname'] : '已删除的用户';
+                $author   = (!empty($author)) ? $author['nickname'] : lang('已删除的用户！');
             }
             array_push($tags, '{article}', '{author}');
             array_push($replace, $article, $author);
@@ -380,7 +394,7 @@ class Comments extends Base
                         // 发送评论信息到邮箱
                         $this->tool->sendMail([
                             'email'  =>$email['email'],
-                            'title'  =>$site.'评论通知',
+                            'title'  =>$site . lang('评论通知！'),
                             'content'=>$template
                         ]);
                     }
@@ -396,7 +410,7 @@ class Comments extends Base
             // 发送评论信息到邮箱
             $this->tool->sendMail([
                 'email'  =>$email,
-                'title'  =>$site.'评论通知',
+                'title'  =>$site . lang('评论通知！'),
                 'content'=>$template
             ]);
             
@@ -416,7 +430,7 @@ class Comments extends Base
                         // 发送评论信息到邮箱
                         $this->tool->sendMail([
                             'email'  =>$email['email'],
-                            'title'  =>$site.'评论通知',
+                            'title'  =>$site . lang('评论通知！'),
                             'content'=>$template
                         ]);
                     }
@@ -433,9 +447,9 @@ class Comments extends Base
     // typecho 迁移至 inis
     public function move(array $param = [])
     {
-        $result = ['data'=>[],'code'=>403,'msg'=>'ok'];
+        $result = ['data'=>[],'code'=>403,'msg'=>'成功！'];
         
-        if (empty($param['login-token'])) $result['msg'] = 'login-token 未提交';
+        if (empty($param['login-token'])) $result['msg'] = lang('login-token 未提交！');
         else {
             
             // 允许用户提交并存储的字段
@@ -446,10 +460,10 @@ class Comments extends Base
             // 判断字段是否允许存储，防提权
             foreach ($param as $key => $val) if (in_array($key, $obtain)) $comment->$key = $val;
             
-            if ($this->user['data']->level == 'admin') {
+            if (request()->user->level == 'admin') {
                 $comment->save();
                 $result['code'] = 200;
-            } else $result['msg'] = '无权限';
+            } else $result['msg'] = lang('无权限！');
         }
         
         return $result;
@@ -460,9 +474,9 @@ class Comments extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = '成功！';
         
-        if (empty($param['id'])) $msg = 'ID不能为空';
+        if (empty($param['id'])) $msg = lang('ID不能为空！');
         else {
             
             $comment = CommentsModel::findOrEmpty((int)$param['id']);
@@ -475,10 +489,10 @@ class Comments extends Base
                 if (in_array($key, $obtain)) $comment->$key = $val;
             } else {
                 $code = 204;
-                $msg  = '无数据';
+                $msg  = lang('无数据！');
             }
             
-            if (in_array($this->user['data']->level, ['admin'])) {
+            if (in_array(request()->user->level, ['admin'])) {
                 
                 $code = 200;
                 // 不转换中文编码
@@ -487,7 +501,7 @@ class Comments extends Base
                 
             } else {
                 $code = 403;
-                $msg  = '无权限';
+                $msg  = lang('无权限！');
             }
         }
         
@@ -499,17 +513,17 @@ class Comments extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = '成功！';
         
         $id = !empty($param['id']) ? $param['id']  : null;
         
-        if (empty($id)) $msg = '请提交 id';
+        if (empty($id)) $msg = lang('请提交 id！');
         else {
             
             $id = array_filter(explode(',', $id));
             
             // 存在该条数据
-            if (in_array($this->user['data']->level, ['admin'])) {
+            if (in_array(request()->user->level, ['admin'])) {
                 
                 $code = 200;
                 CommentsModel::destroy($id);
@@ -517,7 +531,7 @@ class Comments extends Base
             } else {
                 
                 $code = 403;
-                $msg  = '无权限';
+                $msg  = lang('无权限！');
             }
         }
         
@@ -525,7 +539,7 @@ class Comments extends Base
     }
     
     // 文章下的评论
-    public function comments($param)
+    public function article($param)
     {
         $data  = [];
         
@@ -533,11 +547,6 @@ class Comments extends Base
         $limit = (!empty($param['limit'])) ? $param['limit'] : 5;
         $order = (!empty($param['order'])) ? $param['order'] : 'create_time desc';
         $tree  = (empty($param['tree'])  or $param['tree']  == 'true') ? true : false;
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         
         $opt = [
             'tree'   =>  $tree,
@@ -548,22 +557,23 @@ class Comments extends Base
         ];
         
         // 设置缓存名称
-        $cache_name = 'comments?article_id='.$param['article_id'].'&page='.$page.'&limit='.$limit.'&order='.$order.'&tree='.$tree;
+        $cache_name = json_encode(array_merge(['IAPI'=>'comments'], $param));
+
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             unset($opt['where']);
             // 获取数据库数据
             $data = Article::comments((int)$param['article_id'], $opt);
-            Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('数据请求成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -573,18 +583,13 @@ class Comments extends Base
     {
         $tree  = (empty($param['tree'])  or $param['tree']  == 'true') ? true : false;
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
         $data = [];
             
         // 设置缓存名称
-        $cache_name = 'comments?id='.$param['id'].'&tree='.$tree;
+        $cache_name = json_encode(array_merge(['IAPI'=>'comments'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             // 获取数据库数据
             $data = CommentsModel::ExpandAll((int)$param['id']);
@@ -592,14 +597,14 @@ class Comments extends Base
             
             if (!$tree) $data['son'] = $this->helper->BubbSort($data['son'], 'create_time');
             
-            Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['comments',$cache_name])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('数据请求成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -614,11 +619,6 @@ class Comments extends Base
         $order = (!empty($param['order'])) ? $param['order'] : 'create_time desc';
         $type  = (empty($param['type'])) ? null : $param['type'];
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
         $opt = [
             'page'   =>  $page, 
             'limit'  =>  $limit,
@@ -629,10 +629,10 @@ class Comments extends Base
         if (!empty($type)) $opt['where'] = ['pid'=>0,'type'=>$type];
         
         // 设置缓存名称
-        $cache_name = 'comments?page='.$page.'&limit='.$limit.'&order='.$order.'&type='.$type;
+        $cache_name = json_encode(array_merge(['IAPI'=>'comments'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             // 获取全部评论
@@ -643,14 +643,14 @@ class Comments extends Base
                 $val->content = markdown::parse($val->content);
             }
             
-            Cache::tag(['comments'])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['comments'])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('数据请求成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -665,12 +665,7 @@ class Comments extends Base
         $order = (!empty($param['order'])) ? $param['order'] : 'create_time desc';
         $mode  = (empty($param['mode'])) ? false : $param['mode'];
         $tree  = (empty($param['tree'])  or $param['tree']  == 'true') ? true : false;
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
+
         $opt = [
             'tree'   =>  $tree,
             'page'   =>  $page, 
@@ -680,10 +675,10 @@ class Comments extends Base
         ];
         
         // 设置缓存名称
-        $cache_name = 'comments?page='.$page.'&limit='.$limit.'&order='.$order.'&mode='.$mode.'&tree='.$tree;
+        $cache_name = json_encode(array_merge(['IAPI'=>'comments'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
         
             $opt['order'] = [];
@@ -699,14 +694,14 @@ class Comments extends Base
             }
             $data['data'] = $this->helper->BubbSort($data['data'], 'count', $order);
             
-            Cache::tag(['comments'])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['comments'])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('数据请求成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -722,11 +717,6 @@ class Comments extends Base
         $tree  = (empty($param['tree'])  or $param['tree']  == 'true') ? true : false;
         $type  = (empty($param['type'])) ? null : $param['type'];
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
         $opt = [
             'tree'   =>  $tree,
             'page'   =>  $page, 
@@ -738,10 +728,10 @@ class Comments extends Base
         if (!empty($type)) $opt['where'] = ['pid'=>0,'type'=>$type];
         
         // 设置缓存名称
-        $cache_name = 'comments?page='.$page.'&limit='.$limit.'&order='.$order.'&type='.$type.'&tree='.$tree;
+        $cache_name = json_encode(array_merge(['IAPI'=>'comments'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             $opt['where'] = ['type'=>$type,'pid'=>0];
@@ -760,14 +750,14 @@ class Comments extends Base
             // 冒泡排序
             if (!$tree) foreach ($data['data'] as $key => $val) $data['data'][$key]['son'] = $this->helper->BubbSort($val['son'], 'create_time', $order);
             
-            Cache::tag(['comments'])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['comments'])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('数据请求成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }

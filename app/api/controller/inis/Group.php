@@ -4,7 +4,7 @@ declare (strict_types = 1);
 namespace app\api\controller\inis;
 
 use think\Request;
-use think\facade\Cache;
+use think\facade\{Cache, Lang};
 use app\model\mysql\{Tag, Page, Visit, Users, Links, Music, Article, Comments, LinksSort, ArticleSort};
 
 class Group extends Base
@@ -22,7 +22,7 @@ class Group extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = Lang::get('参数不存在！');
         $result = [];
         
         $mode   = !empty($param['mode']) ? $param['mode'] : 'count';
@@ -35,7 +35,7 @@ class Group extends Base
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -44,7 +44,7 @@ class Group extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
         
     }
@@ -55,9 +55,25 @@ class Group extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
+        // 获取请求参数
+        $param  = $request->param();
         
+        $data   = [];
+        $code   = 400;
+        $msg    = Lang::get('参数不存在！');
+        $result = [];
+        
+        // 存在的方法
+        $method = ['count','detail','visit'];
+        
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -67,7 +83,7 @@ class Group extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
         //
     }
@@ -78,7 +94,7 @@ class Group extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
         //
     }
@@ -88,7 +104,7 @@ class Group extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = Lang::get('无数据！');
         
         $where  = [];
         $time   = time();
@@ -107,16 +123,11 @@ class Group extends Base
             'where'  =>  $where,
         ];
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
         // 设置缓存名称
-        $cache_name = 'group?page='.$page.'&limit='.$limit.'&order='.$order.'&day='.$day.'&field='.$field.'&detail='.$detail;
+        $cache_name = json_encode(array_merge(['IAPI'=>'group'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             // 查询 $day 天内的数据
@@ -152,12 +163,12 @@ class Group extends Base
                 $data[$val] = isset($$val) ? $$val : null;
             }
             
-            Cache::tag(['group'])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['group'])->set($cache_name, json_encode($data));
         }
         
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = Lang::get('数据请求成功！');
         
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
     }
@@ -167,22 +178,17 @@ class Group extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = Lang::get('无数据！');
         
         $date      = !empty($param['date']) ? $param['date'] : '';
         $field     = !empty($param['field'])  ? $param['field']  : null;
         $timestamp = !empty($param['timestamp']) ? $param['timestamp'] : '';
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
         // 设置缓存名称
-        $cache_name = 'group?date='.$date.'&timestamp='.$timestamp.'&field='.$field;
+        $cache_name = json_encode(array_merge(['IAPI'=>'group'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             // 日期格式参数
@@ -255,12 +261,12 @@ class Group extends Base
                 }
             }
             
-            Cache::tag(['group'])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['group'])->set($cache_name, json_encode($data));
         }
         
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = Lang::get('数据请求成功！');
         
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
     }
@@ -269,22 +275,17 @@ class Group extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = Lang::get('无数据！');
         
         $date      = !empty($param['date']) ? $param['date'] : '';
         $field     = !empty($param['field'])  ? $param['field']  : null;
         $timestamp = !empty($param['timestamp']) ? $param['timestamp'] : '';
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
+
         // 设置缓存名称
-        $cache_name = 'group?date='.$date.'&timestamp='.$timestamp;
+        $cache_name = json_encode(array_merge(['IAPI'=>'group'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
         
             // 日期格式参数
@@ -354,12 +355,12 @@ class Group extends Base
                 $data['page'][] = ['date'=>$dates,'count'=>$pages];
             }
             
-            Cache::tag(['group'])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['group'])->set($cache_name, json_encode($data));
         }
         
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = Lang::get('数据请求成功！');
         
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
     }

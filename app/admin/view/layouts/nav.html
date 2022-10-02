@@ -13,7 +13,7 @@
                 <!-- 图标 -->
                 <div id="lottie-beil"></div>
                 <!-- 点点 -->
-                <span v-show="update.is_show" class="bg-danger dots"></span>
+                <span v-show="update.show" class="bg-danger dots"></span>
             </a>
         </li>
         
@@ -143,7 +143,7 @@
     
     <teleport to="body">
     <div v-show="update.genuine" id="update-info" class="modal fade customize-progress" tabindex="-1" role="dialog" aria-labelledby="primary-header-modalLabel" style="display: none;" aria-hidden="true">
-        <div v-show="!update.is_show" class="modal-dialog">
+        <div v-show="!update.show" class="modal-dialog">
             <div class="modal-content modal-filled bg-success">
                 <div class="modal-body p-4">
                     <div class="text-center">
@@ -160,7 +160,7 @@
                 </div>
             </div>
         </div>
-        <div v-show="update.is_show" class="modal-dialog modal-lg">
+        <div v-show="update.show" class="modal-dialog modal-lg">
             <div class="modal-content">
                 
                 <div class="modal-body p-1 pt-3 pb-3 p-md-4">
@@ -219,10 +219,10 @@
                                         </table>
                                     </div>
                                 </div>
-                                <div v-if="!update.fulfill && update.is_show" class="flex-center mt-2">
+                                <div v-if="!update.fulfill && update.show" class="flex-center mt-2">
                                     <ul class="list-inline mb-0 wizard">
                                         <li class="next list-inline-item float-right">
-                                            <button v-on:click="getNewTables()" type="button" class="btn btn-info">开始更新</button>
+                                            <button v-on:click="startUpdate()" type="button" class="btn btn-info">开始更新</button>
                                         </li>
                                     </ul>
                                 </div>
@@ -248,7 +248,7 @@
                                             </thead>
                                             <tbody>
                                                 <tr v-for="(item, index) in update.notes" :key="index">
-                                                    <td>{{item.name || ''}}</td>
+                                                    <td v-html="item.name"></td>
                                                     <td>
                                                         <svg v-if="item.state == 'success'" t="1642523210900" class="icon" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1760" width="12" height="12"><path d="M483.84768 867.808C466.37568 885.792 441.73568 896 415.87968 896 390.05568 896 365.41568 885.792 347.94368 867.808L27.46368 547.552C-9.17632 508.864-9.17632 450.336 27.46368 411.648 44.26368 394.944 67.30368 385.088 91.68768 384.256 118.72768 383.008 144.93568 393.024 163.46368 411.648L415.87968 664 860.61568 219.552C878.31168 201.952 902.88768 192 928.58368 192 954.24768 192 978.82368 201.952 996.51968 219.552 1033.15968 258.208 1033.15968 316.704 996.51968 355.36L483.84768 867.808Z" p-id="1761" fill="#707070"></path></svg>
                                                         <span v-else-if="empty(item.state)">-</span>
@@ -258,7 +258,7 @@
                                                             刷新
                                                         </span>
                                                     </td>
-                                                    <td>{{item.des || ''}}</td>
+                                                    <td v-html="item.des"></td>
                                                     <td>
                                                         <span v-if="item.state == 'success'"><i class="mdi mdi-circle text-success"></i> 完成</span>
                                                         <span v-if="item.state == 'cache'"><i class="mdi mdi-circle text-info"></i> 等待中</span>

@@ -65,7 +65,7 @@ class Api extends Base
             else $msg = '数据请求成功！';
         }
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
     
     public function user(Request $request)
@@ -78,6 +78,6 @@ class Api extends Base
         
         if ($request->isGet()) $data = $this->user;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 }

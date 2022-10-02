@@ -11,7 +11,7 @@ class Placard extends Validate
     ];
     
     protected $message  =   [
-        'title.require' => '标题必须',
-        'name.max'      => '标题最多不能超过64个字符',
+        'title.require' => '公告标题不能是空的！',
+        'title.max'     => '公告的标题最多不能超过64个字符！',
     ];
 }

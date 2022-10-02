@@ -3,7 +3,7 @@
     const app = Vue.createApp({
         data() {
             return {
-                url      : inisHelper.get.query.string('url'),
+                url      : utils.get.query.string('url'),
                 account  : null,
                 password : null,
                 is_login : false,   // 是否登录中
@@ -20,13 +20,13 @@
             // 初始化本地配置
             initData(){
                 // 初始化本地配置
-                if (inisHelper.has.storage('config')) {
-                    const config = inisHelper.get.storage('config')
+                if (utils.has.storage('config')) {
+                    const config = utils.get.storage('config')
                     const body   = document.querySelector('body')
                     // 夜间模式
                     if (config.mode.theme == 'dark') {
                         body.setAttribute('data-theme-mode', 'dark')
-                        inisHelper.set.links('/admin/css/app-dark.min.css', 'link')
+                        utils.set.links('/admin/css/app-dark.min.css', 'link')
                     } else {
                         const links = document.querySelectorAll('link[rel=stylesheet]')
                         links.forEach((item)=> {
@@ -38,49 +38,45 @@
             },
             btnLogin(){
                 
-                if (inisHelper.is.empty(this.account)) {
+                if (utils.is.empty(this.account)) {
                     
-                    t.NotificationApp.send(null, "请填写帐号！", "top-right", "rgba(0,0,0,0.2)", "warning");
+                    Tool.Notyf('请输入账号', 'warning')
                     
-                } else if (inisHelper.is.empty(this.password)) {
+                } else if (utils.is.empty(this.password)) {
                     
-                    t.NotificationApp.send(null, "请填写密码！", "top-right", "rgba(0,0,0,0.2)", "warning");
+                    Tool.Notyf('请输入密码', 'warning')
                     
                 } else {
                     
                     this.is_login = true
                     
-                    const params = inisHelper.stringfy({
+                    const params = utils.stringfy({
                         account : this.account,
                         password: this.password,
                     })
                     
-                    axios.post('/admin/comm/login', params).then((res) => {
+                    POST('/admin/comm/login', params).then(res => {
                         
-                        if (res.data.code == 200) {
+                        if (res.code == 200) {
                             
-                            t.NotificationApp.send(null, "登录成功！", "top-right", "rgba(0,0,0,0.2)", "success");
+                            Tool.Notyf('登录成功', 'success')
                             
                             setTimeout(() => {
                                 
-                                window.location.href = !inisHelper.is.empty(this.url) ? this.url : '/'
+                                window.location.href = !utils.is.empty(this.url) ? this.url : '/'
                                 
-                            }, 100);
+                            }, 500);
                             
-                        } else if (res.data.code == 403) {
-                            
-                            t.NotificationApp.send(null, res.data.msg, "top-right", "rgba(0,0,0,0.2)", "error");
-                            
-                        } else t.NotificationApp.send(null, res.data.msg, "top-right", "rgba(0,0,0,0.2)", "error");
+                        } else Tool.Notyf(res.msg, 'error')
                         
                         this.is_login = false
                     })
                 }
             },
             oneWord(){
-                axios.get('/api/file/words').then(res=>{
-                    if (res.data.code == 200) {
-                        const result = res.data.data
+                GET('/api/file/words').then(res => {
+                    if (res.code == 200) {
+                        const result = res.data
                         document.querySelector('.footer .one-word').append(result)
                     }
                 })

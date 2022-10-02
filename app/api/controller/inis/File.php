@@ -5,7 +5,7 @@ namespace app\api\controller\inis;
 
 use think\Request;
 use inis\utils\{Image};
-use think\facade\{Cache};
+use think\facade\{Cache, Lang};
 use app\model\mysql\{Options};
 
 class File extends Base
@@ -23,7 +23,7 @@ class File extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 存在的方法
@@ -36,7 +36,7 @@ class File extends Base
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -45,23 +45,25 @@ class File extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
+        // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = 'ok';
+        $msg    = lang('参数不存在！');
         $result = [];
         
-        $mode   = !empty($param['mode']) ? $param['mode'] : null;
+        // 存在的方法
+        $method = ['upload'];
         
-        if ($mode == 'upload') {
-            $result = $this->upload($param);
-            foreach ($result as $key => $val) $$key = $val;
-        }
-        
-        return $this->create($data, $msg, $code);
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -70,27 +72,25 @@ class File extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
-        if ($IID == 'read') $IID = 'reads';
-        
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 存在的方法
-        $method = ['random','words','info','reads','find','inWords'];
+        $method = ['all','random','words','info','read','find','inWords'];
         
         // 动态方法且方法存在
         if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -100,7 +100,7 @@ class File extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
         //
     }
@@ -111,7 +111,7 @@ class File extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
         //
     }
@@ -121,7 +121,12 @@ class File extends Base
     {
         $data  = [];
         $code  = 400;
-        $msg   = 'ok';
+        $msg   = lang('成功！');
+
+        // 判断有没有上传文件
+        if (empty($_FILES))                 return ['data'=>[],'code'=>400,'msg'=>lang('请提交文件！')];
+        if (empty($_FILES['file']))         return ['data'=>[],'code'=>400,'msg'=>lang('请提交文件！')];
+        if (empty($_FILES['file']['name'])) return ['data'=>[],'code'=>400,'msg'=>lang('请提交文件！')];
         
         // 取原文件名
         $name  = explode('.', $_FILES['file']['name']);
@@ -132,10 +137,10 @@ class File extends Base
             '.', '\\', '/', ':', '*', '`', '?', '<', '>', '%', '&', '$', '#', ' '
         ], '', implode('.', $name));
         
-        $time  = time();
+        $time  = uniqid();
         $upload= $this->tool->upload(
             'file',
-            ['storage', 'users/files/'.$this->user['data']->id.'/'.date("Y-m"), [$time]], 'one', 'file|fileExt:jpg,jpeg,png,gif,webp,svg,ico,zip,gz,mp3,mp4,avi|fileSize:20971520'
+            ['storage', 'users/files/'.request()->user->id.'/'.date("Y-m"), [$time]], 'one', 'file|fileExt:jpg,jpeg,png,gif,webp,svg,ico,zip,gz,mp3,mp4,avi|fileSize:20971520'
         );
         
         // 读取配置
@@ -175,7 +180,7 @@ class File extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
         $file = !empty($param['file']) ? $param['file'] : null;
         $json = (empty($param['json']) or $param['json'] == 'false') ? false : true;
@@ -213,7 +218,7 @@ class File extends Base
                 
             } else {
                 $code = 204;
-                $msg  = '不存在该文件或文件夹';
+                $msg  = lang('不存在该文件或文件夹！');
             }
             
         } else {
@@ -247,7 +252,7 @@ class File extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg   = lang('数据请求成功！');
         
         $file = !empty($param['file']) ? $param['file'] : null;
         
@@ -273,7 +278,7 @@ class File extends Base
             } else {
                 
                 $code = 204;
-                $msg  = '不存在该文件';
+                $msg  = lang('不存在该文件！');
             }
             
         } else if (!empty($list)) {
@@ -357,7 +362,7 @@ class File extends Base
         
         $data = ['path'=>$path,'info'=>$file_info];
         
-        $result = ['data'=>$data,'code'=>200,'msg'=>'ok'];
+        $result = ['data'=>$data,'code'=>200,'msg'=>lang('数据请求成功！')];
         
         return $result;
     }
@@ -374,7 +379,7 @@ class File extends Base
         
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
         if (!empty($param['file'])) {
             
@@ -406,11 +411,11 @@ class File extends Base
     }
     
     // 读取文件内容
-    public function reads($param)
+    public function read($param)
     {
         $data  = [];
         $code  = 400;
-        $msg   = 'ok';
+        $msg   = lang('数据请求成功！');
         
         $file_path = (empty($param['path']) or $param['path'] == '/') ? './' : $param['path'];
         
@@ -437,7 +442,7 @@ class File extends Base
     {
         $data  = [];
         $code  = 400;
-        $msg   = 'ok';
+        $msg   = lang('数据请求成功！');
         
         // 本地域名
         $local_domains = $this->tool->domain();
@@ -516,7 +521,7 @@ class File extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
         // 词库路径
         $path = 'storage/random/inWords/';
@@ -528,7 +533,7 @@ class File extends Base
         
         if (!$text) {
             $code = 500;
-            $msg  = '缺失文件，请在目录' . $path . '下新建 ' . $file . '.txt文件，并填充内容，每个一行';
+            $msg  = lang('文件系统缺失文件', [$path, $file]);
         }
         else if (empty($param['value'])) $data = explode(PHP_EOL, $text);
         else {

@@ -11,7 +11,7 @@
                         total: 0,
                         name:  [],
                         size:  [],
-                        color: ["#727cf5", "#0acf97", "#fa5c7c", "#ffbc00", "#2c8ef8", "#eef2f7", "#6c757d", "#313a46"],
+                        color: ['#727cf5', '#0acf97', '#fa5c7c', '#ffbc00', '#2c8ef8', '#eef2f7', '#6c757d', '#313a46'],
                     }
                 },
                 selectedCache: 0,       // 选中的缓存大小
@@ -31,10 +31,10 @@
             
             // 初始化
             initData(){
-                axios.post('/admin/home').then((res) => {
-                    if (res.data.code == 200) {
-                        this.count    = res.data.data.count
-                        this.populars = res.data.data.popular
+                POST('/admin/home').then(res => {
+                    if (res.code == 200) {
+                        this.count    = res.data.count
+                        this.populars = res.data.popular
                     }
                 })
                 this.visitChart()
@@ -43,11 +43,11 @@
             },
             
             getComments(){
-                axios.get('/admin/api/comments', {
+                GET('/admin/api/comments', {
                     params: {limit:10}
                 }).then(res=>{
-                    if (res.data.code == 200) {
-                        const result = res.data.data
+                    if (res.code == 200) {
+                        const result = res.data
                         this.comments= result
                     }
                 })
@@ -56,19 +56,19 @@
             // 获取运行缓存
             getRuntime(){
                 
-                const select = document.querySelectorAll(".checkbox-cache")
+                const select = document.querySelectorAll('.checkbox-cache')
                 for (let item of select) if (item.checked) item.checked = false
                 
-                axios.post('/admin/chart/SystemCache').then(res=>{
-                    if (res.data.code == 200) {
+                POST('/admin/chart/SystemCache').then(res=>{
+                    if (res.code == 200) {
                         
-                        let result = res.data.data
+                        let result = res.data
                         this.system.cache = {
                             data:  [],
                             total: 0,
                             name:  [],
                             size:  [],
-                            color: ["#727cf5", "#0acf97", "#fa5c7c", "#ffbc00", "#2c8ef8", "#eef2f7", "#6c757d", "#313a46"],
+                            color: ['#727cf5', '#0acf97', '#fa5c7c', '#ffbc00', '#2c8ef8', '#eef2f7', '#6c757d', '#313a46'],
                         }
                         this.selectedCache = 0
                         
@@ -127,13 +127,13 @@
                 const option = {
                     chart: {
                         height: 208,
-                        type: "donut"
+                        type: 'donut'
                     },
                     legend: {
                         show: !1
                     },
                     stroke: {
-                        colors: ["transparent"]
+                        colors: ['transparent']
                     },
                     tooltip: {
                         y: {
@@ -150,13 +150,13 @@
                                 width: 200
                             },
                             legend: {
-                                position: "bottom"
+                                position: 'bottom'
                             }
                         }
                     }]
                 };
                 
-                new ApexCharts(document.querySelector("#system-cache"), option).render()
+                new ApexCharts(document.querySelector('#system-cache'), option).render()
             },
             
             // 绘制访问图表
@@ -164,13 +164,13 @@
                 const option = {
                     chart: {
                         height: 257,
-                        type: "bar",
+                        type: 'bar',
                         stacked: !0
                     },
                     plotOptions: {
                         bar: {
                             horizontal: !1,
-                            columnWidth: "20%"
+                            columnWidth: '20%'
                         }
                     },
                     dataLabels: {
@@ -179,14 +179,14 @@
                     stroke: {
                         show: !0,
                         width: 2,
-                        colors: ["transparent"]
+                        colors: ['transparent']
                     },
                     series: [{
-                        name: "Actual",
+                        name: 'Actual',
                         data: [65, 59, 80, 81, 56, 89, 40, 32, 65, 59, 80, 81]
                     },
                     {
-                        name: "Projection",
+                        name: 'Projection',
                         data: [89, 40, 32, 65, 59, 80, 81, 56, 89, 40, 65, 59]
                     }],
                     zoom: {
@@ -195,9 +195,9 @@
                     legend: {
                         show: !1
                     },
-                    colors: ["#727cf5", "#e3eaef"],
+                    colors: ['#727cf5', '#e3eaef'],
                     xaxis: {
-                        categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         axisBorder: {
                             show: !1
                         }
@@ -205,7 +205,7 @@
                     yaxis: {
                         labels: {
                             formatter: function(item) {
-                                return item + "k"
+                                return item + 'k'
                             },
                             offsetX: -15
                         }
@@ -216,27 +216,27 @@
                     tooltip: {
                         y: {
                             formatter: function(item) {
-                                return "$" + item + "k"
+                                return '$' + item + 'k'
                             }
                         }
                     }
                 }
-                new ApexCharts(document.querySelector("#high-performing-product"), option).render();
+                new ApexCharts(document.querySelector('#high-performing-product'), option).render();
             },
             
             // 计算大小
             computedBytes(value = 0){
-                return inisHelper.format.bytes(value)
+                return utils.format.bytes(value)
             },
             
             // 计算已选中的日志大小
             computedSelected(){
                 
                 let [total,check] = [0,[]]
-                const select = document.querySelectorAll(".checkbox-cache")
+                const select = document.querySelectorAll('.checkbox-cache')
                 
                 for (let item of select) {
-                    if (item.checked) check.push(parseInt(item.getAttribute("sizes")))
+                    if (item.checked) check.push(parseInt(item.getAttribute('sizes')))
                 }
                 
                 check.forEach(item=>total+=item)
@@ -247,22 +247,22 @@
             clearCache() {
                 
                 let check    = []
-                const select = document.querySelectorAll(".checkbox-cache")
+                const select = document.querySelectorAll('.checkbox-cache')
                 
                 for (let item of select) {
-                    if (item.checked) check.push(item.getAttribute("name"))
+                    if (item.checked) check.push(item.getAttribute('name'))
                 }
                 
-                if (inisHelper.is.empty(check)) $.NotificationApp.send(null, "未选择清理选项", "top-right", "rgba(0,0,0,0.2)", "warning");
+                if (utils.is.empty(check)) Tool.Notyf('未选择清理选项', 'warning')
                 else {
                     
                     this.load.cache = true
                     
                     let params = new FormData
-                    params.append("file_name", check.join() || '')
+                    params.append('file_name', check.join() || '')
                     
-                    axios.post('/admin/handle/clearCache', params).then(res=>{
-                        if (res.data.code == 200) {
+                    POST('/admin/handle/clearCache', params).then(res=>{
+                        if (res.code == 200) {
                             this.getRuntime()
                         }
                         this.load.cache = false
@@ -275,19 +275,19 @@
                 
                 let date = null
                 
-                if (inisHelper.is.empty(string)) date = new Date;
+                if (utils.is.empty(string)) date = new Date;
                 else {
-                    let array = string.split("-");
+                    let array = string.split('-');
                     date = new Date(array[0], parseInt(array[1] - 1), array[2]);
                 }
                 
-                return ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][date.getDay()];
+                return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
             },
             
             // 时间戳转人性化时间
             natureTime: (value, bool = false) => {
                 
-                return (bool) ? inisHelper.time.nature(value) : inisHelper.time.nature(inisHelper.date.to.time(value))
+                return (bool) ? utils.time.nature(value) : utils.time.nature(utils.date.to.time(value))
             },
         },
     }).mount('#home')

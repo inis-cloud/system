@@ -63,7 +63,7 @@ class Handle extends Base
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
             $options->save();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -98,7 +98,7 @@ class Handle extends Base
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
             $options->save();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -129,7 +129,7 @@ class Handle extends Base
                 $msg  = '刷新Token 失败！';
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -154,7 +154,7 @@ class Handle extends Base
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
             $options->save();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -187,7 +187,7 @@ class Handle extends Base
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
             $options->save();
             
-            return $this->create($options->opt->domain, $msg, $code);
+            return $this->json($options->opt->domain, $msg, $code);
         }
     }
     
@@ -222,7 +222,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag(['article','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -257,7 +257,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag(['article','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -292,7 +292,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag(['page','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -327,7 +327,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('article-sort')->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -359,7 +359,7 @@ class Handle extends Base
             }
             $users->save();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -394,7 +394,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('links')->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -429,7 +429,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('links-sort')->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -464,7 +464,7 @@ class Handle extends Base
             // 清除缓存
             Cache::tag('tag')->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -489,7 +489,7 @@ class Handle extends Base
             $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
             $options->save();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -514,7 +514,7 @@ class Handle extends Base
             $mode  = (empty($param['mode'])) ? '' : $param['mode'];
             
             // 取原文件名
-            $name  = explode('.', $_FILES['file']['name']);
+            $name  = explode('.', $_FILES['file']['name'] ?? '');
             // 去除后缀
             $pop   = array_pop($name);
             // 过滤非法字符 - 数组转字符串
@@ -631,7 +631,7 @@ class Handle extends Base
                 $data = (new Tool)->MethodsALL($class_name);
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -663,7 +663,7 @@ class Handle extends Base
             }
             $music->save();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -681,7 +681,7 @@ class Handle extends Base
             $param = $request->param();
             
             // 获取需要被删除的缓存
-            $file_name = array_filter(explode(',', $param['file_name']));
+            $file_name = array_filter(explode(',', $param['file_name'] ?? ''));
             
             // 处理格式 - 获取被删除的文件路径
             foreach ($file_name as $value) {
@@ -698,7 +698,7 @@ class Handle extends Base
                 if ($value == 'session') Session::clear();
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -769,7 +769,7 @@ class Handle extends Base
                 $data = $param;
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -787,7 +787,7 @@ class Handle extends Base
             $param = $request->param();
             
             // 取原文件名
-            $name  = explode('.', $_FILES['file']['name']);
+            $name  = explode('.', $_FILES['file']['name'] ?? '');
             // 去除后缀
             array_pop($name);
             // 过滤非法字符 - 数组转字符串
@@ -820,7 +820,7 @@ class Handle extends Base
                 Cache::tag(['article','group'])->clear();
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -838,7 +838,7 @@ class Handle extends Base
             $param = $request->param();
             
             // 取原文件名
-            $name  = explode('.', $_FILES['file']['name']);
+            $name  = explode('.', $_FILES['file']['name'] ?? '');
             // 去除后缀
             array_pop($name);
             // 过滤非法字符 - 数组转字符串
@@ -871,7 +871,7 @@ class Handle extends Base
                 Cache::tag(['page','group'])->clear();
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -889,7 +889,7 @@ class Handle extends Base
             $param = $request->param();
             
             // 取原文件名
-            $name  = explode('.', $_FILES['file']['name']);
+            $name  = explode('.', $_FILES['file']['name'] ?? '');
             // 去除后缀
             array_pop($name);
             // 过滤非法字符 - 数组转字符串
@@ -915,7 +915,7 @@ class Handle extends Base
                 $msg  = '读取完成';
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     

@@ -28,39 +28,37 @@
                 // 数据加载动画
                 this.is_load = is_load
                 
-                const params = inisHelper.stringfy({
+                POST('/admin/ManageArticleSort', {
                     id, page, limit: 8
-                })
-                
-                axios.post('/admin/ManageArticleSort', params).then((res) => {
-                    if(res.data.code == 200){
+                }).then(res => {
+                    if (res.code == 200) {
                         
                         // 更新数据
-                        this.article_sort      = res.data.data
+                        this.article_sort      = res.data
                         
                         // 设置显示数据
-                        this.article_sort.sort.data.forEach((item)=>{
+                        this.article_sort.sort.data.forEach(item => {
                             if (item.is_show == 1) this.is_show.push(item.id)
                         })
                         
                         // 更新数据
-                        if(inisHelper.is.empty(res.data.data.edit_sort)) this.edit_sort = {name:'',description:'',head_img:''}
+                        if (utils.is.empty(res.data.edit_sort)) this.edit_sort = {name:'',description:'',head_img:''}
                         else {
-                            this.edit_sort    = res.data.data.edit_sort
-                            if (!inisHelper.is.empty(this.edit_sort.opt)) {
-                                if (!inisHelper.is.empty(this.edit_sort.opt.head_img)) this.edit_sort.head_img = this.edit_sort.opt.head_img
+                            this.edit_sort    = res.data.edit_sort
+                            if (!utils.is.empty(this.edit_sort.opt)) {
+                                if (!utils.is.empty(this.edit_sort.opt.head_img)) this.edit_sort.head_img = this.edit_sort.opt.head_img
                             }
                         }
                         
                         // 是否显示分页
-                        if(inisHelper.is.empty(this.article_sort.sort.data) || this.article_sort.sort.page == 1) this.is_page_show = false
+                        if (utils.is.empty(this.article_sort.sort.data) || this.article_sort.sort.page == 1) this.is_page_show = false
                         else this.is_page_show = true
                         
                         // 更新页码
                         this.page              = page
                         
                         // 页码列表
-                        this.page_list         = inisHelper.create.paging(page, this.article_sort.sort.page, 5)
+                        this.page_list         = utils.create.paging(page, this.article_sort.sort.page, 5)
                         
                         // 数据加载动画
                         this.is_load           = false
@@ -73,27 +71,21 @@
             // 保存数据
             btnSave(id = ''){
                 
-                if (inisHelper.is.empty(this.edit_sort.name)) {
-                    $.NotificationApp.send(null, "请填写分类名称！", "top-right", "rgba(0,0,0,0.2)", "warning");
-                } else {
+                if (utils.is.empty(this.edit_sort.name)) Tool.Notyf('请填写分类名称！', 'warning')
+                else {
                     
-                    $.NotificationApp.send(null, "正在验证 ... ...", "top-right", "rgba(0,0,0,0.2)", "info");
+                    Tool.Notyf('正在验证 ...')
                     
                     // 数据加载动画
                     this.is_load = true
                     
-                    let params = new FormData
-                    params.append('id', id || '')
-                    params.append('sort_name', this.edit_sort.name || '')
-                    params.append('description', this.edit_sort.description || '')
-                    params.append('opt[head_img]', this.edit_sort.head_img || '')
-                    
-                    axios.post('/admin/method/SaveArticleSort', params).then((res) => {
-                        if(res.data.code == 200){
-                            $.NotificationApp.send(null, "保存成功！", "top-right", "rgba(0,0,0,0.2)", "success");
-                        }else{
-                            $.NotificationApp.send(null, res.data.msg, "top-right", "rgba(0,0,0,0.2)", "error");
-                        }
+                    POST('/admin/method/SaveArticleSort', {
+                        id, sort_name: this.edit_sort.name,
+                        description: this.edit_sort.description,
+                        opt: {head_img: this.edit_sort.head_img}
+                    }).then(res => {
+                        if (res.code == 200) Tool.Notyf('保存成功！', 'success')
+                        else Tool.Notyf(res.msg, 'error')
                         // 刷新数据
                         this.initData()
                     })
@@ -101,22 +93,14 @@
             },
             
             // 删除数据
-            btnDelete(id){
-                
-                id = id || null
+            btnDelete(id = null){
                 
                 // 数据加载动画
                 this.is_load = true
                 
-                let params = new FormData()
-                params.append('id', id || '')
-                
-                axios.post('/admin/method/DeleteArticleSort', params).then((res) => {
-                    if(res.data.code == 200){
-                        $.NotificationApp.send(null, "删除成功！", "top-right", "rgba(0,0,0,0.2)", "success");
-                    }else{
-                        $.NotificationApp.send(null, res.data.msg, "top-right", "rgba(0,0,0,0.2)", "error");
-                    }
+                POST('/admin/method/DeleteArticleSort', { id }).then(res => {
+                    if (res.code == 200) Tool.Notyf('删除成功！', 'success')
+                    else Tool.Notyf(res.msg, 'error')
                     // 刷新数据
                     this.initData()
                 })
@@ -125,23 +109,16 @@
             // 是否显示
             isShow(id = ''){
                 
-                let [arr, status] = [this.is_show, 0]
+                let [array, status] = [this.is_show, 0]
                 
                 // 状态取反
-                if(inisHelper.in.array(id,arr)) status = 0
-                else if(!inisHelper.in.array(id,arr)) status = 1
+                status = utils.in.array(id, array) ? 0 : 1
                 
-                let params = new FormData
-                params.append('id',id || '')
-                params.append('status',status || '')
-                
-                axios.post('/admin/handle/SetArticleSortShow', params)
+                POST('/admin/handle/SetArticleSortShow', { id, status })
             },
             
             // 触发上传事件
-            clickUpload: () => {
-                document.querySelector("#input-file").click()
-            },
+            clickUpload: () => document.querySelector('#input-file').click(),
             
             // 上传头像
             upload(event){
@@ -155,19 +132,18 @@
                 name = name.split('.')
                 const warning = ['php','js','htm','html','xml','json','bat','vb','exe']
                 
-                if (file.size > 5 * 1024 * 1024) $.NotificationApp.send(null, "上传文件不得大于5MB！", "top-right", "rgba(0,0,0,0.2)", "warning");
-                else if (inisHelper.in.array(name.pop(), warning)){
-                    $.NotificationApp.send(null, "请不要尝试提交可执行程序，因为你不会成功！", "top-right", "rgba(0,0,0,0.2)", "error");
-                } else {
+                if (file.size > 5 * 1024 * 1024)              Tool.Notyf('上传文件不得大于5MB！', 'warning')
+                else if (utils.in.array(name.pop(), warning)) Tool.Notyf('请不要尝试提交可执行程序，因为你不会成功！', 'error')
+                else {
                     
-                    $.NotificationApp.send(null, "正在上传 ...", "top-right", "rgba(0,0,0,0.2)", "info");
+                    Tool.Notyf('正在上传 ...')
                     
                     let params = new FormData
-                    params.append("file", file || '')
-                    params.append("mode", 'file')
+                    params.append('file', file || '')
+                    params.append('mode', 'file')
                     
                     const config = {
-                        headers: { "Content-Type": "multipart/form-data" },
+                        headers: { 'Content-Type': 'multipart/form-data' },
                         onUploadProgress: (speed) => {
                             if (speed.lengthComputable) {
                                 let ratio = speed.loaded / speed.total;
@@ -177,14 +153,14 @@
                         }
                     }
                     
-                    axios.post("/admin/handle/upload", params, config).then((res) => {
-                        if(res.data.code == 200){
+                    axios.post('/admin/handle/upload', params, config).then(res => {
+                        if (res.data.code == 200) {
                             self.speed = 1
                             this.edit_sort.head_img = res.data.data
-                            $.NotificationApp.send(null, "上传成功！", "top-right", "rgba(0,0,0,0.2)", "success");
+                            Tool.Notyf('上传成功！', 'success')
                         } else {
                             self.speed = 0
-                            $.NotificationApp.send(null, res.data.msg, "top-right", "rgba(0,0,0,0.2)", "error");
+                            Tool.Notyf(res.data.msg, 'error')
                         }
                     })
                     
@@ -199,7 +175,7 @@
                 },
                 set:function(value){
                     value.sort.data.forEach(item=>{
-                        if (inisHelper.is.empty(item.opt)) item.opt = {"head_img":""}
+                        if (utils.is.empty(item.opt)) item.opt = {'head_img':''}
                     })
                 }
             }

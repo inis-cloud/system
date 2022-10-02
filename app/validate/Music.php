@@ -12,8 +12,8 @@ class Music extends Validate
     ];
     
     protected $message  =   [
-        'title.max'     => '标题最多不能超过64个字符',
-        'url.require'   => '链接必须',
-        'url.url'       => '链接格式不正确',
+        'title.max'     => '标题最多不能超过64个字符！',
+        'url.require'   => '请提交歌单分享地址！',
+        'url.url'       => '歌单地址格式不正确！',
     ];
 }

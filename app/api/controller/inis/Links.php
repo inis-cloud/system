@@ -4,8 +4,8 @@ declare (strict_types = 1);
 namespace app\api\controller\inis;
 
 use think\Request;
-use think\facade\{Cache};
-use app\model\mysql\{Links as LinksModel};
+use think\facade\{Cache, Lang};
+use app\model\mysql\{Links as LinksModel, LinksSort};
 
 class Links extends Base
 {
@@ -22,7 +22,7 @@ class Links extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 存在的方法
@@ -35,7 +35,7 @@ class Links extends Base
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -44,30 +44,28 @@ class Links extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
         // 获取请求参数
         $param  = $request->param();
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
-        
+
         // 存在的方法
-        $method = ['saves','remove'];
-        
-        $mode   = !empty($param['mode']) ? $param['mode']  : 'saves';
-        
+        $method = ['save','remove','apply'];
+
         // 动态方法且方法存在
-        if (in_array($mode, $method)) $result = $this->$mode($param);
+        if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
         // 清除缓存
         Cache::tag('links')->clear();
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -76,25 +74,25 @@ class Links extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 获取请求参数
         $param = $request->param();
-        
+
         // 存在的方法
-        $method = ['sql'];
+        $method = ['sql','one','all'];
         
         // 动态方法且方法存在
         if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -104,9 +102,28 @@ class Links extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
-        //
+        // 获取请求参数
+        $param  = $request->param();
+        
+        $data   = [];
+        $code   = 400;
+        $msg    = lang('参数不存在！');
+        $result = [];
+
+        // 存在的方法
+        $method = ['save'];
+
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        // 清除缓存
+        Cache::tag('links')->clear();
+        
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -115,9 +132,28 @@ class Links extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
-        //
+        // 获取请求参数
+        $param  = $request->param();
+        
+        $data   = [];
+        $code   = 400;
+        $msg    = lang('参数不存在！');
+        $result = [];
+
+        // 存在的方法
+        $method = ['remove'];
+
+        // 动态方法且方法存在
+        if (in_array($IID, $method)) $result = $this->$IID($param);
+        // 动态返回结果
+        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
+        
+        // 清除缓存
+        Cache::tag('links')->clear();
+        
+        return $this->json($data, $msg, $code);
     }
     
     // 获取一条数据
@@ -125,29 +161,24 @@ class Links extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据';
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        $msg  = lang('无数据！');
         
         // 设置缓存名称
-        $cache_name = 'links?id=' . (is_array($param['id']) ? implode($param['id']) : $param['id']);
+        $cache_name = json_encode(array_merge(['IAPI'=>'links'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             // 获取数据库数据
             $data = LinksModel::ExpandAll($param['id']);
-            Cache::tag(['links',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['links',$cache_name])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
@@ -157,16 +188,11 @@ class Links extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = '无数据';
+        $msg  = lang('无数据！');
         
         if (empty($param['page']))  $param['page']  = 1;
         if (empty($param['limit'])) $param['limit'] = 5;
         if (empty($param['order'])) $param['order'] = 'create_time asc';
-        
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         
         $opt = [
             'page'   =>  (int)$param['page'], 
@@ -175,57 +201,84 @@ class Links extends Base
         ];
         
         // 设置缓存名称
-        $cache_name = 'links?page='.$param['page'].'&limit='.$param['limit'].'&order='.$param['order'];
+        $cache_name = json_encode(array_merge(['IAPI'=>'links'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             
             // 获取数据库数据
             $data = LinksModel::ExpandAll(null, $opt);
-            Cache::tag(['links'])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['links'])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
-        $msg  = '无数据！';
+        $msg  = lang('无数据！');
         // 逆向思维，节省代码行数
         if (empty($data)) $code = 204;
-        else $msg = '数据请求成功！';
+        else $msg = lang('成功！');
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
     
     // 新增或者修改数据
-    public function saves($param)
+    public function save($param)
     {
         $data   = [];
         $code   = 400;
-        $msg    = 'ok';
+        $msg    = lang('成功！');
         
         // 允许用户提交并存储的字段
-        $obtain = ['name','url','head_img','description','sort_id','is_show'];
+        $obtain = ['name','url','head_img','description','sort_id','is_show','opt','longtext'];
         
-        if (empty($param['id'])) $links = new LinksModel;
-        else $links = LinksModel::find((int)$param['id']);
+        if (empty($param['id'])) $item = new LinksModel;
+        else {
+            $item = LinksModel::findOrEmpty((int)$param['id']);
+            if ($item->isEmpty()) return ['data'=>[],'code'=>204,'msg'=>lang('无数据！')];
+        }
         
         // 解决 TP6 抢占 name 参数的问题
         if (!empty($param['named'])) $param['name'] = $param['named'];
+
+        // 字符对象
+        if (!empty($param['opt'])) {
+            // 校验字符串对象合法性
+            $param['opt'] = is_string($param['opt']) ? $this->helper->stringJson($param['opt']) : $param['opt'];
+            // 不编码中文
+            $param['opt'] = json_encode($param['opt'], JSON_UNESCAPED_UNICODE);
+        }
         
         // 存储数据
         foreach ($param as $key => $val) {
             // 判断字段是否允许存储，防提权
-            if (in_array($key, $obtain)) $links->$key = $val;
+            if (in_array($key, $obtain)) $item->$key = $val;
         }
         
         // 权限判断
-        if (!in_array($this->user['data']->level, ['admin'])) $msg = '无权限';
-        else if ($this->user['data']->status != 1) $msg = '账号被禁用';
+        if (!in_array(request()->user->level, ['admin'])) $msg = lang('无权限！');
+        else if (request()->user->status != 1) $msg = lang('账号被禁用！');
         else {
             $code = 200;
-            $links->save();
+            $item->save();
+            $data = (int)$item->id;
         }
         
         return ['data'=>$data,'msg'=>$msg,'code'=>$code];
+    }
+
+    // 申请友链
+    public function apply($param)
+    {
+        $data   = ['申请友链'];
+        $code   = 400;
+        $msg    = lang('成功！');
+
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+        
+        // // 允许用户提交并存储的字段
+        // $obtain = ['name','url','head_img','description','sort_id','is_show'];
+
+        // $data   = LinksSort::select();
     }
     
     // 删除数据
@@ -233,18 +286,18 @@ class Links extends Base
     {
         $data = [];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = lang('成功！');
         
         $id = !empty($param['id']) ? $param['id']  : null;
         
-        if (empty($id)) $msg = '请提交 id';
+        if (empty($id)) $msg = lang('请提交 id！');
         else {
             
             $id = array_filter(explode(',', $id));
 
             // 权限判断
-            if (!in_array($this->user['data']->level, ['admin'])) $msg = '无权限';
-            else if ($this->user['data']->status != 1) $msg = '账号被禁用';
+            if (!in_array(request()->user->level, ['admin'])) $msg = lang('无权限！');
+            else if (request()->user->status != 1) $msg = lang('账号被禁用！');
             else {
                 $code = 200;
                 LinksModel::destroy($id);
@@ -257,65 +310,32 @@ class Links extends Base
     // SQL接口
     public function sql($param)
     {
-        $where   = (empty($param['where']))   ? '' : $param['where'];
-        $whereOr = (empty($param['whereOr'])) ? '' : $param['whereOr'];
+        $where   = (empty($param['where']))   ? [] : $param['where'];
+        $whereOr = (empty($param['whereOr'])) ? [] : $param['whereOr'];
         $page    = (!empty($param['page']))   ? $param['page']  : 1;
         $limit   = (!empty($param['limit']))  ? $param['limit'] : 5;
         $order   = (!empty($param['order']))  ? $param['order'] : 'create_time desc';
         
-        // 是否开启了缓存
-        $api_cache = $this->config['api_cache'];
-        // 是否获取缓存
-        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
-        
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = lang('成功！');
         
         $opt  = [
             'page' => $page,
             'limit'=> $limit,
             'order'=> $order,
-            'where'=> [],
-            'whereOr'=> [],
+            'where'=> $where,
+            'whereOr'=> $whereOr,
         ];
         
         // 设置缓存名称
-        $cache_name = 'links/sql?page='.$page.'&limit='.$limit.'&order='.$order.'&where='.$where.'&whereOr='.$whereOr;
-        
-        if (!empty($where)) {
-            
-            if (strstr($where, ';')) {      // 以 ; 号隔开参数
-                
-                $where = array_filter(explode(';', $where));
-                
-                foreach ($where as $val) {
-                    
-                    if (strstr($val, ',')) {
-                        $item = explode(',',$val);
-                        array_push($opt['where'],[$item[0],$item[1],$item[2]]);
-                    } else {
-                        $item = explode('=',$val);
-                        array_push($opt['where'],[$item[0],'=',$item[1]]);
-                    }
-                }
-                
-            } else $opt['where'] = $where;  // 原生写法，以 and 隔开参数
-        }
-        
-        if (!empty($whereOr)) {
-            $whereOr = array_filter(explode(';', $whereOr));
-            foreach ($whereOr as $val) {
-                $item = explode(',',$val);
-                $opt['whereOr'][] = [$item[0],$item[1],$item[2]];
-            }
-        }
+        $cache_name = json_encode(array_merge(['IAPI'=>'links/sql'], $param));
         
         // 检查是否存在请求的缓存数据
-        if (Cache::has($cache_name) and $api_cache and $cache) $data = json_decode(Cache::get($cache_name));
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
         else {
             $data = LinksModel::ExpandAll(null, $opt);
-            Cache::tag(['links',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['links',$cache_name])->set($cache_name, json_encode($data));
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];

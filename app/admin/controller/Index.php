@@ -46,9 +46,9 @@ class Index extends Base
                 
                 $user = Users::field(['nickname','description','email','address_url','head_img'])->find($data['users_id'])->toArray();
                 
-                $tag  = Tag::select(explode("|", $data['tag_id']));
+                $tag  = Tag::select(explode("|", $data['tag_id'] ?? ''));
                 
-                $sort = ArticleSort::select(explode("|", $data['sort_id']));
+                $sort = ArticleSort::select(explode("|", $data['sort_id'] ?? ''));
                 
                 foreach ($tag  as $key => $val) $value['tag'][$key]   = $val['name'];
                 foreach ($sort as $key => $val) $value['sort'][$key]  = $val['name'];
@@ -66,7 +66,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
 
         return View::fetch('/pages/home');
@@ -139,7 +139,7 @@ class Index extends Base
             
             $data['users'] = $users;
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/manage-users');
@@ -200,7 +200,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/system');
@@ -227,7 +227,7 @@ class Index extends Base
             $code  = 200;
             $msg   = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
 
         return View::fetch('/pages/write-article');
@@ -314,7 +314,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/manage-article');
@@ -336,7 +336,7 @@ class Index extends Base
             
             if (!empty($param['id'])) $data = Page::ExpandAll($param['id'], ['where'=>[]]);
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/write-page');
@@ -375,7 +375,7 @@ class Index extends Base
             
             $data['page'] = $page;
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/manage-page');
@@ -417,7 +417,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/manage-article-sort');
@@ -472,7 +472,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/manage-links');
@@ -511,7 +511,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         return View::fetch('/pages/manage-tag');
     }
@@ -548,7 +548,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/manage-links-sort');
@@ -587,7 +587,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/manage-banner');
@@ -632,7 +632,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/manage-comments');
@@ -795,7 +795,7 @@ class Index extends Base
             
             $data = ['email_serve'=>$email_serve,'system_config'=>$system_config];
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -845,7 +845,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         return View::fetch('/pages/manage-music');
     }
@@ -880,7 +880,7 @@ class Index extends Base
             
             $data  = ['info'=>$options,'users'=>$users];
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -923,7 +923,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/manage-placard');
@@ -966,7 +966,7 @@ class Index extends Base
             
             $data = $options;
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1001,7 +1001,7 @@ class Index extends Base
             $start = ($param['page'] * $param['limit']) - $param['limit'];
             $data['data'] = array_slice($internal, $start, $param['limit']);
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/api-store');
@@ -1043,7 +1043,7 @@ class Index extends Base
                 return ['id'=>$apis['id'],'version'=>$apis['version']];
             }, $apis);
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1070,10 +1070,10 @@ class Index extends Base
         // 文章已用资源计算
         $article  = Article::field(['img_src','content'])->select();
         foreach ($article as $key => $val) {
-            $useds = array_merge($useds, [str_replace(['https://','http://','//',$this->helper->domain() . '/'], '', $val['img_src'])]);
+            $useds = array_merge($useds, [str_replace(['https://','http://','//',$this->helper->domain() . '/'], '', $val['img_src'] ?? '')]);
             // 正规提取MarkDowm图片资源
             preg_match_all($markdowm_assets_url_rule, $val['content'], $array);
-            if (!empty($array[1])) foreach ($array[1] as $k => $v)   $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $v)]);
+            if (!empty($array[1])) foreach ($array[1] as $k => $v)   $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $v ?? '')]);
             // 正规提取字符串中的图片资源
             preg_match_all($string_assets_url_rule, $val['content'], $images);
             if (!empty($images[1])) foreach ($images[1] as $k => $v) $useds = array_merge($useds, [str_replace(['https://','http://','//', $domain . '/'], '', $v)]);
@@ -1084,7 +1084,7 @@ class Index extends Base
         foreach ($page as $key => $val) {
             // 正规提取MarkDowm图片资源
             preg_match_all($markdowm_assets_url_rule, $val['content'], $array);
-            if (!empty($array[1])) foreach ($array[1] as $k => $v)   $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $v)]);
+            if (!empty($array[1])) foreach ($array[1] as $k => $v)   $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $v ?? '')]);
             // 正规提取字符串中的图片资源
             preg_match_all($string_assets_url_rule, $val['content'], $images);
             if (!empty($images[1])) foreach ($images[1] as $k => $v) $useds = array_merge($useds, [str_replace(['https://','http://','//', $domain . '/'], '', $v)]);
@@ -1092,15 +1092,15 @@ class Index extends Base
         
         // 轮播已用资源计算
         $banner     = Banner::field(['img'])->select();
-        foreach ($banner as $key => $val) $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $val['img'])]);
+        foreach ($banner as $key => $val) $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $val['img'] ?? '')]);
         
         // 用户已用资源计算
         $users      = Users::field(['head_img'])->select();
-        foreach ($users as $key => $val) $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $val['head_img'])]);
+        foreach ($users as $key => $val) $useds = array_merge($useds, [str_replace(['https://','http://','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $val['head_img'] ?? '')]);
         
         // 站点已用资源计算
         $site_image = Options::where(['keys'=>'site'])->find();
-        $useds[] = str_replace(['https:','http:','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $site_image->opt->image);
+        $useds[] = str_replace(['https:','http:','//', str_replace(['https:','http:','//'], '', $domain) . '/'], '', $site_image->opt->image ?? '');
         
         // 统计出本地已用资源
         foreach ($useds as $key => $val) if (substr($val, 0, 7) == 'storage') $used[] = $val;
@@ -1129,7 +1129,7 @@ class Index extends Base
             
             $data['image'] = $this->trash();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1169,7 +1169,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/manage-search');
@@ -1207,7 +1207,7 @@ class Index extends Base
             $code = 200;
             $msg  = 'ok';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
         
         return View::fetch('/pages/log');
@@ -1252,6 +1252,12 @@ class Index extends Base
         })->where($config['where'])->order($config['order'])->page($config['page'])->limit($config['limit'])->select();
 
         return $data;
+    }
+
+    // 聊天
+    public function chat(Request $request)
+    {
+        return View::fetch('/pages/chat');
     }
 
     // END

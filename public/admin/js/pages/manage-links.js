@@ -29,35 +29,33 @@
                 // 数据加载动画
                 this.is_load = is_load
                 
-                if(!inisHelper.is.empty(id)) this.title = '修改友链'
+                if(!utils.is.empty(id)) this.title = '修改友链'
                 else this.title = '新增友链'
                 
-                const params = inisHelper.stringfy({
+                POST('/admin/ManageLinks', {
                     id, page, limit: 8
-                })
-                
-                axios.post('/admin/ManageLinks', params).then((res) => {
-                    if (res.data.code == 200) {
+                }).then(res => {
+                    if (res.code == 200) {
                         
                         // 更新数据
-                        this.links             = res.data.data
-                        this.links_data        = res.data.data.links
+                        this.links             = res.data
+                        this.links_data        = res.data.links
                         
                         // 更新数据
-                        if (inisHelper.is.empty(res.data.data.edit)) {
+                        if (utils.is.empty(res.data.edit)) {
                             this.edit = {name:'',description:'',url:'',head_img:'',sort_id:''}
                             // 格式化分组数据
                             this.links.sort.forEach((item)=>{
                                 item.text = item.name
                             })
                         } else {
-                            this.edit     = res.data.data.edit
+                            this.edit     = res.data.edit
                             // 格式化分组数据
                             this.links.sort.forEach((item)=>{
                                 item.text = item.name
                                 if (this.edit.sort_id.id == item.id) item.selected = true
                             })
-                            $("#links-sort").empty()
+                            $('#links-sort').empty()
                         }
                         
                         // 设置显示
@@ -66,17 +64,17 @@
                         })
                         
                         // 设置分组
-                        $("#links-sort").select2({data:this.links.sort})
+                        $('#links-sort').select2({data:this.links.sort})
                         
                         // 是否显示分页
-                        if(inisHelper.is.empty(this.links_data.data) || this.links_data.page == 1) this.is_page_show = false
+                        if(utils.is.empty(this.links_data.data) || this.links_data.page == 1) this.is_page_show = false
                         else this.is_page_show = true
                         
                         // 更新页码
                         this.page              = page
                         
                         // 页码列表
-                        this.page_list         = inisHelper.create.paging(page, this.links_data.page, 5)
+                        this.page_list         = utils.create.paging(page, this.links_data.page, 5)
                         
                         // 数据加载动画
                         this.is_load           = false
@@ -89,29 +87,24 @@
             // 保存数据
             btnSave(id = ''){
                 
-                let sort_id = $("#links-sort").select2("data")[0].id
+                let sort_id = $('#links-sort').select2('data')[0].id
                 
-                if(inisHelper.is.empty(this.edit.name)){
-                    $.NotificationApp.send(null, "请填写友链名称！", "top-right", "rgba(0,0,0,0.2)", "warning");
-                }else{
+                if (utils.is.empty(this.edit.name)) Tool.Notyf('请填写友链名称！', 'warning')
+                else {
                     
-                    $.NotificationApp.send(null, "正在验证 ... ...", "top-right", "rgba(0,0,0,0.2)", "info");
+                    Tool.Notyf('正在验证 ...')
                     
                     // 数据加载动画
                     this.is_load = true
                     
-                    let params = new FormData
-                    params.append('id',id || '')
-                    params.append('link_name',this.edit.name || '')
-                    params.append('description',this.edit.description || '')
-                    params.append('url',this.edit.url || '')
-                    params.append('head_img',this.edit.head_img || '')
-                    params.append('sort_id',sort_id || '')
-                    
-                    axios.post('/admin/method/SaveLinks', params).then((res) => {
-                        if (res.data.code == 200) {
-                            $.NotificationApp.send(null, "数据保存成功！", "top-right", "rgba(0,0,0,0.2)", "success");
-                        } else $.NotificationApp.send(null, res.data.msg, "top-right", "rgba(0,0,0,0.2)", "error");
+                    POST('/admin/method/SaveLinks', {
+                        id, link_name: this.edit.name,
+                        description: this.edit.description,
+                        url: this.edit.url, sort_id,
+                        head_img: this.edit.head_img
+                    }).then(res => {
+                        if (res.code == 200) Tool.Notyf('数据保存成功！', 'success')
+                        else Tool.Notyf(res.msg, 'error')
                         // 刷新数据
                         this.initData()
                     })
@@ -124,36 +117,23 @@
                 // 数据加载动画
                 this.is_load = true
                 
-                let params = new FormData()
-                params.append('id',id || '')
-                
-                axios.post('/admin/method/DeleteLinks', params).then((res) => {
-                    if (res.data.code == 200) {
-                        $.NotificationApp.send(null, "删除成功！", "top-right", "rgba(0,0,0,0.2)", "success");
-                    } else {
-                        $.NotificationApp.send(null, res.data.msg, "top-right", "rgba(0,0,0,0.2)", "error");
-                    }
+                POST('/admin/method/DeleteLinks', { id }).then(res => {
+                    if (res.code == 200) Tool.Notyf('数据删除成功！', 'success')
+                    else Tool.Notyf(res.msg, 'error')
                     // 刷新数据
                     this.initData()
-                }).catch((err) => {
-                    console.log(err)
-                })
+                }).catch(err => console.log(err))
             },
             
             // 是否显示
             isShow(id = ''){
                 
-                let [arr, status] = [this.is_show, 0]
+                let [array, status] = [this.is_show, 0]
                 
                 // 状态取反
-                if(inisHelper.in.array(id,arr)) status = 0
-                else if(!inisHelper.in.array(id,arr)) status = 1
+                status = utils.in.array(id, array) ? 0 : 1
                 
-                let params = new FormData
-                params.append('id',id || '')
-                params.append('status',status || '')
-                
-                axios.post('/admin/handle/SetLinksShow', params)
+                axios.post('/admin/handle/SetLinksShow', { id , status })
             },
             
             // 分类修改器
@@ -161,7 +141,7 @@
                 
                 let result = ''
                 
-                this.links.sort.forEach((item)=>{
+                this.links.sort.forEach(item => {
                     if (id == item.id) result = item.name
                 })
                 

@@ -2,9 +2,9 @@
 
 namespace app\admin\controller;
 
-use think\Request;
 use app\BaseController;
 use inis\utils\{helper};
+use think\{Response, Request};
 use think\facade\{View, Session, Config};
 use app\model\mysql\{Log, Users, Options};
 
@@ -28,7 +28,7 @@ class Comm extends BaseController
         // 用户自己的CDN
         $u_cdn  = (!empty($system_config['opt']->optimize)) ? $system_config['opt']->optimize->cdn : '';
         // 处理后的CDN
-        $cdn = array_values(array_filter(explode('/',str_replace(['https','http',':'],'',$u_cdn))));
+        $cdn = array_values(array_filter(explode('/', str_replace(['https','http',':'], '', $u_cdn))));
         
         // 使用本地资源
         if (count($cdn) == 0) $cdn = '';
@@ -93,12 +93,8 @@ class Comm extends BaseController
                 
                 $map1 = ['account', 'like', $param['account']];
                 $map2 = ['email'  , 'like', $param['account']];
-                // $map3 = ['phone', 'like', $param['account']];
                 
                 $users= Users::whereOr([$map1,$map2])->find();
-                // $users= Users::where([function ($query) use ($map1, $map2) {
-                //     $query->where(['level'=>'admin'])->where([$map1])->whereOr([$map2])->find();
-                // }])->find();
                 
                 // 帐号自动锁定
                 if ($this->config['login']['auto_lock_account'] and count($account_err) >= $this->config['login']['account_error_count']) {
@@ -145,11 +141,10 @@ class Comm extends BaseController
                         Session::set('login_account', $users);
                         Session::set('login_auth'   , $login_auth);
                     }
-                    
                 }
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
             
         }
         
@@ -181,6 +176,25 @@ class Comm extends BaseController
     public function register()
     {
         return View::fetch('/register');
+    }
+
+    // 生成标准API格式
+    public function json($data = [], string $msg = '', int $code = 200, array $config = [], string $type = 'json') : Response
+    {
+        // 标准API结构生成
+        $result = [
+            // 状态码
+            'code'  =>  $code,
+            // 消息
+            'msg'   =>  $msg,
+            // 数据
+            'data'  =>  $data
+        ];
+        
+        // 合并其他数据数据
+        $result = !empty($config) ? array_merge($result, $config) : $result;
+        
+        return Response::create($result, $type);
     }
     
     // 404 - 方法不存在的错误

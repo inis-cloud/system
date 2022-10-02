@@ -19,6 +19,7 @@ return [
     
     // 登录配置
     'login' => [
+        'expired'            =>  1 * 24 * 60 * 60,      // 登录过期时间 - 单位秒
         'error_time'         =>  15 * 60,               // 登录限制多少时间内错误 - 单位秒
         'error_count'        =>  10,                    // 限制规定时间内的错误次数 - 防止普通暴力撞库
         'auto_lock_account'  =>  true,                  // 帐号自动锁定 - 防止代理IP暴力撞库
@@ -46,9 +47,20 @@ return [
     
     // 官方授权系统
     'official'     =>  [
-        'api'      =>  'https://inis.cc/api/',                         // 用于检查更新
+        'api'      =>  'https://inis.cc/api/',                         // 用于检查更新 - 千万不要作死
         'cdn'      =>  'https://cdn.inis.cc/system/default/'           // 静态文件加速
     ],
+
+    'openapi'=>[
+        'baidu'=>[
+            'appid'=> 20211115000999812,
+            'key'  => 'b8w4x8w0eTuNDCFdwH9S',
+            'api'  => 'https://api.fanyi.baidu.com/api/'
+        ],
+        'reptile'=>[
+            'hot_search'  => 'https://www.0xu.cn'
+        ]
+    ],
     
-    'version'      => '1.7.0',                          // inis 版本号 - 请不要自行更改，后果自负
+    'version'      => '1.8.0',                          // inis 版本号 - 请不要自行更改，后果自负
 ];

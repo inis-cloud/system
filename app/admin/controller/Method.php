@@ -43,7 +43,7 @@ class Method extends Base
             $code = 200;
             $msg  = '保存成功！';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -148,7 +148,7 @@ class Method extends Base
                 $msg  = $exception->getError();
             }
             
-            return $this->create($data, $msg, $code, ['url'=>$url]);
+            return $this->json($data, $msg, $code, ['url'=>$url]);
         }
     }
     
@@ -196,7 +196,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag(['users','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -216,7 +216,7 @@ class Method extends Base
             $id = (empty($param['id'])) ? '' : $param['id'];
             
             // 字符串转数组并去空处理
-            $id_arr = array_filter(explode(',', $id));
+            $id_arr = array_filter(explode(',', $id ?? ''));
             
             $login_account = Session::get('login_account');
             
@@ -245,7 +245,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag(['users','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -296,11 +296,13 @@ class Method extends Base
             (new Tag)->TagSave($article->id, $param['tag_id'], array_filter(
                 (empty($param['tag_name'])) ? [] : $param['tag_name'] 
             ));
+
+            $data = $article->id;
             
             // 清除缓存
             Cache::tag(['article','group', 'article-sort', 'tag'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -345,6 +347,7 @@ class Method extends Base
                     
                     $page->save();
                     
+                    $data = $page->id;
                     $code = 200;
                     $msg  = 'ok';
                 }
@@ -366,7 +369,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag(['page','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -386,14 +389,14 @@ class Method extends Base
             $id = (empty($param['id'])) ? '' : $param['id'];
             
             // 字符串转数组并去空处理
-            $id_arr = array_filter(explode(',', $id));
+            $id_arr = array_filter(explode(',', $id ?? ''));
             
             Page::destroy($id_arr);
             
             // 清除缓存
             Cache::tag(['page','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -472,7 +475,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag(['article-sort','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -494,7 +497,7 @@ class Method extends Base
             $code = 200;
             $msg  = '删除成功！';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -560,7 +563,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag(['links-sort','group','links'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -583,7 +586,7 @@ class Method extends Base
             $msg  = '删除成功！';
         }
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /** 
@@ -631,7 +634,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag(['links','group','links-sort'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -654,7 +657,7 @@ class Method extends Base
             $msg  = '删除成功！';
         }
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
     
     /** 
@@ -689,7 +692,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag(['banner','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -712,7 +715,7 @@ class Method extends Base
             $msg  = '删除成功！';
         }
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /** 
@@ -759,7 +762,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag(['tag','group'])->clear();
 
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -785,7 +788,7 @@ class Method extends Base
             $code = 200;
             $msg  = '删除成功！';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 
@@ -810,7 +813,7 @@ class Method extends Base
             $code = 200;
             $msg  = '删除成功！';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -833,7 +836,7 @@ class Method extends Base
             $code = 200;
             $msg  = '恢复成功！';
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -869,7 +872,7 @@ class Method extends Base
                 $msg  = '更新成功！';
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -889,14 +892,14 @@ class Method extends Base
             $id = (empty($param['id'])) ? '' : $param['id'];
             
             // 字符串转数组并去空处理
-            $id_arr = array_filter(explode(',', $id));
+            $id_arr = array_filter(explode(',', $id ?? ''));
             
             Comments::destroy($id_arr);
             
             // 清除缓存
             Cache::tag(['comments','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -937,7 +940,7 @@ class Method extends Base
                 $auth_rule->save();
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -971,7 +974,7 @@ class Method extends Base
             // 清理缓存
             Cache::tag(['music','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -991,7 +994,7 @@ class Method extends Base
             $id = (empty($param['id'])) ? '' : $param['id'];
             
             // 字符串转数组并去空处理
-            $id_arr = array_filter(explode(',', $id));
+            $id_arr = array_filter(explode(',', $id ?? ''));
             
             $login_account = Session::get('login_account');
             
@@ -1000,7 +1003,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag(['music','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1029,7 +1032,7 @@ class Method extends Base
             // 清除缓存
             Cache::tag('options')->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1066,7 +1069,7 @@ class Method extends Base
             // 清理缓存
             Cache::tag(['placard','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1086,14 +1089,14 @@ class Method extends Base
             $id = (empty($param['id'])) ? '' : $param['id'];
             
             // 字符串转数组并去空处理
-            $id_arr = array_filter(explode(',', $id));
+            $id_arr = array_filter(explode(',', $id ?? ''));
             
             Placard::destroy($id_arr);
             
             // 清除缓存
             Cache::tag(['placard','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1145,7 +1148,7 @@ class Method extends Base
                 Cache::tag(['options'])->clear();
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1188,7 +1191,7 @@ class Method extends Base
             // 清除tag标签的缓存数据
             Cache::tag('options')->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1257,7 +1260,7 @@ class Method extends Base
                 $msg  = $e->getMessage();
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1290,7 +1293,7 @@ class Method extends Base
                     // 获取压缩包内的文件路径
                     for ($i = 0; $i < $zip->count(); $i++) $files[] = $zip->getNameIndex($i);
                     if (!empty($files)) foreach ($files as $key => $val) {
-                        $item = explode('/', $val);
+                        $item = explode('/', $val ?? '');
                         if (count($item) >= 2) $dirs[] = $item[0];
                     }
                     // 文件夹去重
@@ -1325,7 +1328,7 @@ class Method extends Base
                 $msg  = $e->getMessage();
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1366,7 +1369,7 @@ class Method extends Base
             
             $item->save();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1401,7 +1404,7 @@ class Method extends Base
             // 清理缓存
             Cache::tag(['search','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -1421,14 +1424,14 @@ class Method extends Base
             $id    = (empty($param['id'])) ? '' : $param['id'];
             
             // 字符串转数组并去空处理
-            $array = array_filter(explode(',', $id));
+            $array = array_filter(explode(',', $id ?? ''));
             
             Search::destroy($array);
             
             // 清除缓存
             Cache::tag(['search','group'])->clear();
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
     

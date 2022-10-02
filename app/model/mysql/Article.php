@@ -205,8 +205,8 @@ class Article extends Model
     // 封装分类和标签
     function tagSort($value, $data)
     {
-        $tag  = Tag::select(explode("|", $data['tag_id']));
-        $sort = ArticleSort::select(explode("|", $data['sort_id']));
+        $tag  = Tag::select(explode("|", $data['tag_id'] ?? ''));
+        $sort = ArticleSort::select(explode("|", $data['sort_id'] ?? ''));
         
         // 随机颜色
         $color_arr = ['light','danger','dark','primary','success','info','warning'];
@@ -274,7 +274,7 @@ class Article extends Model
         } else $global = $default;
         
         // 处理局部评论配置，始终有值
-        $local  = json_decode($data['opt'], true);
+        $local  = json_decode($data['opt'] ?? '', true);
         $local  = isset($local['comments']) ? $local['comments'] : $default;
         
         // 全局显示为 false

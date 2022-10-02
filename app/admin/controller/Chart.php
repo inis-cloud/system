@@ -41,7 +41,7 @@ class Chart extends Base
                 $data[$val] = $this->File->getDirInfo($path.'/'.$val);
             }
             
-            return $this->create($data, $msg, $code);
+            return $this->json($data, $msg, $code);
         }
     }
 }

@@ -13,11 +13,11 @@ function jump(...$args)
 function CommTrimURL($url = null)
 {
     
-    if(preg_match("/^http?:\\/\\/.+/",$url)){
+    if (preg_match("/^http?:\\/\\/.+/", $url ?? '')) {
         
         $url = str_replace('http://', '', rtrim($url, '/'));
         
-    }elseif(preg_match("/^https?:\\/\\/.+/",$url)){
+    } else if (preg_match("/^https?:\\/\\/.+/", $url ?? '')){
         
         $url = str_replace('https://', '', rtrim($url, '/'));
     }

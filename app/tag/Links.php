@@ -12,7 +12,7 @@ class Links extends TagLib {
      */
     protected $tags=  [
         // 标签定义： attr 属性列表 close 是否闭合（0 或者1 默认1） alias 标签别名 level 嵌套层次
-        'list'     => ['attr'=>'name', 'close'=>1],
+        'list'     => ['close'=>1],
         'data'     => ['close'=>0],
     ];
 
@@ -21,7 +21,7 @@ class Links extends TagLib {
      */
     public function tagList($tag, $content)
     {
-        $item  = iLinks::select();
+        // $item  = iLinks::select();
         
         /*
         $parse  = '<?';
@@ -31,16 +31,17 @@ class Links extends TagLib {
         $parse .= '} ?>';
         $parse .= $content;
         */
-        $parse = $item;
+        $parse = '<?php
+            $item = \app\model\mysql\Links::select();
+        ?>';
         $parse .= $content;
-
         
         return $parse;
     }
     
     public function tagData($tag, $content)
     {
-        $parse = 1;
+        $parse = [1,2,3];
         return $parse;
     }
     

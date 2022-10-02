@@ -4,8 +4,9 @@ declare (strict_types = 1);
 namespace app\api\controller\inis;
 
 use think\Request;
-use app\model\mysql\{Article, Comments, Page, Links};
+use think\facade\{Cache, Lang};
 use app\model\sqlite\{Search as iSearch};
+use app\model\mysql\{Article, Comments, Page, Links};
 
 class Search extends Base
 {
@@ -21,7 +22,7 @@ class Search extends Base
         
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 存在的方法
@@ -34,7 +35,7 @@ class Search extends Base
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -43,7 +44,7 @@ class Search extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
         
     }
@@ -54,25 +55,25 @@ class Search extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
         $data   = [];
         $code   = 400;
-        $msg    = '参数不存在！';
+        $msg    = lang('参数不存在！');
         $result = [];
         
         // 获取请求参数
         $param = $request->param();
         
         // 存在的方法
-        $method = ['article','complex','record','comments','page','links'];
+        $method = ['article','complex','record','comments','page','links','sql'];
         
         // 动态方法且方法存在
         if (in_array($IID, $method)) $result = $this->$IID($param);
         // 动态返回结果
         if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
         
-        return $this->create($data, $msg, $code);
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -82,7 +83,7 @@ class Search extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
         //
     }
@@ -93,7 +94,7 @@ class Search extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
         //
     }
@@ -103,7 +104,7 @@ class Search extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
         if (empty($param['page']))  $param['page']  = 1;
         if (empty($param['limit'])) $param['limit'] = 5;
@@ -140,7 +141,7 @@ class Search extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
         if (empty($param['page']))  $param['page']  = 1;
         if (empty($param['limit'])) $param['limit'] = 5;
@@ -162,7 +163,7 @@ class Search extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
         // 搜索关键词
         $value= !empty($param['value']) ? $param['value'] : '';
@@ -255,7 +256,7 @@ class Search extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
         if (empty($param['page']))  $param['page']  = 1;
         if (empty($param['limit'])) $param['limit'] = 5;
@@ -292,7 +293,7 @@ class Search extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
         if (empty($param['page']))  $param['page']  = 1;
         if (empty($param['limit'])) $param['limit'] = 5;
@@ -332,7 +333,7 @@ class Search extends Base
     {
         $data = [];
         $code = 200;
-        $msg  = 'ok';
+        $msg  = lang('数据请求成功！');
         
         if (empty($param['page']))  $param['page']  = 1;
         if (empty($param['limit'])) $param['limit'] = 5;
@@ -364,6 +365,40 @@ class Search extends Base
                 $record->count= 1;
             } else $record->count++;
             $record->save();
+        }
+        
+        return ['data'=>$data,'code'=>$code,'msg'=>$msg];
+    }
+
+    // SQL接口
+    public function sql($param)
+    {
+        $where   = (empty($param['where']))   ? [] : $param['where'];
+        $whereOr = (empty($param['whereOr'])) ? [] : $param['whereOr'];
+        $page    = (!empty($param['page']))   ? $param['page']  : 1;
+        $limit   = (!empty($param['limit']))  ? $param['limit'] : 5;
+        $order   = (!empty($param['order']))  ? $param['order'] : 'create_time desc';
+        
+        $data = [];
+        $code = 200;
+        $msg  = lang('成功！');
+        
+        $opt  = [
+            'page' => $page,
+            'limit'=> $limit,
+            'order'=> $order,
+            'where'=> $where,
+            'whereOr'=> $whereOr,
+        ];
+        
+        // 设置缓存名称
+        $cache_name = json_encode(array_merge(['IAPI'=>'search/sql','where'=>$where], $param));
+        
+        // 检查是否存在请求的缓存数据
+        if (Cache::has($cache_name) and $this->ApiCache) $data = json_decode(Cache::get($cache_name));
+        else {
+            $data = iSearch::ExpandAll(null, $opt);
+            if ($this->ApiCache) Cache::tag(['search',$cache_name])->set($cache_name, json_encode($data));
         }
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];

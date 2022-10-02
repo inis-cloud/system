@@ -31,6 +31,12 @@ class Index extends BaseController
         define('__ADMIN_CSS__' , '/index/assets/css/');
         define('__ADMIN_IMG__' , '/index/assets/images/');
         define('__ADMIN_LIBS__', '/index/assets/libs/');
+
+        View::assign([
+            'CONFIG'         => (object)[
+                'API'        => Config::get('inis.official.api', 'https://inis.cc/api/'),
+            ]
+        ]);
     }
     
     // 安装引导首页
@@ -53,7 +59,7 @@ class Index extends BaseController
                 
                 $version = Db::query('select version()');
                 foreach ($version as $val) foreach ($val as $k => $v) $version = ($k == 'version()') ? $v : null;
-                $version = explode('-', $version)[0];
+                $version = explode('-', $version ?? '')[0];
                 
                 $sql_ver_check    = $this->helper->VersionCompare($version, '5.5');
                 
@@ -83,6 +89,6 @@ class Index extends BaseController
             return $this->create($data, $msg, $code);
         }
         
-        return View::engine('php')->fetch('/index');
+        return View::fetch('/index');
     }
 }

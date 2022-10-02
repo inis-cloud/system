@@ -22,11 +22,15 @@ return [
     'taglib_begin'   => '{',
     // 标签库标签结束标记
     'taglib_end'     => '}',
-    //关闭模板缓存
-    // 'tpl_cache' => false,
+    // 模板缓存
+    'tpl_cache'      => false,
 
+    // 预加载自定义模板标签
+    // 'taglib_pre_load'     =>    'app\tag\Demo',
+    
     // 预先加载的标签库 - 去空去重 - 转字符串
-    'taglib_pre_load'=> env('app.tag_pre_load', false) ? implode(array_filter(array_unique([
+    'taglib_pre_load'=> env('app.tag_pre_load', false) ? implode(',', array_filter(array_unique([
         'app\tag\Links',
+        'app\tag\Demo',
     ]))) : '',
 ];

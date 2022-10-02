@@ -83,7 +83,7 @@ class ArticleSort extends Model
     // OPT字段获取器 - 获取前修改
     public function getOptAttr($value)
     {
-        $value = (!empty($value)) ? json_decode((is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value)) : $value;
-        return !empty($value) ? $value : ['head_img'=>''];
+        $value = !empty($value) ? json_decode($value ?? '[]', true) : [];
+        return array_merge(['head_img'=>''], $value);
     }
 }

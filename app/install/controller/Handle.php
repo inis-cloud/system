@@ -54,8 +54,8 @@ class Handle extends BaseController
                         
                         $code = 200;
                         $data['conn']    = true;
-                        $data['version'] = explode('-', $conn->server_info)[0];
-                        $data['check']   = ($this->helper->VersionCompare(explode('-', $conn->server_info)[0], '5.5') >= 0) ? true : false;
+                        $data['version'] = explode('-', $conn->server_info ?? '')[0];
+                        $data['check']   = ($this->helper->VersionCompare(explode('-', $conn->server_info ?? '')[0], '5.5') >= 0) ? true : false;
                         
                         // 创建.$env
                         $this->createEnv($param);
@@ -93,12 +93,12 @@ class Handle extends BaseController
         
         $env_file_path = "../.env";
         
-        $text = "# 开发者模式\nAPP_DEBUG = true\n\n[APP]\n# 默认的网站应用\nDEFAULT_APP      = admin\n# 标签引擎预加载 - 不推荐开启，会影响性能，推荐自己写按需加载\nTAG_PRE_LOAD     = false\n# 时区\nDEFAULT_TIMEZONE = Asia/Shanghai\n\n# 数据库配置\n[DATABASE]\n# 数据库类型\nTYPE     = mysql\n# 数据库地址\nHOSTNAME = $HOSTNAME\n# 数据库用户\nDATABASE = $DATABASE\n# 数据库名称\nUSERNAME = $USERNAME\n# 数据库密码\nPASSWORD = $PASSWORD\n# 数据库端口\nHOSTPORT = $HOSTPORT\n# 编码\nCHARSET  = utf8mb4\n# 调试模式\nDEBUG    = true\n# 数据库前缀\nPREFIX   = inis_\n\n[LANG]\n# 默认语言\ndefault_lang = zh-cn\n\n[WEB]\nAPPCODE = inisblog\nKEY = aisfucasoiasdadwa_inis\nISS = INIS\nAUD = YUEQING\nEXPIRE = 14400\n";
+        $text = "# 开发者模式\nAPP_DEBUG = false\n\n[APP]\n# 默认的网站应用\nDEFAULT_APP      = admin\nTAG_PRE_LOAD     = false\n# 时区\nDEFAULT_TIMEZONE = Asia/Shanghai\n\n# 数据库配置\n[DATABASE]\n# 数据库类型\nTYPE     = mysql\n# 数据库地址\nHOSTNAME = $HOSTNAME\n# 数据库用户\nDATABASE = $DATABASE\n# 数据库名称\nUSERNAME = $USERNAME\n# 数据库密码\nPASSWORD = $PASSWORD\n# 数据库端口\nHOSTPORT = $HOSTPORT\n# 编码\nCHARSET  = utf8mb4\n# 调试模式\nDEBUG    = true\n# 数据库前缀\nPREFIX   = inis_\n\n[LANG]\n# 默认语言\ndefault_lang = zh-cn\n\n[WEB]\nAPPCODE = inisblog\nKEY = aisfucasoiasdadwa_inis\nISS = INIS\nAUD = YUEQING\nEXPIRE = 14400\n";
         
         $env = $this->File->writeFile($env_file_path, $text);
     }
     
-    // 执行安装
+    // 缓存帐号信息
     public function setCache(Request $request)
     {
         if ($request->isPost())
@@ -112,38 +112,6 @@ class Handle extends BaseController
             unset($param['name']);
             
             Cache::set('account', json_encode($param, JSON_UNESCAPED_UNICODE), 7200);
-            
-            return $this->create($data, $msg, $code);
-        }
-    }
-    
-    // 创建数据库表
-    public function createTable(Request $request)
-    {
-        if ($request->isPost())
-        {
-            $data  = [];
-            $code  = 400;
-            $msg   = 'ok';
-            
-            $param = $request->param();
-            
-            try {
-                
-                // 如果表已存在，先删除该表
-                if (in_array($param['table'], Db::getTables())) Db::execute('DROP TABLE '. $param['table']);
-                
-                // 创建表
-                Db::execute($param['query']);
-                // 重新设置自增起始值
-                Db::execute("ALTER TABLE " . $param['table'] . " AUTO_INCREMENT=1;");
-                
-                $code = 200;
-                
-            } catch (\Exception $e) {
-                
-                $msg  = $e->getMessage();
-            }
             
             return $this->create($data, $msg, $code);
         }
@@ -163,54 +131,20 @@ class Handle extends BaseController
             // 获取缓存中的帐号信息
             $account = json_decode(Cache::get('account'), true);
             // 设置默认信息
-            $account['level']       = 'admin';
-            $account['create_time'] = time();
-            $account['update_time'] = time();
-            $account['password']    = password_hash(md5($account['password']), PASSWORD_BCRYPT);
-            $account['head_img']    = $this->helper->RandomImg("local", "admin/images/anime/");
-            $user    = Db::name('users')->where(['id'=>1])->findOrEmpty();
-            
+            $account = array_merge($account, [
+                'level'       => 'admin',
+                'create_time' => time(),
+                'update_time' => time(),
+                'password'    => password_hash(md5($account['password']), PASSWORD_BCRYPT),
+                'head_img'    => $this->helper->RandomImg('local', 'admin/images/anime/'),
+            ]);
+            $item    = Db::name('users')->where(['account'=>$account['account']])->findOrEmpty();
+
             // 帐号已存在
-            if (!empty($user)) $user->save($account);
+            if (!empty($item)) Db::name('users')->where(['account'=>$account['account']])->update($account);
             else Db::name('users')->save($account);
-            
-            return $this->create($data, $msg, $code);
-        }
-    }
-    
-    // 导入数据库表默认数据
-    public function importData(Request $request)
-    {
-        if ($request->isPost())
-        {
-            $data  = [];
-            $code  = 400;
-            $msg   = 'ok';
-            
-            $param = $request->param();
-            
-            unset($param['name']);
-            
-            try {
-                
-                foreach ($param as $key => $val) {
-                    // 清空表数据
-                    if ($key != 'users') Db::execute('DELETE FROM inis_' . $key);
-                    if ($key == 'options') {
-                        // 空值处理
-                        foreach ($val as $k => $v) if (empty($v['opt']))   $val[$k]['opt']   = null;
-                        foreach ($val as $k => $v) if (empty($v['value'])) $val[$k]['value'] = null;
-                        Db::name($key)->insertAll($val);
-                    } else Db::name($key)->insertAll($val);
-                }
-                
-                $code = 200;
-                $this->fulfill();
-                
-            } catch (\Exception $e) {
-                
-                $msg  = $e->getMessage();
-            }
+
+            $this->fulfill();
             
             return $this->create($data, $msg, $code);
         }
@@ -220,115 +154,96 @@ class Handle extends BaseController
     public function fulfill()
     {
         Cache::clear();
-        $route_file_path = "../app/install/route/app.php";
+        $route= "../app/install/route/app.php";
         $text = "<?php\n\nuse think\\facade\\Route;";
         $this->File->unlinkFile('install.env');
-        $this->File->writeFile($route_file_path, $text);
+        $this->File->writeFile($route, $text);
     }
     
-    // sqlite数据库
-    public function existSqlite(Request $request)
+    // 批量建表
+    public function createTables(Request $request)
     {
         if ($request->isPost())
         {
             $data  = [];
-            $code  = 400;
+            $code  = 200;
             $msg   = 'ok';
             
             $param = $request->param();
-            
-            $File  = new File;
+            $db    = !empty($param['db']) ? $param['db'] : 'mysql';
+
+            // 获取表信息
+            $tabs  = $this->helper->get(config('inis.official.api') . $db . '/created');
+
+            if ($tabs['code'] != 200) return $this->create([], $tabs['msg'], 400);
+
+            // 数据库
+            $conn = Db::connect($db);
+
+            // SQL 语句
+            $sqls = [];
+            if (!empty($tabs['data'])) {
+
+                // mysql 驱动
+                if ($db == 'mysql') foreach ($tabs['data'] as $key => $val) {
+
+                    // 如果表已存在，先删除该表
+                    if (in_array($key, $conn->getTables())) $conn->execute('DROP TABLE '. $key);
+
+                    $sqls[] = $val;
+                    // 重新设置自增起始值
+                    $sqls[] = "ALTER TABLE " . $key . " AUTO_INCREMENT=1;";
+                }
+                // sqlite 驱动
+                else if ($db == 'sqlite') foreach ($tabs['data'] as $key => $val) {
+                    
+                    // 如果表已存在，先删除该表
+                    if (in_array($key, $conn->getTables())) $conn->execute('DROP TABLE '. $key);
+
+                    $sqls[] = $val;
+                }
+            }
             
             try {
-                
-                $data = $File->dirInfo('../extend/sqlite');
+
+                // 执行 SQL 语句
+                if (!empty($sqls)) foreach ($sqls as $val) $conn->execute($val);
                 
             } catch (\Exception $e) {
                 
+                $code = 400;
                 $msg  = $e->getMessage();
             }
-            
-            // sqlite数据库不存在
-            if (empty($data) or !in_array('inis.db', $data)) $code = 204;
-            // sqlite数据库已存在
-            else if (in_array('inis.db', $data)) $code = 200;
-            
+
             return $this->create($data, $msg, $code);
         }
     }
-    
-    // 下载文件到本地服务器
-    public function downloadFile(Request $request)
+
+    // 批量导入数据
+    public function insertAll(Request $request)
     {
         if ($request->isPost())
         {
-            $data = [];
-            $code = 200;
-            $msg  = 'ok';
-            
-            $param= $request->param();
-            
-            $url  = (!empty($param['path'])) ? $param['path'] : null;
-            
-            // 下载文件
-            (new File)->downloadFile($url, '../extend/sqlite', 'inis.db');
-            
-            return $this->create($data, $msg, $code);
-        }
-    }
-    
-    // 本地sqlite表信息
-    public function sqliteTables(Request $request)
-    {
-        if ($request->isPost())
-        {
-            $data   = [];
-            $code   = 200;
-            $msg    = 'ok';
-            
-            $param  = $request->param();
-            
-            $sqlite = Db::connect('sqlite');
-            
-            // 查看当前数据库所有表
-            $data   = $sqlite->getTables();
-            // 删除 sqlite_sequence 表
-            if (in_array('sqlite_sequence', $data)) foreach ($data as $key => $val) if ($val == 'sqlite_sequence') unset($data[$key]);
-            
-            return $this->create($data, $msg, $code);
-        }
-    }
-    
-    // 创建sqlite表
-    public function createSqliteTable(Request $request)
-    {
-        if ($request->isPost())
-        {
-            $data   = [];
-            $code   = 400;
-            $msg    = 'ok';
-            
-            $param  = $request->param();
-            $sqlite = Db::connect('sqlite');
-            
-            try {
-                
-                // 如果表已存在，先删除该表 - DROP TABLE database_name.table_name;
-                if (in_array($param['table'], $sqlite->getTables())) Db::execute('DROP TABLE '. $param['table']);
-                
-                // 创建表
-                $sqlite->execute($param['query']);
-                // 重新设置自增起始值
-                // $sqlite->execute("ALTER TABLE " . $param['table'] . " AUTO_INCREMENT=1;");
-                
-                $code = 200;
-                
-            } catch (\Exception $e) {
-                
-                $msg  = $e->getMessage();
+            $data  = [];
+            $code  = 200;
+            $msg   = 'ok';
+            $param = $request->param();
+
+            $db    = !empty($param['db']) ? $param['db'] : 'mysql';
+
+            // 获取默认数据
+            $result= $this->helper->get(config('inis.official.api') . $db . '/data');
+
+            // 估计是没有权限 - 或者网络问题
+            if ($result['code'] != 200) return $this->create([], $result['msg'], (int)$result['code']);
+
+            // 先判断数据有没有
+            if (!empty($result['data'])) foreach ($result['data'] as $key => $val) {
+                // 批量插入数据
+                Db::connect($db)->table($key)->insertAll($val);
             }
-            
-            return $this->create($data, $msg, $code);
+
+            return $this->create($result, $msg, $code);
         }
     }
 }

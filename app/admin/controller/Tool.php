@@ -277,7 +277,7 @@ class Tool
             
             if ($val['text'] == false) $item['text'] = $val['id'];
             else {
-                $text = explode("\r\n",$val['text']);
+                $text = explode("\r\n", $val['text'] ?? '');
                 array_shift($text);
                 array_pop($text);
                 $item['text'] = $this->getParam($text, 'name');
@@ -295,12 +295,12 @@ class Tool
         $result = '';
         
         foreach ($data as $key => $val) {
-            $item = explode("@", $val);
+            $item = explode("@", $val ?? '');
             foreach ($item as $k => $v) if ($k != 0) $array[] = $v;
         }
         
         foreach ($array as $key => $val) {
-            $item = explode(" ", $val);
+            $item = explode(" ", $val ?? '');
             if ($item[0] == $param) $result = $item[1];
         }
         

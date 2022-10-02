@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace app\api\middleware;
 
 use Closure;
+use think\facade\{Lang};
 use inis\utils\{FileLog};
 use app\model\mysql\{Options};
 use think\{Config, Request, Response};
@@ -16,7 +17,7 @@ class api
     protected $header = [
         'Access-Control-Allow-Credentials' => true,
         'Access-Control-Max-Age'           => 1800,
-        'Content-Type'                     => 'application/json;charset=utf-8',
+        'Content-Type'                     => 'application/json; charset=utf-8',
         'Access-Control-Allow-Methods'     => 'GET, POST, PATCH, PUT, DELETE, OPTIONS, PATCH',
         'Access-Control-Allow-Headers'     => 'Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-CSRF-TOKEN, X-Requested-With',
     ];
@@ -42,7 +43,9 @@ class api
     public function handle($request, Closure $next, ?array $header = [])
     {
         $params  = $request->param();
-        
+
+        $this->header['X-INIS-API'] = Lang::get('X-INIS-API');
+
         $result  = ['code'=>403,'msg'=>'禁止非法操作！','data'=>[]];
         
         $header  = !empty($header) ? array_merge($this->header, $header) : $this->header;
@@ -82,7 +85,7 @@ class api
             if (!empty($headers['origin'])) {
                 
                 $origin = $headers['origin'];
-                
+
                 if (strstr($origin, 'http://')) $origin = str_replace('http://','',$origin);
                 else if (strstr($origin, 'https://')) {
                     
@@ -104,7 +107,7 @@ class api
         // ↑↑↑ 前置中间件执行区域 ↑↑↑
         $reponse = $next($request)->header($header);
         // ↓↓↓ 后置中间件执行区域 ↓↓↓
-        
+
         // 执行 Token 验证
         if ($security->opt->token->status == 1) {
             
@@ -130,13 +133,13 @@ class api
         }
 
         // 写入日志
-        $this->FileLog->save([
-            'ip'    =>  $request->ip(),
-            'url'   =>  $request->url(),
-            'method'=>  $request->method(),
-            'ua'    =>  $request->header('user-agent'),
-            'params'=>  $request->param(),
-        ]);
+        // $this->FileLog->save([
+        //     'ip'    =>  $request->ip(),
+        //     'url'   =>  $request->url(),
+        //     'method'=>  $request->method(),
+        //     'ua'    =>  $request->header('user-agent'),
+        //     'params'=>  $request->param(),
+        // ]);
         
         // 回调本身并返回response对象
         return $reponse;

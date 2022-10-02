@@ -3,7 +3,7 @@
 namespace app\api\controller;
 
 use inis\utils\{helper};
-use think\facade\{Config};
+use think\facade\{Config, Lang};
 use app\model\mysql\{Users};
 use think\{Request, Response};
 use app\admin\controller\Tool;
@@ -26,6 +26,14 @@ abstract class Base
         $header = $request->header();
         
         $this->Header = $header;
+
+        $config = Config::get('inis');
+
+        // 是否开启了缓存
+        $apiCache = $config['api_cache'];
+        // 是否获取缓存
+        $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
+        $this->ApiCache = $apiCache and $cache;
         
         // 解析login-token
         $token  = !empty($header['login-token']) ? $header['login-token'] : (!empty($param['login-token']) ? $param['login-token'] : []);
@@ -67,17 +75,17 @@ abstract class Base
             
             $data = Users::withoutField(['password'])->find($arr['uid']);
             $code = 200;
-            $msg  = '合法登录！';
+            $msg  = Lang::get('合法登录！');
             
         } catch (SignatureInvalidException $e){
             // $e->getMessage()
-            $msg = '签名不正确！';
+            $msg = Lang::get('签名不正确！');
         } catch (BeforeValidException $e){
-            $msg = 'login-token失效！';
+            $msg = Lang::get('login-token失效！');
         } catch (ExpiredException $e){
-            $msg = 'login-token失效！';
+            $msg = Lang::get('login-token失效！');
         } catch (Exception $e){
-            $msg = '未知错误！';
+            $msg = Lang::get('未知错误！');
         };
         
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];;
@@ -86,6 +94,6 @@ abstract class Base
     public function __call($name, $arguments)
     {
         // 404 - 方法不存在的错误
-        return $this->create([], '资源不存在~', 404);
+        return $this->create([], Lang::get('资源不存在~'), 404);
     }
 }

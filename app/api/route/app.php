@@ -12,46 +12,57 @@ use think\facade\Route;
 
 // 公共模块
 Route::group('comm', function (){
-    Route::rule(':INAME', 'inis.Comm/:INAME');
+    Route::rule(':INAME1', 'inis.Comm/:INAME1');
 });
 
 // INIS API 分组路由
 Route::group(function () {
-    
-    // 取消资源路由中的默认参数
-    Route::resource('proxy', 'inis.Proxy')->rest([
-        'read'   => ['GET'   , '/:IID', 'read'],
-        'update' => ['PUT'   , ''     , 'update'],
-        'delete' => ['DELETE', ''     , 'delete'],
-        'patch'  => ['PATCH' , ''     , 'patch'],
+
+    Route::resource(':INAME1', 'inis.:INAME1')->rest([
+        'read'  =>['GET'   , '/:IID', 'IGET'],
+        'update'=>['PUT'   , '/:IID', 'IPUT'],
+        'save'  =>['POST'  , '/:IID', 'IPOST'],
+        'delete'=>['DELETE', '/:IID', 'IDELETE'],
+        'patch' =>['PATCH' , '/:IID', 'IPATCH'],
     ]);
-    
-    // 动态路由
-    Route::resource(':INAME', 'inis.:INAME')->rest([
-        'read'  =>['GET'   , '/:IID', 'read'],
-        'update'=>['PUT'   , '/:IID', 'update'],
-        'delete'=>['DELETE', '/:IID', 'delete'],
+    Route::resource(':INAME1-:INAME2', 'inis.:INAME1-:INAME2')->rest([
+        'read'  =>['GET'   , '/:IID', 'IGET'],
+        'update'=>['PUT'   , '/:IID', 'IPUT'],
+        'save'  =>['POST'  , '/:IID', 'IPOST'],
+        'delete'=>['DELETE', '/:IID', 'IDELETE'],
+        'patch' =>['PATCH' , '/:IID', 'IPATCH'],
     ]);
-    Route::resource('links-sort'    , 'inis.LinksSort')->rest([
-        'read'  =>['GET'   , '/:IID', 'read'],
-        'update'=>['PUT'   , '/:IID', 'update'],
-        'delete'=>['DELETE', '/:IID', 'delete']
+
+    // 兼容旧版 - v1.8.0 之前
+    Route::resource(':INAME1', 'inis.:INAME1')->rest([
+        'read'  =>['GET'   , '', 'IGET'],
+        'update'=>['PUT'   , '', 'IPUT'],
+        'save'  =>['POST'  , '', 'IPOST'],
+        'delete'=>['DELETE', '', 'IDELETE'],
+        'patch' =>['PATCH' , '', 'IPATCH'],
+    ])->append([
+        'IID' => request()->param('mode', 'def')
     ]);
-    Route::resource('article-sort'  , 'inis.ArticleSort')->rest([
-        'read'  =>['GET'   , '/:IID', 'read'],
-        'update'=>['PUT'   , '/:IID', 'update'],
-        'delete'=>['DELETE', '/:IID', 'delete']
+    Route::resource(':INAME1-:INAME2', 'inis.:INAME1-:INAME2')->rest([
+        'read'  =>['GET'   , '', 'IGET'],
+        'update'=>['PUT'   , '', 'IPUT'],
+        'save'  =>['POST'  , '', 'IPOST'],
+        'delete'=>['DELETE', '', 'IDELETE'],
+        'patch' =>['PATCH' , '', 'IPATCH'],
+    ])->append([
+        'IID' => request()->param('mode', 'def')
     ]);
-    Route::resource('verify-code'   , 'inis.VerifyCode')->rest([
-        'read'  =>['GET'   , '/:IID', 'read'],
-        'update'=>['PUT'   , '/:IID', 'update'],
-        'delete'=>['DELETE', '/:IID', 'delete']
-    ]);
-    
+
 })->allowCrossDomain([
     // 自定义headers参数
-    'Access-Control-Allow-Headers' => 'token, login-token',
-]);
+    'Access-Control-Allow-Headers' => 'token, login-token, authorization',
+])->miss(function(){
+    return json([
+        'code' => 404,
+        'data' => [],
+        'msg'  => 'Not Route'
+    ]);
+});
 
 // 第三方API分组路由
 Route::group(function () {

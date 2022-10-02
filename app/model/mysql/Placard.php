@@ -45,6 +45,6 @@ class Placard extends Model
     public function getOptAttr($value)
     {
         $value = !empty($value) ? json_decode((is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value)) : $value;
-        return !empty($value) ? $value : ['jump'=>'outside','url'=>null,'article_id'=>null];
+        return !empty($value) ? json_decode($value) : ['jump'=>'outside','url'=>null,'article_id'=>null];
     }
 }

@@ -55,9 +55,9 @@
             },
             
             initData(){
-                axios.post('/admin/update/info').then(res=>{
-                    if (res.data.code == 200) {
-                        const result  = res.data.data
+                POST('/admin/update/info').then(res => {
+                    if (res.code == 200) {
+                        const result  = res.data
                         this.official = result.official
                     }
                 })
@@ -69,25 +69,23 @@
                 // 数据加载动画
                 this.page.internal.is_load = true
                 
-                const params = inisHelper.stringfy({
+                POST('/admin/apiStore', {
                     page, limit: 12
-                })
-                
-                axios.post('/admin/apiStore', params).then((res) => {
-                    if (res.data.code == 200) {
+                }).then(res => {
+                    if (res.code == 200) {
                         
-                        const result = res.data.data
+                        const result = res.data
                         this.internal= result
                         
                         // 是否显示分页
-                        if (inisHelper.is.empty(result.data) || result.page == 1) this.page.internal.is_show = false
+                        if (utils.is.empty(result.data) || result.page == 1) this.page.internal.is_show = false
                         else this.page.internal.is_show = true
                         
                         // 更新页码
                         this.page.internal.code    = page
                         
                         // 页码列表
-                        this.page.internal.list    = inisHelper.create.paging(page, result.page, 5)
+                        this.page.internal.list    = utils.create.paging(page, result.page, 5)
                         
                         // 数据加载动画
                         this.page.internal.is_load = false
@@ -101,25 +99,23 @@
                 // 数据加载动画
                 this.page.plugin.is_load = true
                 
-                const params = inisHelper.stringfy({
+                POST('/admin/installedApi', {
                     page, limit: 12
-                })
-                
-                axios.post('/admin/installedApi', params).then((res) => {
-                    if (res.data.code == 200) {
+                }).then(res => {
+                    if (res.code == 200) {
                         
-                        const result = res.data.data
+                        const result = res.data
                         this.plugin  = result
                         
                         // 是否显示分页
-                        if(inisHelper.is.empty(result.data) || result.page == 1) this.page.plugin.is_show = false
+                        if(utils.is.empty(result.data) || result.page == 1) this.page.plugin.is_show = false
                         else this.page.plugin.is_show = true
                         
                         // 更新页码
                         this.page.plugin.code    = page
                         
                         // 页码列表
-                        this.page.plugin.list    = inisHelper.create.paging(page, result.page, 5)
+                        this.page.plugin.list    = utils.create.paging(page, result.page, 5)
                         
                         // 数据加载动画
                         this.page.plugin.is_load = false
@@ -136,33 +132,31 @@
                 // 数据加载动画
                 this.page.apis.is_load = true
                 
-                axios.get(this.official.api + 'plugin', {
-                    params: {
-                        page, limit: 12
-                    }
-                }).then((res) => {
-                    if (res.data.code == 200) {
+                GET(this.official.api + 'plugin', {
+                    page, limit: 12
+                }).then(res => {
+                    if (res.code == 200) {
                         
-                        const result = res.data.data
+                        const result = res.data
                         
                         result.data.forEach((item, index)=>{
                             // 判断是否已安装
-                            item.installed = (inisHelper.in.array(item.id, this.plugin.installed.id)) ? true : false
+                            item.installed = (utils.in.array(item.id, this.plugin.installed.id)) ? true : false
                             // 先拿到本地这个API的版本信息
                             const version  = this.getArrayId(this.plugin.installed.version, item.id)
-                            item.update    = inisHelper.compare.version(this.getArrayId(this.installed, item.id), version)
+                            item.update    = utils.compare.version(this.getArrayId(this.installed, item.id), version)
                         })
                         
                         this.apis    = result
                         
                         // 是否显示分页
-                        if (inisHelper.is.empty(result.data) || result.page == 1) this.page.apis.is_show = false
+                        if (utils.is.empty(result.data) || result.page == 1) this.page.apis.is_show = false
                         else this.page.apis.is_show = true
                         // 更新页码
                         this.page.apis.code    = page
                         
                         // 页码列表
-                        this.page.apis.list    = inisHelper.create.paging(page, result.page, 5)
+                        this.page.apis.list    = utils.create.paging(page, result.page, 5)
                         
                         // 数据加载动画
                         this.page.apis.is_load = false
@@ -172,20 +166,19 @@
             
             // 从官方获取已安装API的最新数据
             installedApi(){
-                axios.get(this.official.api + 'plugin', {
-                    params: {
-                        id: this.plugin.installed.id, withoutField: ['uid','title','expand','content','url','docsify','status','size','opt','longtext','create_time','update_time']
-                    }
-                }).then((res) => {
-                    if (res.data.code == 200) {
+                GET(this.official.api + 'plugin', {
+                    id: this.plugin.installed.id,
+                    withoutField: ['uid','title','expand','content','url','docsify','status','size','opt','longtext','create_time','update_time']
+                }).then(res => {
+                    if (res.code == 200) {
                         
-                        const result   = res.data.data
+                        const result   = res.data
                         this.installed = result
                         
                         this.plugin.data.forEach((item, index)=>{
                             // 比对两个版本，是否有更新
                             const version = this.getArrayId(result, item.id)
-                            const compare = inisHelper.compare.version(version, item.version)
+                            const compare = utils.compare.version(version, item.version)
                             item.update   = compare
                             if (compare) item.new_version = version
                         })
@@ -195,8 +188,8 @@
             
             getArrayId(data = [], id = null){
                 let result = ''
-                if (typeof data == 'object') data = Object.keys(data).map(function(i){return data[i]});
-                data.forEach(item=>{
+                if (typeof data == 'object') data = Object.keys(data).map(function(i){return data[i]})
+                data.forEach(item => {
                     if (item.id == id) result = item.version
                 })
                 return result
@@ -218,10 +211,6 @@
                     state: 'cache',
                 })
                 
-                const params = inisHelper.stringfy({
-                    ...obj
-                })
-                
                 this.notes.push({
                     id   : 'downloadApiFile',
                     name : '下载API文件',
@@ -229,25 +218,21 @@
                     state: null,
                 })
                 
-                axios.post('/admin/method/installApi', params).then(res=>{
+                POST('/admin/method/installApi', {
+                    ...obj
+                }).then(res => {
                     
-                    if (res.data.code == 200) {
-                        const result = res.data.data
+                    if (res.code == 200) {
+                        const result = res.data
                         this.setNotes('downloadApiFile', {state:'success'})
                         this.unzipApi(result)
                     } else this.setNotes('downloadApiFile', {state:'error'})
                     
-                }).catch(err=>{
-                    this.setNotes('downloadApiFile', {state:'error'})
-                })
+                }).catch(() => this.setNotes('downloadApiFile', {state:'error'}))
             },
             
             // 解压API
             unzipApi(obj = {}){
-                
-                const params = inisHelper.stringfy({
-                    ...obj
-                })
                 
                 this.notes.push({
                     id   : 'unzipApiFile',
@@ -256,33 +241,28 @@
                     state: null,
                 })
                 
-                axios.post('/admin/method/unzipApi', params).then(res=>{
+                POST('/admin/method/unzipApi', {
+                    ...obj
+                }).then(res => {
                     
-                    if (res.data.code == 200) {
+                    if (res.code == 200) {
                         
                         this.fulfill = true;
-                        const result = res.data.data
+                        const result = res.data
                         this.setNotes('unzipApiFile', {state:'success'})
                         this.setNotes('startInstall', {state:'success'})
                         this.getPlugin()
                         
                     } else this.setNotes('unzipApiFile', {state:'error'})
-                    
                 })
             },
             
             // 卸载API
             uninstall(id = null){
                 
-                const params = inisHelper.stringfy({
-                    id
-                })
-                
-                axios.post('/admin/method/uninstallApi', params).then(res=>{
-                    if (res.data.code == 200) {
-                        this.getPlugin()
-                        console.log(res.data.data)
-                    } else $.NotificationApp.send(null, "卸载失败！", "top-right", "rgba(0,0,0,0.2)", "error");
+                POST('/admin/method/uninstallApi', { id }).then(res => {
+                    if (res.code == 200) this.getPlugin()
+                    else Tool.Notyf('卸载失败！', 'error')
                 })
             },
             
@@ -295,14 +275,10 @@
             },
             
             // 判断为空
-            empty(value = null){
-                return inisHelper.is.empty(value) ? true : false;
-            },
+            empty: value => utils.is.empty(value),
             
             // 是否为True
-            isTrue(data = null){
-                return inisHelper.is.true(data)
-            },
+            isTrue: data => utils.is.true(data),
         },
         watch: {
             

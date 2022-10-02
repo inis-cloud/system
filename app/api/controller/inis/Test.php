@@ -4,13 +4,15 @@ declare (strict_types = 1);
 namespace app\api\controller\inis;
 
 use think\Request;
-use inis\utils\{helper};
+use inis\utils\{helper, utils};
 use app\admin\controller\Tool;
-use think\facade\{Db, Cache, Config, Validate, Filesystem, Log};
+use think\facade\{Db, Cache, Config, Validate, Filesystem, Log, Lang};
 use app\model\mysql\{Users, Links, Banner, Visit, Article, Comments};
 
 class Test extends Base
 {
+    protected $middleware = [];
+
     /**
      * 显示资源列表
      *
@@ -21,13 +23,19 @@ class Test extends Base
     {
         
         $data = [];
-        $code = 200;
-        $msg  = 'ok';
+        $code = 201;
+        $msg  = Lang::get('数据请求成功！');
         
         // 获取请求参数
         $param = $request->param();
-        
-        return $this->create($param, $msg, $code);
+        $header= $request->header();
+
+        $data = [
+            'param' => $param,
+            'header'=> $header,
+        ];
+
+        return $this->json($data, $msg, $code);
     }
 
     /**
@@ -36,57 +44,16 @@ class Test extends Base
      * @param  \think\Request  $request
      * @return \think\Response
      */
-    public function save(Request $request)
+    public function IPOST(Request $request, $IID)
     {
-        $data = [];
-        $code = 200;
-        $msg  = 'ok';
-        
         // 获取请求参数
         $param = $request->param();
+
+        $data   = [$IID];
+        $code   = 400;
+        $msg    = Lang::get('参数不存在！');
         
-        $time  = time();
-        $token = md5('testtest'.$time);
-        $ip    = "101.".mt_rand(1,255).".".mt_rand(1,255).".".mt_rand(1,255);
-        
-        $header= [                                                                                                                       
-            'Origin' =>'https://beian.miit.gov.cn/',                                                                                       
-            'Referer'=>'https://beian.miit.gov.cn/',                                                                                      
-            'token'  =>$token,                                                                                                              
-            'User-Agent'=>'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36',
-            'CLIENT-IP'=>$ip,                                                                                                      
-            'X-FORWARDED-FOR'=>$ip                                                                                                 
-        ];
-        
-        $data  = $this->helper->post('https://hlwicpfwc.miit.gov.cn/icpproject_query/api/auth',['authKey'=>$token,'timeStamp'=>$time], $header);
-        
-        // $ip = "101.".mt_rand(1,255).".".mt_rand(1,255).".".mt_rand(1,255);
-        // $ch = curl_init();
-        // $headers = array(
-            
-        //     "Content-Type: application/json; charset=utf-8",
-        //     "Origin: https://beian.miit.gov.cn/",
-        //     "Referer: https://beian.miit.gov.cn/",
-        //     "token: $token",
-        //     "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36",
-        //     "CLIENT-IP: $ip",
-        //     "X-FORWARDED-FOR: $ip"
-        // );
-        // curl_setopt($ch, CURLOPT_URL, "https://hlwicpfwc.miit.gov.cn/icpproject_query/api/auth");
-        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        // curl_setopt($ch, CURLOPT_POST, 1);
-        // curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        // curl_setopt($ch, CURLOPT_HEADER, 0);
-        // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        // curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        // $content = curl_exec($ch);
-        // curl_close($ch);
-        
-        // $data = $content;
-        
-        return $this->create($data, $msg, $code);
+        return $this->json($param, $msg, $code, ['method'=>'POST']);
     }
 
     /**
@@ -95,25 +62,16 @@ class Test extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function read(Request $request, $IID)
+    public function IGET(Request $request, $IID)
     {
-        $data   = [];
-        $code   = 400;
-        $msg    = '参数不存在！';
-        $result = [];
-        
         // 获取请求参数
         $param = $request->param();
+
+        $data   = [$IID];
+        $code   = 400;
+        $msg    = Lang::get('参数不存在！');
         
-        // 存在的方法
-        $method = ['sql'];
-        
-        // 动态方法且方法存在
-        if (in_array($IID, $method)) $result = $this->$IID($param);
-        // 动态返回结果
-        if (!empty($result)) foreach ($result as $key => $val) $$key = $val;
-        
-        return $this->create($data, $msg, $code);
+        return $this->json($param, $msg, $code, ['method'=>'GET']);
     }
 
     /**
@@ -123,16 +81,16 @@ class Test extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function update(Request $request, $IID)
+    public function IPUT(Request $request, $IID)
     {
-        $data   = [];
-        $code   = 400;
-        $msg    = '参数不存在！';
-        
         // 获取请求参数
         $param = $request->param();
+
+        $data   = [$IID];
+        $code   = 400;
+        $msg    = Lang::get('参数不存在！');
         
-        return $this->create($param, $msg, $code, ['method'=>'PUT']);
+        return $this->json($param, $msg, $code, ['method'=>'PUT']);
     }
 
     /**
@@ -141,23 +99,24 @@ class Test extends Base
      * @param  int  $IID
      * @return \think\Response
      */
-    public function delete(Request $request, $IID)
+    public function IDELETE(Request $request, $IID)
     {
-        $data   = [];
-        $code   = 400;
-        $msg    = '参数不存在！';
-        
         // 获取请求参数
         $param = $request->param();
+
+        $data   = [$IID];
+        $code   = 400;
+        $msg    = Lang::get('参数不存在！');
         
-        return $this->create($param, $msg, $code, ['method'=>'DELETE']);
+        return $this->json($param, $msg, $code, ['method'=>'DELETE']);
     }
     
+    // SQL语句
     public function sql($param)
     {
-        $data = [];
+        $data = ['sql'];
         $code = 400;
-        $msg  = 'ok';
+        $msg  = Lang::get('数据请求成功！');
         
         return ['data'=>$param,'code'=>$code,'msg'=>$msg];
     }

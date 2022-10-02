@@ -145,7 +145,7 @@
                             </div>
                             <div v-if="redundancy.length > 0">
                                 <div class="table-box customize-scroll max-h-400">
-                                    <table class="table table-row-bordered">
+                                    <table class="table custom table-row-bordered">
                                         <thead>
                                             <tr class="fw-bold fs-6 text-muted">
                                                 <th>序号</th>
@@ -371,14 +371,37 @@
                             <div class="row">
                                 <div class="accordion" id="accordionExample">
                                     <div class="card mb-2">
+                                        <div class="card-header border-unset" id="headingSystem">
+                                            <h5 class="m-0">
+                                                <a class="custom-accordion-title d-block pt-2 pb-2" data-bs-toggle="collapse" href="#collapseSystem" aria-expanded="false" aria-controls="collapseSystem">
+                                                    # 系统配置
+                                                </a>
+                                            </h5>
+                                        </div>
+                                        <div id="collapseSystem" class="collapse show" aria-labelledby="headingSystem" data-bs-parent="#accordionExample">
+                                            <div class="progress" style="height: 3px;"></div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="conf-switch mr-3">
+                                                            <span class="mr-2">自动更新</span>
+                                                            <input v-model="serve.other.system.autoUpdate" v-on:change="saveOther()" type="checkbox" id="show_comments" data-switch="primary">
+                                                            <label for="show_comments" data-on-label="On" data-off-label="Off"></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card mb-2">
                                         <div class="card-header border-unset" id="headingArticle">
                                             <h5 class="m-0">
-                                                <a class="custom-accordion-title d-block pt-2 pb-2" data-bs-toggle="collapse" href="#collapseArticle" aria-expanded="true" aria-controls="collapseArticle">
+                                                <a class="custom-accordion-title d-block pt-2 pb-2" data-bs-toggle="collapse" href="#collapseArticle" aria-expanded="false" aria-controls="collapseArticle">
                                                     # 文章配置
                                                 </a>
                                             </h5>
                                         </div>
-                                        <div id="collapseArticle" class="collapse show" aria-labelledby="headingArticle" data-bs-parent="#accordionExample">
+                                        <div id="collapseArticle" class="collapse" aria-labelledby="headingArticle" data-bs-parent="#accordionExample">
                                             <div class="progress" style="height: 3px;"></div>
                                             <div class="card-body">
                                                 <div class="row">
@@ -483,6 +506,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <p class="text-white bg-dark py-1 text-center custom-bark-text">风险操作！此功能不懂请勿开启！</p>
                     <p>Token 是服务端生成的一串字符串，用作客户端发起请求前校验的一个令牌。</p>
                     <p>开启 Token 验证后，客户端获取数据需要提交 Token，在一定的程度上可以防止API被恶意请求。</p>
                     <div class="form-group row">
@@ -527,6 +551,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <p class="text-white bg-dark py-1 text-center custom-bark-text">风险操作！此功能不懂请勿开启！</p>
                     <p>白名单是后端针对前端发起的API请求做的域名或IP限制。</p>
                     <p>开启后，只有名单内的域名或IP可以发起API请求，在一定的程度上可以防止API被恶意请求。</p>
                     <div class="row">
