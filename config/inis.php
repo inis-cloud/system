@@ -53,8 +53,8 @@ return [
 
     'openapi'=>[
         'baidu'=>[
-            'appid'=> 20211115000999812,
-            'key'  => 'b8w4x8w0eTuNDCFdwH9S',
+            'appid'=> 123456,
+            'key'  => '123456',
             'api'  => 'https://api.fanyi.baidu.com/api/'
         ],
         'reptile'=>[
@@ -62,9 +62,5 @@ return [
         ]
     ],
     
-<<<<<<< HEAD
     'version'      => '1.8.0',                          // inis 版本号 - 请不要自行更改，后果自负
-=======
-    'version'      => '1.7.1',                          // inis 版本号 - 请不要自行更改，后果自负
->>>>>>> 87fca681c9b58709de042bec437a274dd099cac1
 ];
