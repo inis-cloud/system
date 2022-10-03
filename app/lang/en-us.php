@@ -129,4 +129,5 @@ return [
     '页面别名只能是字母和数字！'=>'The page alias can only be letters and numbers!',
     '公告标题不能是空的！'=>'The announcement title cannot be empty!',
     '公告的标题最多不能超过64个字符！'=>'The announcement title cannot exceed 64 characters!',
+    '啊咧~我们可没有这个地址！'=>"Ahhh~ we don't have this address!"
 ];

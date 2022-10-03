@@ -1609,11 +1609,11 @@
         },
         {
             "name": "symfony/var-dumper",
-            "version": "v4.4.44",
+            "version": "v4.4.46",
             "dist": {
                 "type": "zip",
-                "url": "https://mirrors.cloud.tencent.com/repository/composer/symfony/var-dumper/v4.4.44/symfony-var-dumper-v4.4.44.zip",
-                "reference": "f19951007dae942cc79b979c1fe26bfdfbeb54ed",
+                "url": "https://mirrors.cloud.tencent.com/repository/composer/symfony/var-dumper/v4.4.46/symfony-var-dumper-v4.4.46.zip",
+                "reference": "90425fd98d1ecad98e4b2dca9f54f62069193b15",
                 "shasum": ""
             },
             "require": {
@@ -1671,15 +1671,15 @@
                 "debug",
                 "dump"
             ],
-            "time": "2022-07-20T09:59:04+00:00"
+            "time": "2022-09-03T23:07:25+00:00"
         },
         {
             "name": "tightenco/collect",
-            "version": "v9.27.0",
+            "version": "v9.33.0",
             "dist": {
                 "type": "zip",
-                "url": "https://mirrors.cloud.tencent.com/repository/composer/tightenco/collect/v9.27.0/tightenco-collect-v9.27.0.zip",
-                "reference": "171e83662a4db5d888631c2d318e3005ad2a3883",
+                "url": "https://mirrors.cloud.tencent.com/repository/composer/tightenco/collect/v9.33.0/tightenco-collect-v9.33.0.zip",
+                "reference": "306135c47c98cad966881170f9eb247bf4cef39d",
                 "shasum": ""
             },
             "require": {
@@ -1715,7 +1715,7 @@
                 "collection",
                 "laravel"
             ],
-            "time": "2022-09-02T22:56:44+00:00"
+            "time": "2022-09-30T18:57:36+00:00"
         },
         {
             "name": "topthink/framework",

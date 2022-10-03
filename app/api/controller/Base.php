@@ -30,13 +30,13 @@ abstract class Base
         $config = Config::get('inis');
 
         // 是否开启了缓存
-        $apiCache = $config['api_cache'];
+        $apiCache = config('inis.api.cache', false);
         // 是否获取缓存
         $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         $this->ApiCache = $apiCache and $cache;
         
         // 解析login-token
-        $token  = !empty($header['login-token']) ? $header['login-token'] : (!empty($param['login-token']) ? $param['login-token'] : []);
+        $token  = !empty($header['authorization']) ? $header['authorization'] : (!empty($param['login-token']) ? $param['login-token'] : []);
         $this->user   = !empty($token) ? $this->parseJWT($token) : [];
     }
 

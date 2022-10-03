@@ -8,8 +8,11 @@ use inis\utils\helper;
 $helper = new helper;
 
 return [
-    
-    'api_cache'          =>  true,                      // 开启API缓存
+
+    'api'   =>  [
+        'log'            =>  true,                      // 开启API日志
+        'cache'          =>  true,                      // 开启API缓存
+    ],
     'valid_time'         =>  5 * 60,                    // 验证码有效时间 - 单位秒
     'jwt'   =>  [
         'key'            =>  'inis-!@#$%*&',            // KEY - 用于校验 TOKEN 是否合法
@@ -62,5 +65,5 @@ return [
         ]
     ],
     
-    'version'      => '1.8.0',                          // inis 版本号 - 请不要自行更改，后果自负
+    'version'      => '1.8.1',                          // inis 版本号 - 请不要自行更改，后果自负
 ];

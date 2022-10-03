@@ -49,9 +49,9 @@ class Index extends BaseController
             $msg  = 'ok';
             
             $data['php']   = [
-                'need'     => '7.4',
+                'need'     => '8.0',
                 'version'  => PHP_VERSION,
-                'check'    => (version_compare(PHP_VERSION,'7.4','ge')) ? true : false
+                'check'    => (version_compare(PHP_VERSION,'8.0','ge')) ? true : false
             ];
             $data['exten'] = get_loaded_extensions();
             

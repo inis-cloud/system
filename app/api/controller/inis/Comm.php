@@ -49,7 +49,7 @@ class Comm extends BaseController
         
         $data  = [];
         $code  = 400;
-        $msg   = Lang::get('帐号和密码不能为空！');
+        $msg   = lang('帐号和密码不能为空！');
         $header= [];
         
         if (isset($param['account']) and isset($param['password'])) {
@@ -71,7 +71,7 @@ class Comm extends BaseController
                 $second_to_time = $this->helper->NaturalSecond($this->config['login_errot_time']);
                 
                 $code = 403;
-                $msg  = Lang::get('登录错误上限',[$this->config['login_error_count'],$second_to_time]);
+                $msg  = lang('登录错误上限',[$this->config['login_error_count'],$second_to_time]);
                 
             } else {
                 
@@ -90,7 +90,7 @@ class Comm extends BaseController
                 // 收集错误信息
                 if (!$users or !$this->verify_password($param['password'], $users['password'])){
                     
-                    $msg    = Lang::get('用户名或密码不正确！');
+                    $msg    = lang('用户名或密码不正确！');
                     
                     $log    = new Log;
                     $log->save([
@@ -117,7 +117,7 @@ class Comm extends BaseController
                     // 登录成功
                     $data   = ['login-token'=>$jwt];
                     $code   = 200;
-                    $msg    = Lang::get('登录成功！');
+                    $msg    = lang('登录成功！');
                 }
             }
         }
@@ -134,7 +134,7 @@ class Comm extends BaseController
         
         $data = [];
         $code = 400;
-        $msg  = Lang::get('非法访问！');
+        $msg  = lang('非法访问！');
         
         if (isset($param['login-token']) or isset($header['login-token'])) {
             
@@ -148,17 +148,17 @@ class Comm extends BaseController
                 
                 $data = Users::withoutField(['password'])->find($arr['uid']);
                 $code = 200;
-                $msg  = Lang::get('合法登录！');
+                $msg  = lang('合法登录！');
                 
             } catch (SignatureInvalidException $e){
                 // $e->getMessage()
-                $msg = Lang::get('签名不正确！');
+                $msg = lang('签名不正确！');
             } catch (BeforeValidException $e){
-                $msg = Lang::get('login-token失效！');
+                $msg = lang('login-token失效！');
             } catch (ExpiredException $e){
-                $msg = Lang::get('login-token失效！');
+                $msg = lang('login-token失效！');
             } catch (Exception $e){
-                $msg = Lang::get('未知错误！');
+                $msg = lang('未知错误！');
             };
         }
         
@@ -181,7 +181,7 @@ class Comm extends BaseController
         $time = time();
         $code_data = (empty($param['code'])) ? '' : strtoupper($param['code']);
         
-        if (empty($code_data)) $msg = Lang::get('验证码不得为空！');
+        if (empty($code_data)) $msg = lang('验证码不得为空！');
         else {
             
             $verify_code = VerifyCode::where(['types'=>'email','content'=>$param['email'],'code'=>$code_data])->findOrEmpty();
@@ -191,7 +191,7 @@ class Comm extends BaseController
                 if ($verify_code->end_time < $time) {
                     
                     $code = 412;
-                    $msg  = Lang::get('验证码已失效！');
+                    $msg  = lang('验证码已失效！');
                     
                 } else {
                     
@@ -217,7 +217,7 @@ class Comm extends BaseController
                     $msg  = 'ok';
                 }
                 
-            } else $msg = Lang::get('验证码错误！');
+            } else $msg = lang('验证码错误！');
         }
         
         return $this->json($data, $msg, $code);
@@ -230,15 +230,15 @@ class Comm extends BaseController
         
         if($options->opt->token->status == 0){
             $data = [];
-            $msg  = Lang::get('未开启 Token 验证！');
+            $msg  = lang('未开启 Token 验证！');
             $code = 204;
         }elseif ($options->opt->token->open == 0){
-            $data = [Lang::get('想什么呢，Token这么重要的东西，能给你吗？')];
-            $msg  = Lang::get('未经授权！');
+            $data = [lang('想什么呢，Token这么重要的东西，能给你吗？')];
+            $msg  = lang('未经授权！');
             $code = 403;
         }else{
             $data = $options->opt->token->value;
-            $msg  = Lang::get('请求成功！');
+            $msg  = lang('请求成功！');
             $code = 200;
         }
         

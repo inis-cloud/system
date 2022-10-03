@@ -7,7 +7,6 @@ use think\{Request, Response};
 use inis\utils\{File, helper};
 use app\admin\controller\{Tool};
 use think\facade\{Config, Lang};
-// use app\api\middleware\{api, handle};
 
 use Firebase\JWT\{JWT, ExpiredException, BeforeValidException, SignatureInvalidException};
 
@@ -36,7 +35,7 @@ abstract class Base
         $this->header = $header;
         
         // 是否开启了缓存
-        $apiCache = $this->config['api_cache'];
+        $apiCache = config('inis.api.cache', false);
         // 是否获取缓存
         $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
         $this->ApiCache = $apiCache and $cache;

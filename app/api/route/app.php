@@ -15,6 +15,33 @@ Route::group('comm', function (){
     Route::rule(':INAME1', 'inis.Comm/:INAME1');
 });
 
+// 第三方API分组路由
+Route::group(function () {
+    // 文件方式
+    Route::resource(':INAME-api', 'plugins.:INAME')->rest([
+        'read'  =>['GET'   , '/:IID', 'read'],
+        'update'=>['PUT'   , ''     , 'update'],
+        'delete'=>['DELETE', ''     , 'delete'],
+        'patch' =>['PATCH' , ''     , 'patch'],
+    ]);
+    // 文件夹方式
+    Route::resource(':INAME-:IDIR-api', 'app\api\controller\plugins\:IDIR\:INAME')->rest([
+        'read'  =>['GET'   , '/:IID', 'read'],
+        'update'=>['PUT'   , ''     , 'update'],
+        'delete'=>['DELETE', ''     , 'delete'],
+        'patch' =>['PATCH' , ''     , 'patch'],
+    ]);
+})->allowCrossDomain([
+    // 自定义headers参数
+    'Access-Control-Allow-Headers' => 'token, login-token, authorization',
+])->miss(function(){
+    return json([
+        'code' => 404,
+        'data' => [],
+        'msg'  => lang('啊咧~我们可没有这个地址！')
+    ]);
+})->middleware([\app\api\middleware\api::class]);
+
 // INIS API 分组路由
 Route::group(function () {
 
@@ -60,27 +87,6 @@ Route::group(function () {
     return json([
         'code' => 404,
         'data' => [],
-        'msg'  => 'Not Route'
+        'msg'  => lang('啊咧~我们可没有这个地址！')
     ]);
 });
-
-// 第三方API分组路由
-Route::group(function () {
-    // 文件方式
-    Route::resource(':INAME-api', 'plugins.:INAME')->rest([
-        'read'  =>['GET'   , '/:IID', 'read'],
-        'update'=>['PUT'   , ''     , 'update'],
-        'delete'=>['DELETE', ''     , 'delete'],
-        'patch' =>['PATCH' , ''     , 'patch'],
-    ]);
-    // 文件夹方式
-    Route::resource(':INAME-:IDIR-api', 'app\api\controller\plugins\:IDIR\:INAME')->rest([
-        'read'  =>['GET'   , '/:IID', 'read'],
-        'update'=>['PUT'   , ''     , 'update'],
-        'delete'=>['DELETE', ''     , 'delete'],
-        'patch' =>['PATCH' , ''     , 'patch'],
-    ]);
-})->allowCrossDomain([
-    // 自定义headers参数
-    'Access-Control-Allow-Headers' => 'token, login-token, authorization',
-])->middleware([\app\api\middleware\api::class]);

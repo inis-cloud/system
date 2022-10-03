@@ -133,13 +133,13 @@ class api
         }
 
         // 写入日志
-        // $this->FileLog->save([
-        //     'ip'    =>  $request->ip(),
-        //     'url'   =>  $request->url(),
-        //     'method'=>  $request->method(),
-        //     'ua'    =>  $request->header('user-agent'),
-        //     'params'=>  $request->param(),
-        // ]);
+        if (config('inis.api.log', false)) $this->FileLog->save([
+            'ip'    =>  $request->ip(),
+            'url'   =>  $request->url(),
+            'method'=>  $request->method(),
+            'ua'    =>  $request->header('user-agent'),
+            'params'=>  $request->param(),
+        ]);
         
         // 回调本身并返回response对象
         return $reponse;
