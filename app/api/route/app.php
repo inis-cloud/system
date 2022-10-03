@@ -34,13 +34,7 @@ Route::group(function () {
 })->allowCrossDomain([
     // 自定义headers参数
     'Access-Control-Allow-Headers' => 'token, login-token, authorization',
-])->miss(function(){
-    return json([
-        'code' => 404,
-        'data' => [],
-        'msg'  => lang('啊咧~我们可没有这个地址！')
-    ]);
-})->middleware([\app\api\middleware\api::class]);
+])->middleware([\app\api\middleware\api::class]);
 
 // INIS API 分组路由
 Route::group(function () {
