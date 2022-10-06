@@ -7,10 +7,10 @@ use app\BaseController;
 use think\{Request, Response};
 use app\admin\controller\Tool;
 use inis\utils\{File, helper};
-use think\facade\{Config, Validate, Lang};
 use think\exception\ValidateException;
 use app\validate\Users as UsersValidate;
-use app\model\mysql\{Log, Users, Options, VerifyCode};
+use app\model\mysql\{Log, Users, Options};
+use think\facade\{Config, Validate, Lang, Cache};
 
 use Firebase\JWT\{JWT, ExpiredException, BeforeValidException, SignatureInvalidException};
 
@@ -179,45 +179,40 @@ class Comm extends BaseController
         $obtain = ['email','nickname','password'];
         
         $time = time();
-        $code_data = (empty($param['code'])) ? '' : strtoupper($param['code']);
         
-        if (empty($code_data)) $msg = lang('验证码不得为空！');
+        if (empty($param['code'])) $msg = lang('验证码不得为空！');
         else {
             
-            $verify_code = VerifyCode::where(['types'=>'email','content'=>$param['email'],'code'=>$code_data])->findOrEmpty();
-            
-            if (!$verify_code->isEmpty()) {
-                
-                if ($verify_code->end_time < $time) {
-                    
-                    $code = 412;
-                    $msg  = lang('验证码已失效！');
-                    
-                } else {
-                    
-                    $users = new Users;
+            $cache_name = 'email-verify-code-' . $param['email'];
+
+            if (Cache::has($cache_name)) {
+
+                if (Cache::get($cache_name) != strtoupper($param['code'])) $msg = lang('验证码无效！');
+                else {
+
+                    $item = new Users;
                     
                     // 存储数据
                     foreach ($param as $key => $val) {
                         // 判断字段是否允许存储，防提权
                         if (in_array($key, $obtain)) {
-                            if ($key == 'password') $users->password = password_hash(md5($val), PASSWORD_BCRYPT);
-                            else $users->$key = $val;
+                            if ($key == 'password') $item->password = password_hash(md5($val), PASSWORD_BCRYPT);
+                            else $item->$key = $val;
                         }
                     }
                     
                     // 随机默认头像
-                    $users->head_img = (new helper)->RandomImg("local", "admin/images/anime/");
+                    $item->head_img = (new helper)->RandomImg('local', 'admin/images/anime/');
                     
-                    $users->save();
-                    $verify_code->delete();
+                    $item->save();
                     
                     $data = ['email'=>$param['email'],'password'=>$param['password']];
                     $code = 200;
-                    $msg  = 'ok';
+                    $msg  = lang('注册成功！');
+                    Cache::delete($cache_name);
                 }
-                
-            } else $msg = lang('验证码错误！');
+    
+            } else $msg = lang('验证码已失效，请重新获取！');
         }
         
         return $this->json($data, $msg, $code);

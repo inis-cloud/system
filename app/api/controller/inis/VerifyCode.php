@@ -143,7 +143,7 @@ class VerifyCode extends Base
 
         if (Cache::has($cache_name)) {
 
-            if (Cache::get($cache_name) != $param['code']) $msg = lang('验证码无效！');
+            if (Cache::get($cache_name) != strtoupper($param['code'])) $msg = lang('验证码无效！');
             else {
 
                 $code= 200;

@@ -3,6 +3,7 @@
 namespace app\model\mysql;
 
 use think\Model;
+use inis\utils\{helper};
 
 class ArticleSort extends Model
 {
@@ -85,6 +86,7 @@ class ArticleSort extends Model
     {
         $value = !empty($value) ? json_decode($value, true) : [];
         $value = array_merge(['head_img'=>''], $value);
+        $value['head_img'] = !empty($value['head_img']) ? $value['head_img'] : (new helper)->RandomImg('local', 'admin/images/anime/');
         return (object)$value;
     }
 }

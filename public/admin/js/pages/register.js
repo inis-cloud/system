@@ -111,8 +111,7 @@
                         
                     }, 1000)
                     
-                    POST('/api/verify-code', {
-                        mode : 'create',
+                    POST('/api/verify-code/create', {
                         email: this.user.email,
                     }).then(res=>{
                         if (res.code == 200) Tool.Notyf(res.msg, 'success')

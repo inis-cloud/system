@@ -3,9 +3,6 @@
     const app = Vue.createApp({
         data() {
             return {
-                official: {         // 官方信息
-                    api: 'https://inis.cc/api/'
-                },
                 apis:{},            // 官方的API
                 internal: {},       // 内置的API
                 plugin: {           // 已安装API
@@ -55,12 +52,7 @@
             },
             
             initData(){
-                POST('/admin/update/info').then(res => {
-                    if (res.code == 200) {
-                        const result  = res.data
-                        this.official = result.official
-                    }
-                })
+
             },
             
             // 获取内置的API
@@ -132,7 +124,7 @@
                 // 数据加载动画
                 this.page.apis.is_load = true
                 
-                GET(this.official.api + 'plugin', {
+                GET(inis.api + 'plugin', {
                     page, limit: 12
                 }).then(res => {
                     if (res.code == 200) {
@@ -160,13 +152,13 @@
                         
                         // 数据加载动画
                         this.page.apis.is_load = false
-                    }
+                    } else Tool.Notyf(res.msg, 'error')
                 })
             },
             
             // 从官方获取已安装API的最新数据
             installedApi(){
-                GET(this.official.api + 'plugin', {
+                GET(inis.api + 'plugin', {
                     id: this.plugin.installed.id,
                     withoutField: ['uid','title','expand','content','url','docsify','status','size','opt','longtext','create_time','update_time']
                 }).then(res => {

@@ -7,7 +7,7 @@ use Parsedown;
 use think\Request;
 use inis\utils\{markdown};
 use think\facade\{Cache, Validate, Config, Lang, Log};
-use app\model\mysql\{Tag, Visit, Article as ArticleModel, Comments};
+use app\model\mysql\{Tag, Visit, Article as ArticleModel, Comments, ArticleSort};
 
 class Article extends Base
 {
@@ -550,7 +550,7 @@ class Article extends Base
             $map2 = ['id','<',$param['id']];
             $map3 = ['is_show','=',1];
             
-            $field= ['id','title','description','img_src','views','create_time','update_time','last_update_time'];
+            $field= ['id','title','description','img_src','views','sort_id','create_time','update_time','last_update_time'];
             
             // 上一篇
             $data['prev'] = ArticleModel::where([$map2, $map3])->field($field)->find();
@@ -597,6 +597,9 @@ class Article extends Base
         
         // 统计评论
         $result['comments']['count'] = sizeof(Comments::where(['article_id'=>$data['id']])->field(['article_id'])->select());
+        // 分类ID
+        $sort = array_merge(array_filter(explode('|', $data['sort_id'] ?? '')));
+        $result['sort'] = !empty($sort) ? ArticleSort::where('is_show', 1)->field(['id','name','description','opt'])->select($sort) : [];
         
         return $result;
     }

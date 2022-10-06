@@ -284,7 +284,7 @@ class Other extends Base
             $domain = str_replace(['https:','http:','//'], '', $ip);
             
             // 是否开启了缓存
-            $api_cache = $this->config['api_cache'];
+            $api_cache = config('inis.api.cache');
             // 是否获取缓存
             $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
             

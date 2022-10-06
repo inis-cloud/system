@@ -29,7 +29,7 @@ class Api extends Base
             $order = (!empty($param['order'])) ? $param['order'] : 'create_time desc';
             
             // 是否开启了缓存
-            $api_cache = $this->config['api_cache'];
+            $api_cache = config('inis.api.cache');
             // 是否获取缓存
             $cache = (empty($param['cache']) or $param['cache'] == 'true') ? true : false;
             
