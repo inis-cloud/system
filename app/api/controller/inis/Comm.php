@@ -100,7 +100,7 @@ class Comm extends BaseController
                         'content'=>$param['account'],
                     ]);
                     
-                }else{
+                } else {
                     
                     $token = [
                         "iss" => "inis",            // 签发者 可以为空

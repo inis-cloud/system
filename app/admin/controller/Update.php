@@ -17,6 +17,12 @@ class Update extends Base
     // 批量建表
     public function createTables(Request $request)
     {
+        $File = new File;
+        $path = app()->getRootPath() . '/extend';
+        $dir  = $File->getDir($path)['dir'];
+
+        if (!in_array('sqlite', $dir)) $File->createDir($path . '/sqlite');
+
         if ($request->isPost())
         {
             $data  = [];

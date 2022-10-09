@@ -18,6 +18,11 @@ class Handle extends BaseController
         $this->File     = new File;
         $this->helper   = new helper;
         $this->DBUPDATE = Config::get('dbupdate');
+
+        $path = app()->getRootPath() . '/extend';
+        $dir  = $this->File->getDir($path)['dir'];
+
+        if (!in_array('sqlite', $dir)) $this->File->createDir($path . '/sqlite');
     }
     
     // 数据库连接测试

@@ -49,11 +49,14 @@ class Test extends Base
         // 获取请求参数
         $param = $request->param();
 
-        $data   = [$IID];
+        $data   = [
+            'param' => $param,
+            'header'=> $request->header(),
+        ];
         $code   = 400;
-        $msg    = Lang::get('参数不存在！');
+        $msg    = Lang::get('ok！');
         
-        return $this->json($param, $msg, $code, ['method'=>'POST']);
+        return $this->json($data, $msg, $code, ['method'=>'POST']);
     }
 
     /**

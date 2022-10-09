@@ -20,16 +20,25 @@ use GuzzleHttp\Client;
 class Test
 {
     // 构造器
-    // public function __construct()
-    // {
-    //     $this->utils = new utils;
-    // }
+    public function __construct()
+    {
+        $this->file  = new File;
+        $this->utils = new utils;
+    }
     
     public function index(Request $request)
     {
         $data = [];
         // 获取请求参数
         $param= $request->param();
+
+        $dir  = $this->file->getDir(app()->getRootPath() . '/extend')['dir'];
+
+        $data[] = $dir;
+
+        if (!in_array('test', $dir)) {
+            $this->file->createDir(app()->getRootPath() . '/extend/test');
+        }
 
 
 
