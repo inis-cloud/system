@@ -258,13 +258,10 @@
                     
                     this.load.cache = true
                     
-                    let params = new FormData
-                    params.append('file_name', check.join() || '')
-                    
-                    POST('/admin/handle/clearCache', params).then(res=>{
-                        if (res.code == 200) {
-                            this.getRuntime()
-                        }
+                    POST('/admin/handle/clearCache', {
+                        file_name: check.join()
+                    }).then(res=>{
+                        if (res.code == 200) this.getRuntime()
                         this.load.cache = false
                     })
                 }

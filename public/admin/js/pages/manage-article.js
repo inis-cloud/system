@@ -128,11 +128,11 @@
                 
                 let [array, status] = ['', 0]
                 
-                opt = opt == 'all' ? this.is_top_all : this.is_top_my
-                
+                array = opt == 'all' ? this.is_top_all : this.is_top_my
+
                 // 状态取反
                 status = utils.in.array(id, array) ? 0 : 1
-                
+
                 POST('/admin/handle/SetArticleTop', { id, status })
             },
             
@@ -142,10 +142,10 @@
                 let [array, status] = ['', 0]
                 
                 array = opt == 'all' ? this.is_show_all : this.is_show_my
-                
+
                 // 状态取反
                 status = utils.in.array(id, array) ? 0 : 1
-                
+
                 POST('/admin/handle/SetArticleShow', { id, status })
             },
             

@@ -98,7 +98,7 @@ class Handle extends BaseController
         
         $env_file_path = "../.env";
         
-        $text = "# 开发者模式\nAPP_DEBUG = false\n\n[APP]\n# 默认的网站应用\nDEFAULT_APP      = admin\nTAG_PRE_LOAD     = false\n# 时区\nDEFAULT_TIMEZONE = Asia/Shanghai\n\n# 数据库配置\n[DATABASE]\n# 数据库类型\nTYPE     = mysql\n# 数据库地址\nHOSTNAME = $HOSTNAME\n# 数据库用户\nDATABASE = $DATABASE\n# 数据库名称\nUSERNAME = $USERNAME\n# 数据库密码\nPASSWORD = $PASSWORD\n# 数据库端口\nHOSTPORT = $HOSTPORT\n# 编码\nCHARSET  = utf8mb4\n# 调试模式\nDEBUG    = true\n# 数据库前缀\nPREFIX   = inis_\n\n[LANG]\n# 默认语言\ndefault_lang = zh-cn\n\n[WEB]\nAPPCODE = inisblog\nKEY = aisfucasoiasdadwa_inis\nISS = INIS\nAUD = YUEQING\nEXPIRE = 14400\n";
+        $text = "# 开发者模式\nAPP_DEBUG = false\n\n[APP]\n# 默认的网站应用\nDEFAULT_APP      = admin\n# 时区\nDEFAULT_TIMEZONE = Asia/Shanghai\n\n# 数据库配置\n[DATABASE]\n# 数据库类型\nTYPE     = mysql\n# 数据库地址\nHOSTNAME = $HOSTNAME\n# 数据库用户\nDATABASE = $DATABASE\n# 数据库名称\nUSERNAME = $USERNAME\n# 数据库密码\nPASSWORD = $PASSWORD\n# 数据库端口\nHOSTPORT = $HOSTPORT\n# 编码\nCHARSET  = utf8mb4\n# 调试模式\nDEBUG    = true\n# 数据库前缀\nPREFIX   = inis_\n\n[LANG]\n# 默认语言\ndefault_lang = zh-cn\n\n[WEB]\nAPPCODE = inisblog\nKEY = aisfucasoiasdadwa_inis\nISS = INIS\nAUD = YUEQING\nEXPIRE = 14400\n";
         
         $env = $this->File->writeFile($env_file_path, $text);
     }

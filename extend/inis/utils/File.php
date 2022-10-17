@@ -342,17 +342,17 @@ class File
      * 改变文件和目录的相关属性
      * @param string $file 文件或路径
      * @param string $mode 操作类型
-     * @param string $ch_info 操作信息
+     * @param string $info 操作信息
      * @return boolean
      */
-    public function changeFile(string $file, string  $mode, $ch_info)
+    public function changeFile(string $file, string $mode, $info = 0755)
     {
         switch ($mode){
-            case 'group' : $is_ok = chgrp($file, $ch_info);  // 改变文件组。
+            case 'group' : $ok = chgrp($file, $info);  // 改变文件组。
                 break;
-            case 'mode'  : $is_ok = chmod($file, $ch_info);  // 改变文件模式。
+            case 'mode'  : $ok = chmod($file, $info);  // 改变文件模式。
                 break;
-            case 'ower'  : $is_ok = chown($file, $ch_info);  // 改变文件所有者。
+            case 'ower'  : $ok = chown($file, $info);  // 改变文件所有者。
                 break;
         }
     }

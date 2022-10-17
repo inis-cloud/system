@@ -15,7 +15,7 @@ return [
     ],
     'valid_time'         =>  5 * 60,                    // 验证码有效时间 - 单位秒
     'jwt'   =>  [
-        'key'            =>  'inis-!@#$%^&',                // KEY - 用于校验 TOKEN 是否合法
+        'key'            =>  'inis-api',                // KEY - 用于校验 TOKEN 是否合法
         'encrypt'        =>  'HS256',                   // 加密方式
         'array'          =>  ['HS256','HS384','HS512'], // 可用加密方式
     ],
@@ -65,5 +65,5 @@ return [
         ]
     ],
     
-    'version'      => '1.8.3',                          // inis 版本号 - 请不要自行更改，后果自负
+    'version'      => '1.8.4',                          // inis 版本号 - 请不要自行更改，后果自负
 ];

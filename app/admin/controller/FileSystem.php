@@ -173,7 +173,7 @@ class FileSystem extends Base
             else $this->File->createDir($path_file);
             
             // 设置权限
-            $this->File->changeFile($path_file,'mode', 0755);
+            $this->File->changeFile($path_file, 'mode', 0755);
             
             $data = [];
             $code = 200;

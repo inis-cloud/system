@@ -39,7 +39,7 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $options = Options::where(['keys'=>'config:security'])->find();
+            $item = Options::where(['keys'=>'config:security'])->find();
             
             if($param['status'] == 1){
                 
@@ -48,8 +48,8 @@ class Handle extends Base
                 $data['token']  = $token;
                 $msg  = 'Token验证 开启 成功！';
                 
-                $options->opt->token->status = 1;
-                $options->opt->token->value  = $token;
+                $item->opt->token->status = 1;
+                $item->opt->token->value  = $token;
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
@@ -57,11 +57,11 @@ class Handle extends Base
                 $data['token']  = '';
                 $msg  = 'Token验证 关闭 成功！';
                 
-                $options->opt->token->status = 0;
-                $options->opt->token->value = '';
+                $item->opt->token->status = 0;
+                $item->opt->token->value = '';
             }
-            $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
-            $options->save();
+            $item->opt = json_encode($item->opt, JSON_UNESCAPED_UNICODE);
+            $item->save();
             
             return $this->json($data, $msg, $code);
         }
@@ -79,24 +79,24 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $options = Options::where(['keys'=>'config:security'])->find();
+            $item = Options::where(['keys'=>'config:security'])->find();
             
             if($param['status'] == 1){
                 
                 $data['status'] = 1;
                 $msg  = '允许通过API方式获取Token 开启 成功！';
                 
-                $options->opt->token->open = 1;
+                $item->opt->token->open = 1;
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
                 $data['status'] = 0;
                 $msg  = '允许通过API方式获取Token 关闭 成功！';
                 
-                $options->opt->token->open = 0;
+                $item->opt->token->open = 0;
             }
-            $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
-            $options->save();
+            $item->opt = json_encode($item->opt, JSON_UNESCAPED_UNICODE);
+            $item->save();
             
             return $this->json($data, $msg, $code);
         }
@@ -113,12 +113,12 @@ class Handle extends Base
             
             $token = md5($this->token_prefix.time());
             
-            $options = Options::where(['keys'=>'config:security'])->find();
+            $item = Options::where(['keys'=>'config:security'])->find();
             
             if($param['code'] == 1){
-                $options->opt->token->value = $token;
-                $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
-                $options->save();
+                $item->opt->token->value = $token;
+                $item->opt = json_encode($item->opt, JSON_UNESCAPED_UNICODE);
+                $item->save();
                 
                 $data = ['token'=>$token];
                 $code = 200;
@@ -148,11 +148,11 @@ class Handle extends Base
             
             $token = (!empty($param['token'])) ? $param['token'] : '';
             
-            $options = Options::where(['keys'=>'config:security'])->find();
+            $item = Options::where(['keys'=>'config:security'])->find();
             
-            $options->opt->token->value = $token;
-            $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
-            $options->save();
+            $item->opt->token->value = $token;
+            $item->opt = json_encode($item->opt, JSON_UNESCAPED_UNICODE);
+            $item->save();
             
             return $this->json($data, $msg, $code);
         }
@@ -170,24 +170,24 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $options = Options::where(['keys'=>'config:security'])->find();
+            $item = Options::where(['keys'=>'config:security'])->find();
             
             if($param['status'] == 1){
                 
                 $data['status'] = 1;
                 $msg  = '白名单 开启 成功！';
-                $options->opt->domain = ['status'=>1];
+                $item->opt->domain = ['status'=>1];
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
                 $data['status'] = 0;
                 $msg  = '白名单 关闭 成功！';
-                $options->opt->domain = ['status'=>0];
+                $item->opt->domain = ['status'=>0];
             }
-            $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
-            $options->save();
+            $item->opt = json_encode($item->opt, JSON_UNESCAPED_UNICODE);
+            $item->save();
             
-            return $this->json($options->opt->domain, $msg, $code);
+            return $this->json($item->opt->domain, $msg, $code);
         }
     }
     
@@ -203,21 +203,21 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $article = Article::find($param['id']);
+            $item = Article::find($param['id']);
             
-            if($param['status'] == 1){
+            if ($param['status'] == 1) {
                 
-                $article->is_top = 1;
+                $item->is_top = 1;
                 $data['status']  = 1;
                 $msg = '文章置顶开启成功！';
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
-                $article->is_top = 0;
+                $item->is_top = 0;
                 $data['status']  = 0;
                 $msg = '文章置顶关闭成功！';
             }
-            $article->save();
+            $item->save();
             
             // 清除缓存
             Cache::tag(['article','group'])->clear();
@@ -238,21 +238,21 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $article = Article::find($param['id']);
+            $item = Article::find($param['id']);
             
             if($param['status'] == 1){
                 
-                $article->is_show = 1;
+                $item->is_show = 1;
                 $data['status']   = 1;
                 $msg = '文章显示开启成功！';
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
-                $article->is_show = 0;
+                $item->is_show = 0;
                 $data['status']   = 0;
                 $msg = '文章显示关闭成功！';
             }
-            $article->save();
+            $item->save();
             
             // 清除缓存
             Cache::tag(['article','group'])->clear();
@@ -273,21 +273,21 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $page = Page::find($param['id']);
+            $item = Page::find($param['id']);
             
             if($param['status'] == 1){
                 
-                $page->is_show = 1;
+                $item->is_show = 1;
                 $data['status']   = 1;
                 $msg = '页面显示开启成功！';
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
-                $page->is_show = 0;
+                $item->is_show = 0;
                 $data['status']   = 0;
                 $msg = '页面显示关闭成功！';
             }
-            $page->save();
+            $item->save();
             
             // 清除缓存
             Cache::tag(['page','group'])->clear();
@@ -308,21 +308,21 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $article_sort = ArticleSort::find($param['id']);
+            $item = ArticleSort::find($param['id']);
             
             if($param['status'] == 1){
                 
-                $article_sort->is_show = 1;
+                $item->is_show = 1;
                 $data['status']   = 1;
                 $msg = '文章分类显示开启成功！';
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
-                $article_sort->is_show = 0;
+                $item->is_show = 0;
                 $data['status']   = 0;
                 $msg = '文章分类显示关闭成功！';
             }
-            $article_sort->save();
+            $item->save();
             
             // 清除缓存
             Cache::tag('article-sort')->clear();
@@ -343,21 +343,21 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $users = Users::find($param['id']);
+            $item = Users::find($param['id']);
             
             if($param['status'] == 1){
                 
-                $users->status   = 1;
+                $item->status   = 1;
                 $data['status']  = 1;
                 $msg = '该用户被启用！';
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
-                $users->status   = 0;
+                $item->status   = 0;
                 $data['status']  = 0;
                 $msg = '该用户被禁用！';
             }
-            $users->save();
+            $item->save();
             
             return $this->json($data, $msg, $code);
         }
@@ -375,21 +375,21 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $links = Links::find($param['id']);
+            $item = Links::find($param['id']);
             
             if($param['status'] == 1){
                 
-                $links->is_show = 1;
+                $item->is_show = 1;
                 $data['status']   = 1;
                 $msg = '友链显示开启成功！';
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
-                $links->is_show = 0;
+                $item->is_show = 0;
                 $data['status']   = 0;
                 $msg = '友链显示关闭成功！';
             }
-            $links->save();
+            $item->save();
             
             // 清除缓存
             Cache::tag('links')->clear();
@@ -410,21 +410,21 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $links_sort = LinksSort::find($param['id']);
+            $item = LinksSort::find($param['id']);
             
             if($param['status'] == 1){
                 
-                $links_sort->is_show = 1;
+                $item->is_show = 1;
                 $data['status']   = 1;
                 $msg = '友链分类显示开启成功！';
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
-                $links_sort->is_show = 0;
+                $item->is_show = 0;
                 $data['status']   = 0;
                 $msg = '友链分类显示关闭成功！';
             }
-            $links_sort->save();
+            $item->save();
             
             // 清除缓存
             Cache::tag('links-sort')->clear();
@@ -445,21 +445,21 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $tag = Tag::find($param['id']);
+            $item = Tag::find($param['id']);
             
             if($param['status'] == 1){
                 
-                $tag->is_show = 1;
+                $item->is_show = 1;
                 $data['status']   = 1;
                 $msg = '友链显示开启成功！';
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
-                $tag->is_show = 0;
+                $item->is_show = 0;
                 $data['status']   = 0;
                 $msg = '友链显示关闭成功！';
             }
-            $tag->save();
+            $item->save();
             
             // 清除缓存
             Cache::tag('tag')->clear();
@@ -481,13 +481,13 @@ class Handle extends Base
             $code = 200;
             $msg  = '保存成功！';
             
-            $options = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
+            $item = Options::where(['keys'=>'config:email-serve'])->findOrEmpty();
             
-            if ($options->isEmpty()) $options->keys = 'config:email-serve';
-            $options->opt->email_cc = $param['email_cc'];
+            if ($item->isEmpty()) $item->keys = 'config:email-serve';
+            $item->opt->email_cc = $param['email_cc'];
             
-            $options->opt = json_encode($options->opt, JSON_UNESCAPED_UNICODE);
-            $options->save();
+            $item->opt = json_encode($item->opt, JSON_UNESCAPED_UNICODE);
+            $item->save();
             
             return $this->json($data, $msg, $code);
         }
@@ -498,9 +498,9 @@ class Handle extends Base
      */
     public function uploadImage()
     {
-        $upload = (new Tool)->upload('image', '', 'more');
+        $item = (new Tool)->upload('image', '', 'more');
         
-        return $upload;
+        return $item;
     }
     
     /** 
@@ -570,15 +570,15 @@ class Handle extends Base
     {
         $account_id = Session::get('login_account')['id'];
         
-        $upload = (new Tool())->upload('image', ['storage', 'users/uid-' . $account_id, [time()]]);
+        $item = (new Tool())->upload('image', ['storage', 'users/uid-' . $account_id, [time()]]);
         
-        if ($upload['code'] == 200){
+        if ($item['code'] == 200){
             
             $users = Users::find($account_id);
-            $users->head_img = $upload['data'];
+            $users->head_img = $item['data'];
             $users->save();
             
-            $url = str_replace($this->helper->domain() . '/', '', $upload['data']);
+            $url = str_replace($this->helper->domain() . '/', '', $item['data']);
             (new Image($url, 0.5))->compress($url);
             
             unset($users['password']);
@@ -586,7 +586,7 @@ class Handle extends Base
             Session::set('login_account', $users);
         }
         
-        return $upload;
+        return $item;
     }
     
     /** 
@@ -594,21 +594,21 @@ class Handle extends Base
      */
     public function uploadSiteHead()
     {
-        $upload = (new Tool())->upload('image', ['storage', 'users', [time()]]);
+        $item = (new Tool())->upload('image', ['storage', 'users', [time()]]);
         
-        if ($upload['code'] == 200) {
+        if ($item['code'] == 200) {
             
             $site = Options::where(['keys'=>'site'])->find();
             $opt  = json_decode(json_encode($site->opt), true);
-            $opt['image'] = $upload['data'];
+            $opt['image'] = $item['data'];
             $site->opt = json_encode($opt, JSON_UNESCAPED_UNICODE);
             $site->save();
             
-            $url = str_replace($this->helper->domain() . '/', '', $upload['data']);
+            $url = str_replace($this->helper->domain() . '/', '', $item['data']);
             (new Image($url, 0.5))->compress($url);
         }
         
-        return $upload;
+        return $item;
     }
     
     /** 
@@ -647,21 +647,21 @@ class Handle extends Base
             $data = [];
             $code = 200;
             
-            $music = Music::find($param['id']);
+            $item = Music::find($param['id']);
             
             if($param['status'] == 1){
                 
-                $music->is_show  = 1;
+                $item->is_show  = 1;
                 $data['status']  = 1;
                 $msg = '该歌单被启用！';
                 
             } else if($param['status'] == 0 or empty($param['status'])) {
                 
-                $music->is_show  = 0;
+                $item->is_show  = 0;
                 $data['status']  = 0;
                 $msg = '该歌单被禁用！';
             }
-            $music->save();
+            $item->save();
             
             return $this->json($data, $msg, $code);
         }
