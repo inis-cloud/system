@@ -85,7 +85,7 @@ class ArticleSort extends Model
     public function getOptAttr($value)
     {
         $value = !empty($value) ? json_decode($value, true) : [];
-        $value = array_merge(['head_img'=>''], $value);
+        $value = array_merge(['head_img'=>''], $value ?? []);
         $value['head_img'] = !empty($value['head_img']) ? $value['head_img'] : (new helper)->RandomImg('local', 'admin/images/anime/');
         return (object)$value;
     }

@@ -44,7 +44,7 @@ class api
     {
         $params  = $request->param();
 
-        $this->header['X-INIS-API'] = Lang::get('X-INIS-API');
+        $this->header['I-API-DESCRIBE'] = lang('I-API-DESCRIBE');
 
         $result  = ['code'=>403,'msg'=>'禁止非法操作！','data'=>[]];
         

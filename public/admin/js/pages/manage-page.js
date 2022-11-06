@@ -96,12 +96,9 @@
                     if (item.checked) check_arr.push(item.getAttribute('name'))
                 }
                 
-                let params = new FormData
-                
-                if (utils.is.empty(id)) params.append('id', check_arr.join() || '')
-                else params.append('id', id || '')
-                
-                POST('/admin/method/deletePage', params).then(res => {
+                POST('/admin/method/deletePage', {
+                    id: utils.is.empty(id) ? check_arr.join() : id, 
+                }).then(res => {
                     if (res.code == 200) Tool.Notyf('删除成功！', 'success')
                     else Tool.Notyf('删除失败！', 'error')
                     this.initData()

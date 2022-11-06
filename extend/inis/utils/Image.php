@@ -69,8 +69,8 @@ class Image{
      */
     private function set()
     {
-        $new_width   = $this->info['width']  * $this->percent;
-        $new_height  = $this->info['height'] * $this->percent;
+        $new_width   = (int)($this->info['width']  * ($this->percent <= 0 ? 0.5 : $this->percent));
+        $new_height  = (int)($this->info['height'] * ($this->percent <= 0 ? 0.5 : $this->percent));
         $image_thump = imagecreatetruecolor($new_width, $new_height);
         
         // 将原图复制带图片载体上面，并且按照一定比例压缩,极大的保持了清晰度

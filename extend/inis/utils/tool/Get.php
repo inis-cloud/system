@@ -21,11 +21,11 @@ class Get
      * 获取本地域名
      * @return string 返回本地域名
      */
-    public function domain()
+    public function domain($url = null)
     {
         $type   = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https://' : 'http://';
         $domain = &$_SERVER['HTTP_HOST'];
-        return $type.$domain;
+        return $type . $domain . $url;
     }
 
     /**

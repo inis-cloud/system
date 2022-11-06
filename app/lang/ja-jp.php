@@ -1,7 +1,7 @@
 <?php
 // 日文
 return [
-    'X-INIS-API'=>'公式 Web サイト https://inis.cc へようこそ。API ドキュメントは https://docs.inis.cc です。',
+    'I-API-DESCRIBE'=>'公式 Web サイト https://inis.cc へようこそ。API ドキュメントは https://docs.inis.cc です。',
     '验证码已发送至邮箱，%s 内有效！' =>'確認コードが電子メールに送信されました。有効期限は %s!',
 
     '参数不存在！'=>'引数が存在しません！',

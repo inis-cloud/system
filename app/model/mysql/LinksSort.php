@@ -82,7 +82,7 @@ class LinksSort extends Model
     public function getOptAttr($value)
     {
         $value = !empty($value) ? json_decode($value, true) : [];
-        $value = array_merge([], $value);
+        $value = array_merge([], $value ?? []);
         return (object)$value;
     }
 }

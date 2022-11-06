@@ -1,7 +1,7 @@
 <?php
 // 韩文
 return [
-    'X-INIS-API'=>'공식 웹사이트 https://inis.cc에 오신 것을 환영합니다. API 문서는 https://docs.inis.cc입니다.',
+    'I-API-DESCRIBE'=>'공식 웹사이트 https://inis.cc에 오신 것을 환영합니다. API 문서는 https://docs.inis.cc입니다.',
     '验证码已发送至邮箱，%s 内有效！' =>'인증 코드가 이메일로 전송되었으며 %s 내에 유효합니다!',
 
     '参数不存在！'=>'인수가 존재하지 않습니다!',

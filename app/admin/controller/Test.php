@@ -32,13 +32,13 @@ class Test
         // 获取请求参数
         $param= $request->param();
 
-        $dir  = $this->file->getDir(app()->getRootPath() . '/extend')['dir'];
+        // $dir  = $this->file->getDir(app()->getRootPath() . '/extend')['dir'];
 
-        $data[] = $dir;
+        // $data[] = $dir;
 
-        if (!in_array('test', $dir)) {
-            $this->file->createDir(app()->getRootPath() . '/extend/test');
-        }
+        // if (!in_array('test', $dir)) {
+        //     $this->file->createDir(app()->getRootPath() . '/extend/test');
+        // }
 
 
 

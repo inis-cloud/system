@@ -1,0 +1,12 @@
+{
+  "php_ext":"",
+  "chmod":[],
+  "success_url":"/index.php",
+  "php_versions":"80,81",
+  "db_config":"",
+  "admin_username":"",
+  "admin_password":"",
+  "run_path":"/public",
+  "remove_file":["/.user.ini"],
+  "enable_functions":[]
+}

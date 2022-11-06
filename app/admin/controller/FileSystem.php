@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use app\Request;
 use inis\utils\{File};
+use app\utils\{File as FileUtil};
 
 class FileSystem extends Base
 {
@@ -219,6 +220,10 @@ class FileSystem extends Base
      */
     public function uploadFileOne(Request $request)
     {
+        $data = [];
+        $code = 200;
+        $msg  = 'ok';
+
         $name = explode('.', $_FILES['file']['name'] ?? '');
         array_pop($name);
         $name = implode('.',$name);
@@ -227,22 +232,25 @@ class FileSystem extends Base
         
         $param = $request->param();
         
-        $path = explode('/', $param['path'] ?? './');
+        $path  = explode('/', $param['path'] ?? './');
         foreach ($path as $key => $val) {
             if ($val == '.' or $val == '..') unset($path[$key]);
         }
-        $path = implode('/',$path);
-        $path = (empty($path)) ? '/' : $path;
-        
-        $rule = 'file';
-        
-        $upload = (new Tool())->upload('file', ['public', $path, [$name]], 'one', $rule);
-        
-        if ($upload['code'] == 200){
-            $this->File->changeFile($param['path'].$_FILES['file']['name'],'mode', 0755);
+        $path  = implode('/', $path);
+        $path  = empty($path) ? './' : $path;
+
+        try {
+
+            $item   = new FileUtil();
+            $data   = $item->disk($path)->size(1024 * 1024 * 20)->upload($name);
+
+        } catch (\Throwable $th) {
+
+            $msg  = $th->getMessage();
+            $code = $th->getCode();
         }
-        
-        return $upload;
+
+        return $this->json($data, $msg, $code);
     }
     
     /** 

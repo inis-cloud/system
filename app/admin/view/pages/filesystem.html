@@ -221,16 +221,22 @@
                         <div class="slimscroll" style="max-height: 330px;">
                             <div class="timeline-alt pb-0 pt-0">
                                 
-                                <div v-for="(data, index) in preview" :key="index" class="uploads-preview">
-                                    <div class="media mt-3 mr-3">
-                                        <img class="mr-3" :src="data.ico" width="40">
-                                        <div class="media-body">
+                                <div v-for="(data, index) in preview" :key="index" class="uploads-preview my-2">
+                                    <div class="d-flex align-items-start">
+                                        <img class="me-3" :src="data.ico" width="40">
+                                        <div class="w-100 overflow-hidden">
+                                            <span v-if="data.speed == 0" class="badge badge-warning-lighten float-end">
+                                                <i class="mdi mdi-spin mdi-timer-sand"></i>
+                                            </span>
+                                            <span v-else-if="data.speed != 1" class="badge badge-info-lighten float-end">
+                                                <i class="mdi mdi-spin mdi-star"></i>
+                                            </span>
+                                            <span v-else-if="data.speed == 1" class="badge badge-success-lighten float-end">
+                                                完成
+                                            </span>
                                             <h5 class="mt-0 mb-1">{{data.name}}</h5>
                                             <span class="font-13">{{data.size}}</span>
                                         </div>
-                                        <span v-if="data.speed == 0" class="badge badge-warning-lighten"><i class="mdi mdi-spin mdi-timer-sand"></i></span>
-                                        <span v-else-if="data.speed != 1" class="badge badge-info-lighten"><i class="mdi mdi-spin mdi-star"></i></span>
-                                        <span v-else-if="data.speed == 1" class="badge badge-success-lighten">完成</span>
                                     </div>
                                     <div v-if="data.speed != 1 && data.speed != 0" class="progress-w-percent">
                                         <div class="progress progress-sm">

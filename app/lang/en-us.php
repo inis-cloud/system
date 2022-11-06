@@ -1,7 +1,7 @@
 <?php
 // 英文
 return [
-    'X-INIS-API'=>'Welcome to our official website https://inis.cc, our API documentation is https://docs.inis.cc',
+    'I-API-DESCRIBE'=>'Welcome to our official website https://inis.cc, our API documentation is https://docs.inis.cc',
     '验证码已发送至邮箱，%s 内有效！' =>'Verification code has been sent to email, valid within %s!',
     '参数不存在！'=>'Argument does not exist!',
     '数据请求成功！'=>'Data request successful!',

@@ -3,9 +3,10 @@
 namespace app\admin\controller;
 
 use app\Request;
+use app\utils\{File as FileUtil};
 use app\model\sqlite\{Search};
 use PHPMailer\PHPMailer\PHPMailer;
-use inis\utils\{File, helper, Image};
+use inis\utils\{File, helper, Image, utils};
 use think\facade\{Db, Cache, Config, Session};
 use app\model\mysql\{Tag, Page, Links, Users, Music, Options, Article, LinksSort, ArticleSort};
 
@@ -23,6 +24,7 @@ class Handle extends Base
     {
         $this->tool   = new Tool;
         $this->File   = new File;
+        $this->utils  = new utils;
         $this->helper = new helper;
         $this->DBUPDATE = Config::get('dbupdate');
     }
@@ -492,17 +494,7 @@ class Handle extends Base
             return $this->json($data, $msg, $code);
         }
     }
-    
-    /** 
-     * @name 上传图片到本地
-     */
-    public function uploadImage()
-    {
-        $item = (new Tool)->upload('image', '', 'more');
-        
-        return $item;
-    }
-    
+
     /** 
      * @name 上传资源
      */
@@ -512,54 +504,46 @@ class Handle extends Base
             
             $param = $request->param();
             $mode  = (empty($param['mode'])) ? '' : $param['mode'];
-            
-            // 取原文件名
-            $name  = explode('.', $_FILES['file']['name'] ?? '');
-            // 去除后缀
-            $pop   = array_pop($name);
-            // 过滤非法字符 - 数组转字符串
-            $name  = str_replace([
-                '.', '\\', '/', ':', '*', '`', '?', '<', '>', '%', '&', '$', '#', ' '
-            ], '', implode('.', $name));
-            
-            $time  = time();
+
+            $data = [];
+            $code = 200;
+            $msg  = '上传成功！';
+
             // 登录用户的ID
-            $uid   = Session::get('login_account')['id'];
-            
-            if (empty($mode))           $upload = $this->tool->upload('file', ['storage', 'users/head/'.$uid, [$time]]);
-            elseif ($mode == 'banner')  $upload = $this->tool->upload('file', ['storage', 'banner', [$time]], 'one', 'file|fileExt:jpg,jpeg,png,gif,webp|fileSize:20971520');
-            elseif ($mode == 'pay')     $upload = $this->tool->upload('file', ['storage', 'users/pay/'.$uid, [$time]]);
-            elseif ($mode == 'article') $upload = $this->tool->upload('file', ['storage', 'article/'.$uid.'/'.date("Y-m"), [$time]], 'one', 'file|fileExt:jpg,jpeg,png,gif,webp|fileSize:20971520');
-            elseif ($mode == 'file')    $upload = $this->tool->upload('file', ['storage', 'users/files/'.$uid.'/'.date("Y-m"), [$time]], 'one', 'file|fileExt:jpg,jpeg,png,gif,webp,svg,ico,zip,gz,mp3,mp4,avi|fileSize:20971520');
-            
+            $uid  = Session::get('login_account')['id'];
+
+            $path = 'storage/users/head/' . $uid;
+            if ($mode == 'banner')       $path = 'storage/banner';
+            else if ($mode == 'pay')     $path = 'storage/users/pay/' . $uid;
+            else if ($mode == 'article') $path = "storage/article/$uid" . date('Y-m');
+            else if ($mode == 'file')    $path = "storage/users/files/$uid/" . date('Y-m');
+
             // 读取配置
             $config = Options::where(['keys'=>'config:system'])->findOrEmpty();
             if (!$config->isEmpty()) $config = json_decode(json_encode($config['opt']), true);
             else $config = ['optimize'=>['image'=>['open'=>true,'ratio'=>50]]];
+
             // 空配置处理
-            
-            // 读取配置
             $config = Options::where(['keys'=>'config:system'])->findOrEmpty();
             $config = !$config->isEmpty() ? json_decode(json_encode($config['opt']), true) : [];
             // 深度合并
-            $config = $this->helper->array_merge_deep(['optimize'=>[
+            $config = $this->utils->arr->merge(['optimize'=>[
                 'image'=>['open'=>true,'ratio'=>50],
             ]], $config);
-            
-            
-            // 开启了图片压缩
-            if (($config['optimize']['image']['open'] === 'true' or $config['optimize']['image']['open'] === true) ? true : false) {
-                // 图片后缀
-                $img_pop = ['jpg', 'jpeg', 'png', 'bmp', 'wbmp','gif'];
-                // 图片压缩
-                if (in_array($pop, $img_pop)) if ($upload['code'] == 200) {
-                    // 得到本地资源路径
-                    $url = str_replace($this->helper->domain() . '/', '', $upload['data']);
-                    (new Image($url, 1 - ((int)$config['optimize']['image']['ratio'] / 100)))->compress($url);
-                }
+
+            $compress = $this->utils->is->true($config['optimize']['image']['open']);
+            $percent  = 1 - ((int)$config['optimize']['image']['ratio'] / 100);
+
+            try {
+                $item   = new FileUtil();
+                $domain = $this->utils->get->domain() . '/';
+                $data   = $domain . $item->compress($percent, $compress)->disk($path)->size(1024 * 1024 * 20)->upload(uniqid());
+            } catch (\Throwable $th) {
+                $msg  = $th->getMessage();
+                $code = $th->getCode();
             }
             
-            return $upload;
+            return $this->json($data, $msg, $code);
         }
     }
     
@@ -568,25 +552,34 @@ class Handle extends Base
      */
     public function uploadHead()
     {
-        $account_id = Session::get('login_account')['id'];
-        
-        $item = (new Tool())->upload('image', ['storage', 'users/uid-' . $account_id, [time()]]);
-        
-        if ($item['code'] == 200){
-            
-            $users = Users::find($account_id);
-            $users->head_img = $item['data'];
+        $data = [];
+        $code = 200;
+        $msg  = '上传成功！';
+
+        $uid = Session::get('login_account')['id'];
+
+        try {
+
+            $item   = new FileUtil();
+            $path   = 'storage/users/uid-' . $uid;
+            $domain = $this->utils->get->domain() . '/';
+            $data   = $domain . $item->file('image')->compress(0.5)->disk($path)->size(1024 * 1024 * 20)->upload(uniqid());
+
+            $users = Users::find($uid);
+            $users->head_img = $data;
             $users->save();
-            
-            $url = str_replace($this->helper->domain() . '/', '', $item['data']);
-            (new Image($url, 0.5))->compress($url);
-            
+
             unset($users['password']);
             // 更新用户登录信息
             Session::set('login_account', $users);
+
+        } catch (\Throwable $th) {
+
+            $msg  = $th->getMessage();
+            $code = $th->getCode();
         }
-        
-        return $item;
+
+        return $this->json($data, $msg, $code);
     }
     
     /** 
@@ -594,21 +587,72 @@ class Handle extends Base
      */
     public function uploadSiteHead()
     {
-        $item = (new Tool())->upload('image', ['storage', 'users', [time()]]);
-        
-        if ($item['code'] == 200) {
-            
+        $data = [];
+        $code = 200;
+        $msg  = '上传成功！';
+
+        try {
+
+            $item   = new FileUtil();
+            $path   = 'storage/users';
+            $domain = $this->utils->get->domain() . '/';
+            $data   = $domain . $item->file('image')->compress(0.5)->disk($path)->size(1024 * 1024 * 20)->upload(uniqid());
+
             $site = Options::where(['keys'=>'site'])->find();
             $opt  = json_decode(json_encode($site->opt), true);
-            $opt['image'] = $item['data'];
+            $opt['image'] = $data;
             $site->opt = json_encode($opt, JSON_UNESCAPED_UNICODE);
             $site->save();
-            
-            $url = str_replace($this->helper->domain() . '/', '', $item['data']);
-            (new Image($url, 0.5))->compress($url);
+
+        } catch (\Throwable $th) {
+
+            $msg  = $th->getMessage();
+            $code = $th->getCode();
         }
-        
-        return $item;
+
+        return $this->json($data, $msg, $code);
+    }
+
+    /** 
+     * @name 读取文件
+     */
+    public function readFile(Request $request)
+    {
+        if ($request->isPost()) {
+            
+            $data  = [];
+            $code  = 200;
+            $msg   = '读取完成';
+            
+            $param = $request->param();
+            
+            // 取原文件名
+            $name  = explode('.', $_FILES['file']['name'] ?? '');
+            // 去除后缀
+            array_pop($name);
+            // 过滤非法字符 - 数组转字符串
+            $name  = str_replace([
+                '.', '\\', '/', ':', '*', '`', '?', '<', '>', '%', '&', '$', '#', ' '
+            ], '', implode('.', $name));
+
+            try {
+
+                $item   = new FileUtil();
+                $path   = 'storage/cache';
+                $url    = $item->disk($path)->ext('md')->size(1024 * 1024 * 20)->upload(uniqid());
+
+                $data   = ['name'=>$name, 'content'=>$this->File->readFile($url)];
+                // 删除文件
+                $this->File->unlinkFile($url);
+    
+            } catch (\Throwable $th) {
+    
+                $msg  = $th->getMessage();
+                $code = $th->getCode();
+            }
+            
+            return $this->json($data, $msg, $code);
+        }
     }
     
     /** 
@@ -869,50 +913,6 @@ class Handle extends Base
                 
                 // 清除缓存
                 Cache::tag(['page','group'])->clear();
-            }
-            
-            return $this->json($data, $msg, $code);
-        }
-    }
-    
-    /** 
-     * @name 读取文件
-     */
-    public function readFile(Request $request)
-    {
-        if ($request->isPost()) {
-            
-            $data  = [];
-            $code  = 400;
-            $msg   = '读取失败';
-            
-            $param = $request->param();
-            
-            // 取原文件名
-            $name  = explode('.', $_FILES['file']['name'] ?? '');
-            // 去除后缀
-            array_pop($name);
-            // 过滤非法字符 - 数组转字符串
-            $name  = str_replace([
-                '.', '\\', '/', ':', '*', '`', '?', '<', '>', '%', '&', '$', '#', ' '
-            ], '', implode('.', $name));
-            
-            // 保存文件
-            $upload = $this->tool->upload('file', ['storage','cache', [$name]], 'one', 'file|fileExt:md');
-            
-            if ($upload['code'] == 200) {
-                
-                // 上传文件的本地路径
-                $url  = str_replace($this->tool->domain() . '/', '', $upload['data']);
-                // 文件名称
-                $data['name']    = $name;
-                // 文件内容
-                $data['content'] = $this->File->readFile($url);
-                // 删除文件
-                $this->File->unlinkFile($url);
-                
-                $code = 200;
-                $msg  = '读取完成';
             }
             
             return $this->json($data, $msg, $code);

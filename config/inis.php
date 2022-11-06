@@ -3,9 +3,9 @@
 // | INIS 设置
 // +----------------------------------------------------------------------
 
-use inis\utils\helper;
+use inis\utils\{utils};
 
-$helper = new helper;
+$utils  = new utils;
 
 return [
 
@@ -35,7 +35,7 @@ return [
         // 文章随机图配置
         'article'      =>  [
             'enable'   =>  true,                                    // 是否启用随机图
-            'path'     =>  $helper->domain() . '/api/file/random',  // $helper->domain() 获取的是当前域名    
+            'path'     =>  $utils->get->domain('/api/file/random'), // $utils->get->domain('/api/file/random') 获取的是当前域名    
         ],
         'path'         =>  'storage/random/',                       // 配置随机路径
     ],
@@ -65,5 +65,5 @@ return [
         ]
     ],
     
-    'version'      => '1.8.4',                          // inis 版本号 - 请不要自行更改，后果自负
+    'version'      => '1.9.0',                          // inis 版本号 - 请不要自行更改，后果自负
 ];

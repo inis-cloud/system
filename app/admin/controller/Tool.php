@@ -161,7 +161,7 @@ class Tool
         // smtp登录的密码 使用生成的授权码（就刚才叫你保存的最新的授权码）
         $mail->Password = $config->password;
         
-        // 设置发件人邮箱地址 这里填入上述提到的“发件人邮箱”
+        // 设置发件人邮箱地址 这里填入上述提到的 发件人邮箱
         $mail->From = $config->email;
         
         // 邮件正文是否为html编码 注意此处是一个方法 不再是属性 true或false

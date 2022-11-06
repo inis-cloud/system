@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+ RewriteEngine on
+ RewriteBase /
+ RewriteCond %{REQUEST_FILENAME} !-d
+ RewriteCond %{REQUEST_FILENAME} !-f
+ RewriteRule ^(.*)$ index.php?s=/$1 [QSA,PT,L]
+ SetEnvIf Token .+ HTTP_AUTHORIZATION=$0
+ SetEnvIf Version .+ HTTP_AUTHORIZATION=$0
+ SetEnvIf login-token .+ HTTP_AUTHORIZATION=$0
+ SetEnvIf Authorization .+ HTTP_AUTHORIZATION=$0
+</IfModule>

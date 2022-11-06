@@ -33,7 +33,8 @@
         "phpmailer/phpmailer": "^6.3",
         "liliuwei/thinkphp-social": "^1.3",
         "jaeger/querylist": "^4.2",
-        "guzzlehttp/guzzle": "^7.4"
+        "guzzlehttp/guzzle": "^7.4",
+        "aileshe/upload": "*"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",
