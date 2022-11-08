@@ -11,7 +11,7 @@ return [
 
     'api'   =>  [
         'log'            =>  true,                      // 开启API日志
-        'cache'          =>  true,                      // 开启API缓存
+        'cache'          =>  false,                      // 开启API缓存
     ],
     'valid_time'         =>  5 * 60,                    // 验证码有效时间 - 单位秒
     'jwt'   =>  [
@@ -65,5 +65,5 @@ return [
         ]
     ],
     
-    'version'      => '1.9.0',                          // inis 版本号 - 请不要自行更改，后果自负
+    'version'      => '1.9.1',                          // inis 版本号 - 请不要自行更改，后果自负
 ];

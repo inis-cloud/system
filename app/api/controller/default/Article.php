@@ -553,14 +553,14 @@ class Article extends Base
             $field= ['id','title','description','img_src','views','sort_id','create_time','update_time','last_update_time'];
             
             // 上一篇
-            $data['prev'] = ArticleModel::where([$map2, $map3])->field($field)->find();
+            $data['prev'] = ArticleModel::where([$map2, $map3])->order('id desc')->field($field)->find();
             if (!empty($data['prev']))  $data['prev']['expand'] = $this->imagesCover($data['prev']);
             
             // 下一篇
             $data['next'] = ArticleModel::where([$map1, $map3])->field($field)->find();
             if (!empty($data['next']))  $data['next']['expand'] = $this->imagesCover($data['next']);
             
-            if ($this->ApiCache) Cache::tag(['links',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['article',$cache_name])->set($cache_name, json_encode($data));
         }
         
         $code = 200;
