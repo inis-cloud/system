@@ -43,35 +43,32 @@
             },
             
             // 初始化
-            initData() {
+            async initData() {
                 
                 this.database = utils.get.storage('database')
                 
-                POST('/install').then(res=>{
-                    if (res.code == 200) this.info = res.data
-                })
+                const { code, data, msg }  = await POST('/install')
+                if (code == 200) this.info = data
             },
             
             // 测试数据库连接
-            testConn(){
+            async testConn(){
                 
                 // 更新缓存
                 utils.set.storage('database', this.database)
                 
-                POST('/install/handle/testConn', { ...this.database }).then(res=>{
-                    if (res.code == 200) {
-                        
-                        utils.set.storage('check', { database: true })
-                        this.initData()
-                        this.next('setting')
-                    }
-                    else if (res.code == 400) Tool.Notyf(res.msg, 'warning')
-                    else Tool.Notyf(res.msg, 'error')
-                })
+                const { code, data, msg } = await POST('/install/handle/testConn', { ...this.database })
+                if (code == 200) {
+                    utils.set.storage('check', { database: true })
+                    this.initData()
+                    this.next('setting')
+                }
+                else if (code == 400) return Tool.Notyf(msg, 'warning')
+                else return Tool.Notyf(msg, 'error')
             },
             
             // 开始安装
-            install(){
+            async install(){
                 
                 utils.set.storage('check',{finish:false})
                 
@@ -81,42 +78,20 @@
                 else if (utils.is.empty(this.account.email))    Tool.Notyf('邮箱不得为空！', 'warning')
                 else {
                     
-                    POST('/install/handle/setCache', { ...this.account }).then(res=>{
-                        if (res.code == 200) {
-                            this.is_instal = true
-                            this.next('instal')
-                            this.startInstall()
-                        }
-                    })
+                    const { code, data, msg } = await POST('/install/handle/setCache', { ...this.account })
+                    if (code == 200) {
+                        this.is_instal = true
+                        this.next('instal')
+                        this.startInstall()
+                    }
                 }
             },
 
             // 开始安装
             async startInstall(){
 
-                const check = await this.copyright()
-
-                if (check) {
-                    await this.createTables()
-                    await this.createTables('sqlite')
-                }
-            },
-
-            // 正版查询
-            async copyright(){
-
-                const result = await GET(inis.api + 'check')
-                if (result.code == 200) {
-                    if (result.data.status) return true
-                    else {
-                        const text = '您非正版用户，很抱歉我不能为您安装，如有能力，请点我支持正版！'
-                        const notif= Tool.Notyf(text, 'error', { duration: 10 * 1000 })
-                        const blank= () => window.open('https://inis.cc', '_blank')
-                        notif.on('click',   () => blank())
-                        notif.on('dismiss', () => blank())
-                        return false
-                    }
-                } else Tool.Notyf('服务器正忙，请稍候重试！', 'warning')
+                await this.createTables()
+                await this.createTables('sqlite')
             },
 
             // 创建表
@@ -130,12 +105,11 @@
                     des  : '正在创建',
                     state: null,
                 })
-                POST('/install/handle/createTables', { db }).then(res=>{
-                    if (res.code == 200) {
-                        this.setNotes(id, { state: 'success', des: '创建完成' })
-                        this.insertAll(db)
-                    } else this.setNotes(id, { state: 'error', des: '创建失败' })
-                })
+                const { code, data, msg} = await POST('/install/handle/createTables', { db })
+                if (code == 200) {
+                    this.setNotes(id, { state: 'success', des: '创建完成' })
+                    this.insertAll(db)
+                } else this.setNotes(id, { state: 'error', des: '创建失败' })
             },
 
             // 插入数据

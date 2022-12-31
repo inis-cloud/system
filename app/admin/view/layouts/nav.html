@@ -142,7 +142,7 @@
     </div>
     
     <teleport to="body">
-    <div v-show="update.genuine" id="update-info" class="modal fade customize-progress" tabindex="-1" role="dialog" aria-labelledby="primary-header-modalLabel" style="display: none;" aria-hidden="true">
+    <div id="update-info" class="modal fade customize-progress" tabindex="-1" role="dialog" aria-labelledby="primary-header-modalLabel" style="display: none;" aria-hidden="true">
         <div v-show="!update.show" class="modal-dialog">
             <div class="modal-content modal-filled bg-success">
                 <div class="modal-body p-4">
@@ -276,19 +276,6 @@
                     </div>
                 </div>
                 
-            </div>
-        </div>
-    </div>
-    <div v-if="!update.genuine" id="update-info" class="modal fade" tabindex="-1" role="dialog" aria-modal="true" style="display: none;">
-        <div class="modal-dialog">
-            <div class="modal-content modal-filled bg-danger">
-                <div class="modal-body p-4">
-                    <div class="text-center">
-                        <i class="dripicons-wrong h1"></i>
-                        <p class="mt-3">您的系统未添加授权，无法获取更新信息，请前往<a href="//inis.cc" target="_blank" class="text-white">inis 社区</a>添加授权！</p>
-                        <a href="//inis.cc/admin/comm/login?url=/admin/warrant" target="_blank" class="btn btn-light my-2">inis 社区</a>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

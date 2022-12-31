@@ -5,7 +5,7 @@
             return {
                 update: {
                     show: false,     // 版本比较 - 是否显示更新
-                    genuine: false,     // 正版查询
+                    // genuine: false,     // 正版查询
                     fulfill: false,     // 更新完成
                     info: {},           // 最新版信息
                     notes: [],          // 更新记录
@@ -47,52 +47,27 @@
         methods: {
             // 初始化方法
             initData(){
-
-                setTimeout(()=>{
-                    this.copyright()
-                }, 1000)
-
                 this.checkUpdate()
             },
-            // 正版查询
-            copyright(){
-                GET(inis.api + 'check').then(res=>{
-                    if (res.code == 200) {
-                        if (!res.data.status) {
-                            this.update.genuine = false
-                            const text = '您非正版用户，无法获取更新，如有能力，请支持正版！'
-                            const notif= Tool.Notyf(text, 'error', { duration: 10 * 1000 })
-                            const blank= () => window.open('https://inis.cc', '_blank')
-                            notif.on('click',   () => blank())
-                            notif.on('dismiss', () => blank())
-                        } else {
-                            this.update.genuine = true
-                        }
-                    }
-                })
-            },
             // 检查更新 - 获取版本更新信息
-            checkUpdate(){
-                GET(inis.api + 'update/version').then(res=>{
-                    if (res.code == 200) {
-                        const result        = res.data
-                        this.update.info    = result
-                        this.update.content = (result.content.split(/[(\r\n)\r\n]+/)).filter(value=>{
-                            return value && value.trim()
-                        })
-                        // 版本比较
-                        let check = utils.compare.version(result.version, inis.version)
-                        // 显示更新
-                        this.update.show = check
-                        this.lottie()
+            async checkUpdate(){
 
-                        // 自动更新
-                        if (inis.autoupdate && check) {
-                            Tool.Notyf('检测到新版本，正在为您更新...', 'default', { duration: 3 * 1000 })
-                            this.startUpdate()
-                        }
-                    }
-                })
+                const { code, data, msg } = await GET(inis.api + 'update/version')
+                if (code != 200) return
+
+                this.update.info    = data
+                this.update.content = (data.content.split(/[(\r\n)\r\n]+/)).filter(value=>value && value.trim())
+                // 版本比较
+                let check = utils.compare.version(data.version, inis.version)
+                // 显示更新
+                this.update.show = check
+                this.lottie()
+
+                // 自动更新
+                if (inis.autoupdate && check) {
+                    Tool.Notyf('检测到新版本，正在为您更新...', 'default', { duration: 3 * 1000 })
+                    this.startUpdate()
+                }
             },
             // 开始更新
             async startUpdate(){
@@ -122,10 +97,10 @@
                     state: null,
                 })
 
-                const result = await GET(inis.api + db + '/table')
+                const { code, data, msg } = await GET(inis.api + db + '/table')
 
-                if (result.code == 200) {
-                    this.update[db].news = result.data
+                if (code == 200) {
+                    this.update[db].news = data
                     this.setNotes(id, { state: 'success' })
                 } else this.setNotes(id, { state: 'error' })
             },
@@ -236,21 +211,15 @@
                     reset: true,
                 })
 
-                const result = await GET(inis.api + 'download/update')
-                if (result.code != 200) {
-                    this.setNotes(id, { state: 'error' })
-                    return
-                }
+                const { package: path } = this.update.info
 
                 this.setNotes(id, { state: 'cache', des: '正在下载' })
-                const path = result.data.file
 
-                const download = await POST('/admin/update/downloadFile', { path })
-                if (download.code == 200) {
-                    this.setNotes(id, { state: 'success', des: '下载完成' })
-                    await this.unzipFile()
-                }
-                else this.setNotes(id, { state: 'error', des: '下载失败' })
+                const { code, data, msg } = await POST('/admin/update/downloadFile', { path })
+                if (code != 200) return this.setNotes(id, { state: 'error', des: '下载失败' })
+
+                this.setNotes(id, { state: 'success', des: '下载完成' })
+                await this.unzipFile()
             },
 
             // 解压更新
@@ -266,24 +235,24 @@
                     reset: true,
                 })
 
-                const result = await POST('/admin/update/unzipFile')
-                if (result.code == 200) {
-                    this.setNotes(id, { state: 'success', des: '解压完成' })
-                    this.update.fulfill = true
-                    this.update.notes.push({
-                        id   : 'update-ok',
-                        name : '最终更新结果',
-                        des  : '更新完成',
-                        state: 'success',
-                    })
-                    // 热更新 - 临时更改版本号
-                    inis.version = this.update.info.version
-                    setTimeout(()=>{
-                        // 重新比对版本
-                        this.checkUpdate()
-                    }, 1000);
-                    Tool.Notyf('更新完成！')
-                } else this.setNotes(id, { state: 'error', des: '解压失败' })
+                const { code, data, msg } = await POST('/admin/update/unzipFile')
+                if (code != 200) return this.setNotes(id, { state: 'error', des: '解压失败' })
+
+                this.setNotes(id, { state: 'success', des: '解压完成' })
+                this.update.fulfill = true
+                this.update.notes.push({
+                    id   : 'update-ok',
+                    name : '最终更新结果',
+                    des  : '更新完成',
+                    state: 'success',
+                })
+                // 热更新 - 临时更改版本号
+                inis.version = this.update.info.version
+                setTimeout(()=>{
+                    // 重新比对版本
+                    this.checkUpdate()
+                }, 1000);
+                Tool.Notyf('更新完成！')
             },
 
             // 设置记录
@@ -362,7 +331,6 @@
                     
                     const self  = this
                     self.search.result = utils.array.search(self.search.data, 'key', self.search_key)
-                    console.log(self.search.result)
                 },
             }
         },

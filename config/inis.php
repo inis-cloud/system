@@ -11,7 +11,7 @@ return [
 
     'api'   =>  [
         'log'            =>  true,                      // 开启API日志
-        'cache'          =>  false,                      // 开启API缓存
+        'cache'          =>  true,                      // 开启API缓存
     ],
     'valid_time'         =>  5 * 60,                    // 验证码有效时间 - 单位秒
     'jwt'   =>  [
@@ -50,7 +50,7 @@ return [
     
     // 官方授权系统
     'official'     =>  [
-        'api'      =>  'https://inis.cc/api/',                         // 用于检查更新 - 千万不要作死
+        'api'      =>  'https://api.inis.cc/api/',                         // 用于检查更新 - 千万不要作死
         'cdn'      =>  'https://cdn.inis.cc/system/default/'           // 静态文件加速
     ],
 
@@ -65,5 +65,5 @@ return [
         ]
     ],
     
-    'version'      => '1.9.1',                          // inis 版本号 - 请不要自行更改，后果自负
+    'version'      => '2.0.0',                          // inis 版本号 - 请不要自行更改，后果自负
 ];

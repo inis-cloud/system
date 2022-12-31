@@ -34,7 +34,7 @@ class Index extends BaseController
 
         View::assign([
             'CONFIG'         => (object)[
-                'API'        => Config::get('inis.official.api', 'https://inis.cc/api/'),
+                'API'        => Config::get('inis.official.api', 'https://api.inis.cc/api/'),
             ]
         ]);
     }

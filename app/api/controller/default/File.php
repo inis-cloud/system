@@ -152,6 +152,7 @@ class File extends Base
             $code = $th->getCode();
             $msg  = $th->getMessage();
         }
+        
         return ['data'=>$data,'code'=>$code,'msg'=>$msg];
     }
     
