@@ -15,6 +15,22 @@
         mounted() {
             this.oneWord()
             this.initData()
+            const socket = new WebSocket('wss://inis.cc/wss')
+            // const socket = new WebSocket('ws://localhost:8080/chrome')
+            socket.onopen = () => {
+                socket.send('Hello Server!')
+            }
+            socket.onmessage = (event) => {
+                console.log('Message from server ', event.data)
+            }
+            socket.onclose = (event) => {
+                if (event.wasClean) {
+                    console.log('Connection closed cleanly')
+                } else {
+                    console.log('Connection died')
+                }
+                console.log('Code: ' + event.code + ' reason: ' + event.reason)
+            }
         },
         methods: {
             // 初始化本地配置

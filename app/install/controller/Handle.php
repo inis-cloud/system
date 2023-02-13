@@ -11,13 +11,11 @@ class Handle extends BaseController
 {
     protected $File;
     protected $helper;
-    protected $DBUPDATE;
     
     public function __construct()
     {
         $this->File     = new File;
         $this->helper   = new helper;
-        $this->DBUPDATE = Config::get('dbupdate');
 
         $path = app()->getRootPath() . '/extend';
         $dir  = $this->File->getDir($path)['dir'];
@@ -164,91 +162,53 @@ class Handle extends BaseController
         $this->File->unlinkFile('install.env');
         $this->File->writeFile($route, $text);
     }
-    
-    // 批量建表
-    public function createTables(Request $request)
+
+    // 批量导入数据
+    public function initDB(Request $request)
     {
-        if ($request->isPost())
-        {
+
+        if ($request->isPost()) {
+
             $data  = [];
             $code  = 200;
             $msg   = 'ok';
-            
+
             $param = $request->param();
             $db    = !empty($param['db']) ? $param['db'] : 'mysql';
 
-            // 获取表信息
-            $tabs  = $this->helper->get(config('inis.official.api') . $db . '/created');
+            // 获取数据信息
+            $array = config('inis_db.' . $db);
 
-            if ($tabs['code'] != 200) return $this->create([], $tabs['msg'], 400);
-
-            // 数据库
-            $conn = Db::connect($db);
-
-            // SQL 语句
-            $sqls = [];
-            if (!empty($tabs['data'])) {
-
-                // mysql 驱动
-                if ($db == 'mysql') foreach ($tabs['data'] as $key => $val) {
-
-                    // 如果表已存在，先删除该表
-                    if (in_array($key, $conn->getTables())) $conn->execute('DROP TABLE '. $key);
-
-                    $sqls[] = $val;
-                    // 重新设置自增起始值
-                    $sqls[] = "ALTER TABLE " . $key . " AUTO_INCREMENT=1;";
-                }
-                // sqlite 驱动
-                else if ($db == 'sqlite') foreach ($tabs['data'] as $key => $val) {
-                    
-                    // 如果表已存在，先删除该表
-                    if (in_array($key, $conn->getTables())) $conn->execute('DROP TABLE '. $key);
-
-                    $sqls[] = $val;
-                }
-            }
-            
             try {
 
-                // 执行 SQL 语句
-                if (!empty($sqls)) foreach ($sqls as $val) $conn->execute($val);
-                
+                foreach ($array as $key => $val) {
+
+                    // 数据库
+                    $conn = Db::connect($db);
+
+                    // 如果表不存在，先创建该表
+                    if (!in_array($key, $conn->getTables())) $conn->execute($val['sql']);
+
+                    if (!empty($val['data'])) {
+
+                        // 重新设置自增起始值
+                        $conn->execute("ALTER TABLE " . $key . " AUTO_INCREMENT=1;");
+
+                        // 清空表数据
+                        $conn->execute('TRUNCATE TABLE ' . $key);
+
+                        // 批量插入数据
+                        $conn->table($key)->insertAll($val['data']);
+                    }
+                }
+
             } catch (\Exception $e) {
-                
+                    
                 $code = 400;
                 $msg  = $e->getMessage();
             }
 
             return $this->create($data, $msg, $code);
-        }
-    }
-
-    // 批量导入数据
-    public function insertAll(Request $request)
-    {
-        if ($request->isPost())
-        {
-            $data  = [];
-            $code  = 200;
-            $msg   = 'ok';
-            $param = $request->param();
-
-            $db    = !empty($param['db']) ? $param['db'] : 'mysql';
-
-            // 获取默认数据
-            $result= $this->helper->get(config('inis.official.api') . $db . '/data');
-
-            // 估计是没有权限 - 或者网络问题
-            if ($result['code'] != 200) return $this->create([], $result['msg'], (int)$result['code']);
-
-            // 先判断数据有没有
-            if (!empty($result['data'])) foreach ($result['data'] as $key => $val) {
-                // 批量插入数据
-                Db::connect($db)->table($key)->insertAll($val);
-            }
-
-            return $this->create($result, $msg, $code);
         }
     }
 }

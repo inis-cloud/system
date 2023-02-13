@@ -108,7 +108,7 @@ class Location extends Base
         $code = 400;
         $msg  = Lang::get('无数据！');
         
-        $ip   = !empty($param['ip']) ? $param['ip'] : $this->helper->GetClientIP();
+        $ip   = !empty($param['ip']) ? $param['ip'] : $this->utils->get->ip()['ip'];
         
         // 设置缓存名称
         $cache_name = json_encode(array_merge(['IAPI'=>'location'], $param));
@@ -118,12 +118,12 @@ class Location extends Base
         else {
             
             // 获取数据
-            $result = $this->helper->get($this->config['official']['api'] . 'gothe', ['ip'=>$ip], ['origin'=>$this->helper->domain()]);
+            $result = $this->utils->curl->get($this->config['official']['api'] . 'gothe', ['ip'=>$ip], ['origin'=>$this->helper->domain()]);
             
             if ($result['code'] == 200) $data = $result['data'];
             else $data = $result;
             
-            if ($this->ApiCache) Cache::tag(['gothe',$cache_name])->set($cache_name, json_encode($data));
+            if ($this->ApiCache) Cache::tag(['gothe', $cache_name])->set($cache_name, json_encode($data));
             
         }
         

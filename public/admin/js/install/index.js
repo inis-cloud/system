@@ -89,47 +89,25 @@
 
             // 开始安装
             async startInstall(){
-
-                await this.createTables()
-                await this.createTables('sqlite')
+                
+                await this.inisDB('mysql')
+                await this.inisDB('sqlite')
             },
 
-            // 创建表
-            async createTables(db = 'mysql'){
-
-                const id = `create-tables-${db}`
-
+            async inisDB(db = 'mysql') {
+                const id = `init-db-${db}`
                 this.notes.push({
                     id,
-                    name : `创建 <span class='text-info'>${db == 'mysql' ? '主库' : '备库'}</span> 表`,
-                    des  : '正在创建',
+                    name : `初始化 <span class='text-info'>${db == 'mysql' ? '主库' : '备库'}</span>`,
+                    des  : '正在初始化数据库...',
                     state: null,
                 })
-                const { code, data, msg} = await POST('/install/handle/createTables', { db })
+                const { code, data, msg} = await POST('/install/handle/initDB', { db })
                 if (code == 200) {
-                    this.setNotes(id, { state: 'success', des: '创建完成' })
-                    this.insertAll(db)
-                } else this.setNotes(id, { state: 'error', des: '创建失败' })
-            },
-
-            // 插入数据
-            async insertAll(db = 'mysql'){
-
-                const id = `insert-all-${db}`
-                this.notes.push({
-                    id,
-                    name : `导入 <span class='text-info'>${db == 'mysql' ? '主库' : '备库'}</span> 表默认数据`,
-                    des  : '正在导入',
-                    state: null,
-                })
-                POST('/install/handle/insertAll', { db }).then(async res=>{
-                    if (res.code == 200 || res.code == 204) {
-                        this.fulfill[db] = true
-                        this.setNotes(id, { state: 'success', des: '导入完成' })
-                        if (this.fulfill.mysql && this.fulfill.sqlite) await this.createAdmin()
-                    }
-                    else this.setNotes(id, { state: 'error', des: '导入失败' })
-                })
+                    this.setNotes(id, { state: 'success', des: '初始化完成' })
+                    this.fulfill[db] = true
+                    if (this.fulfill.mysql && this.fulfill.sqlite) await this.createAdmin()
+                } else this.setNotes(id, { state: 'error', des: '初始化失败' })
             },
 
             // 设置记录

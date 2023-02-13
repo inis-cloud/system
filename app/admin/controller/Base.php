@@ -59,7 +59,7 @@ abstract class Base extends BaseController
 
         // 开启了自动更新
         $autoUpdate = Options::where(['keys'=>'config:system'])->value('opt');
-        $autoUpdate = json_decode($autoUpdate, true);
+        $autoUpdate = json_decode($autoUpdate ?? '', true);
         $autoUpdate = $autoUpdate['system']['autoUpdate'] ?? false;
         $autoUpdate = $autoUpdate == 'true' or $autoUpdate === true ? true : false;
 
