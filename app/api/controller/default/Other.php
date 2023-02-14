@@ -303,7 +303,9 @@ class Other extends Base
         try {
             
             $timeStart = microtime(true);
-            $FSO       = fSockOpen($ip, (int)$port, $errno, $errstr, (float)$timeout);
+            $errCode   = null;
+            $errMsg    = null;
+            $FSO       = fSockOpen($ip, (int)$port, $errCode, $errMsg, (float)$timeout);
             if (!$FSO) $msg = Lang::get('Ping 请求找不到主机', [$ip]);
             else {
                 $timeEnd = microtime(true);
