@@ -316,7 +316,7 @@ class Other extends Base
                 ];
             }
             
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $msg = Lang::get('请求超时！');
         }
         
