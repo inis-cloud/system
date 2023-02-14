@@ -12,10 +12,11 @@ use think\facade\{Config, View, Session};
 abstract class Base extends BaseController
 {
     protected $File;
-    protected $helper = [];
-    protected $config = [];
+    protected $helper     = [];
+    protected $config     = [];
     protected $middleware = [LoginCheck::class];
-    
+    private mixed $user;
+
     public function initialize()
     {
         $this->File   = new File;

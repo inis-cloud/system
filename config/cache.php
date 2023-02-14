@@ -25,5 +25,16 @@ return [
             'serialize'  => [],
         ],
         // 更多的缓存连接
+        // redis缓存
+        'redis'   =>  [
+            // 驱动方式
+            'type'    => 'Redis',
+            'host'    => env('cache.host', 'localhost'),
+            'password'=> env('cache.password', ''),
+            'port'    => env('cache.port', 6379),
+            'select'  => env('cache.select', 0),
+            'expire'  => env('cache.expire', 7200),
+            'timeout' => env('cache.timeout', 2400),
+        ],
     ],
 ];
